@@ -42,3 +42,8 @@ Próximos itens prioritários:
 - Testes unitários do domínio adicionados com Vitest. Arquivos em `tests/domain` (16/05/2026).
 
 Próximo passo recomendado: provisionar `.env.local` em staging/production e configurar secrets no CI.
+
+Status: padronização do runtime
+
+- Arquivos `.nvmrc` e `.node-version` adicionados com `24`.
+- Atualizar ambiente local para Node 24 e rodar `npm install` + `npm run test`.

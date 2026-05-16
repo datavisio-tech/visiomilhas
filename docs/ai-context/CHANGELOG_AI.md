@@ -105,6 +105,23 @@ Notas:
 - Vitest foi instalado como dependência de desenvolvimento.
 - Testes cobrem casos de borda, erros de domínio e arredondamentos.
 
+## 2026-05-16 — Padronização do runtime: Node 24 LTS
+
+Objetivo:
+
+- Padronizar o runtime para Node 24 LTS (versão alvo do projeto) para evitar incompatibilidades com dependências modernas (Vitest, Vite, rolldown).
+
+Arquivos criados/alterados nesta etapa:
+
+- `.nvmrc` — `24`
+- `.node-version` — `24`
+- `package.json` — `engines` definido para `node: ">=24 <25"` e `npm: ">=10"`.
+
+Notas:
+
+- A alteração de runtime exige que o ambiente local seja atualizado para Node 24 antes de rodar os testes.
+- Não foi feito `npm install` nem `npm run test` com Node 24 neste ciclo; instruções para atualização estão no README operacional.
+
 ## 2026-05-16 — Environment and checks: added APP_NAME, ran typecheck & lint
 
 Objetivo:

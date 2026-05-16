@@ -37,3 +37,8 @@ Outras decisões:
 
 - Adotar `Vitest` como framework de testes unitários para funções puras do domínio (rápido e integrado com Vite/esbuild).
 - Manter testes de domínio separados dos testes de UI e integrações; usar `tests/domain` como localização preferida.
+
+Decisão sobre runtime:
+
+- Padronizar runtime em Node 24 LTS para o projeto, garantindo compatibilidade com ferramentas modernas e reduzindo dívida técnica.
+- Evitar suporte a Node 21 (EOL) — forçar ambientes locais e CI para Node >=24.
