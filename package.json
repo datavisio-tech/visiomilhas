@@ -23,7 +23,8 @@
     "db:migrate": "npm run db:adm:migrate && npm run db:app:migrate",
     "db:seed": "tsx db/seed/index.ts",
     "db:check-env": "tsx db/seed/check-env.ts",
-    "db:create-databases": "tsx db/admin/create-databases.ts"
+    "db:create-databases": "tsx db/admin/create-databases.ts",
+    "db:check-connections": "tsx db/seed/check-db-connections.ts"
   },
   "dependencies": {
     "pg": "^8.10.0",
