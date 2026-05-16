@@ -151,4 +151,22 @@ Notas:
 - Próximo passo: adicionar testes unitários para `lib/domain`.
 
 - Próximo passo recomendado: provisionar um arquivo `.env.local` seguro no ambiente de deploy/staging e configurar CI secrets.
+
+## 2026-05-16 — Preparação de migrations e seeds (Drizzle)
+
+Objetivo:
+
+- Separar configurações Drizzle para bases ADM e APP; adicionar seeds idempotentes.
+
+Arquivos criados/alterados nesta etapa:
+
+- `drizzle.adm.config.ts`, `drizzle.app.config.ts`
+- `db/seed/index.ts`, `db/seed/check-env.ts`, `db/seed/adm-seed.ts`, `db/seed/app-seed.ts`, `db/seed/demo-data.ts`
+- `db/adm/client.ts`, `db/app/client.ts` (exportando pools e clients para uso server-side)
+- `package.json` — scripts `db:adm:generate`, `db:app:generate`, `db:adm:migrate`, `db:app:migrate`, `db:generate`, `db:migrate`, `db:seed`, `db:check-env`
+
+Notas:
+
+- Seeds são idempotentes e `db/seed/index.ts` exige autorização explícita (`VISIOMILHEIRO_ALLOW_DB_SEED=1` ou `--apply`).
+- Migrations NÃO foram executadas automaticamente e nenhum seed foi rodado sem autorização.
 - Rodar lint/typecheck/build após scaffold.

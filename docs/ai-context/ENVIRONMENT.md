@@ -46,3 +46,20 @@ Observações:
 
 - Nunca comitar `.env` real. Use `.env.example` com os mesmos nomes sem valores.
 - Prefixos `NEXT_PUBLIC_` somente para variáveis públicas.
+
+Operação de migrações e seeds:
+
+- Use `drizzle.adm.config.ts` e `drizzle.app.config.ts` para gerar e aplicar migrações separadas.
+- Fluxo principal: `generate` -> `migrate` (não usar `push` como padrão).
+- Scripts disponíveis (padrão DataVisio):
+  - `npm run db:adm:generate` — gerar migração ADM
+  - `npm run db:app:generate` — gerar migração APP
+  - `npm run db:adm:migrate` — aplicar migração ADM
+  - `npm run db:app:migrate` — aplicar migração APP
+  - `npm run db:generate` — gera ambas (ADM + APP)
+  - `npm run db:migrate` — aplica ambas (ADM + APP)
+  - `npm run db:check-env` — verifica presença segura das variáveis necessárias
+  - `npm run db:seed` — executa `db/seed/index.ts` (REquer autorização explícita, veja `db/seed/index.ts`)
+- Verifique `ADM_DATABASE_URL` e `APP_DATABASE_URL` antes de executar migrações/seeds. Nunca imprima valores de conexão em logs.
+
+Observação: `drizzle-kit push` NÃO é o fluxo recomendado aqui; prefira gerar migrações e aplicar com `drizzle-kit migrate` para controle do histórico e revisão de mudanças.

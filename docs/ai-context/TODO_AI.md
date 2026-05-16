@@ -47,3 +47,10 @@ Status: padronização do runtime
 
 - Arquivos `.nvmrc` e `.node-version` adicionados com `24`.
 - Atualizar ambiente local para Node 24 e rodar `npm install` + `npm run test`.
+
+DB: migrações, generate e seeds
+
+- Arquivos de configuração do Drizzle separados: `drizzle.adm.config.ts` e `drizzle.app.config.ts`.
+- Scripts npm adicionados: `db:adm:generate`, `db:app:generate`, `db:adm:migrate`, `db:app:migrate`, `db:generate`, `db:migrate`, `db:seed`, `db:check-env`.
+- `db/seed/` contém seeds idempotentes (`adm-seed.ts`, `app-seed.ts`, `demo-data.ts`) e `index.ts` requer autorização explícita (`VISIOMILHEIRO_ALLOW_DB_SEED=1` ou `--apply`).
+- Não executar `db:migrate` ou `db:seed` sem confirmação explícita.

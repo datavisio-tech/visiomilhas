@@ -58,3 +58,10 @@ Fase 9: deploy e hardening
 Observação:
 
 - Priorizar entregas mínimas por fase com testes e seeds.
+
+DB: migrações e seeds (operação segura)
+
+- Separar migrações/saídas por database: `drizzle.adm.config.ts` e `drizzle.app.config.ts`.
+- Fluxo: `generate` -> `migrate` (usar `drizzle-kit migrate`); evitar `push` como padrão.
+- Seeds idempotentes em `db/seed/` e execução controlada via `npm run db:seed` que exige autorização explícita (`VISIOMILHEIRO_ALLOW_DB_SEED=1` ou `--apply`).
+- Não executar migrações ou seeds sem aprovação explícita do time de desenvolvimento/DBA.

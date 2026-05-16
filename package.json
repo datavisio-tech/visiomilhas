@@ -14,9 +14,18 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "db:adm:generate": "drizzle-kit generate --config=drizzle.adm.config.ts",
+    "db:app:generate": "drizzle-kit generate --config=drizzle.app.config.ts",
+    "db:adm:migrate": "drizzle-kit migrate --config=drizzle.adm.config.ts",
+    "db:app:migrate": "drizzle-kit migrate --config=drizzle.app.config.ts",
+    "db:generate": "npm run db:adm:generate && npm run db:app:generate",
+    "db:migrate": "npm run db:adm:migrate && npm run db:app:migrate",
+    "db:seed": "tsx db/seed/index.ts",
+    "db:check-env": "tsx db/seed/check-env.ts"
   },
   "dependencies": {
+    "pg": "^8.10.0",
     "lucide-react": "^1.16.0",
     "next": "14.0.0",
     "react": "18.2.0",
@@ -24,6 +33,8 @@
     "recharts": "^3.8.1"
   },
   "devDependencies": {
+    "tsx": "^3.12.7",
+    "@types/pg": "^8.6.6",
     "@types/node": "25.8.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
