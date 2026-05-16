@@ -15,12 +15,12 @@ Fase 1: auth, tenant e onboarding
 
 Fase 1.5: domínio e validações (atual)
 
-- Implementar `lib/domain` com cálculos puros (CPM, compras, vendas, transferências).
-- Implementar `lib/validations` com Zod para programas, contas, lançamentos, compras, vendas e transfers.
+Adição de testes (Vitest):
+
+- Adotar Vitest para testes unitários de funções puras do domínio.
+- Criar suite de testes em `tests/domain` cobrindo `miles-calculations`.
 
 Fase 2: landing page
-
-- Implementar páginas públicas: hero, pricing, FAQ, CTA de trial
 
 Fase 3: programas e contas
 

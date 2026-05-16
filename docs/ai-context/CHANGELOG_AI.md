@@ -88,6 +88,23 @@ Pendências:
 
 - Adicionar testes unitários para cálculos e validar corner-cases (zerodivision, arredondamentos).
 
+## 2026-05-16 — Testes unitários do domínio (Vitest)
+
+Objetivo:
+
+- Introduzir testes unitários para as funções puras em `lib/domain`, garantindo cálculos de CPM, impacto de compras, vendas e transferências.
+
+Arquivos criados/alterados nesta etapa:
+
+- `vitest.config.ts` — configuração mínima do Vitest (ambiente node).
+- `tests/domain/miles-calculations.test.ts` — testes unitários para `lib/domain/miles-calculations.ts`.
+- `package.json` — scripts `test`, `test:watch`, `test:coverage` adicionados.
+
+Notas:
+
+- Vitest foi instalado como dependência de desenvolvimento.
+- Testes cobrem casos de borda, erros de domínio e arredondamentos.
+
 ## 2026-05-16 — Environment and checks: added APP_NAME, ran typecheck & lint
 
 Objetivo:

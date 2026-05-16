@@ -32,3 +32,8 @@ Outras decisões:
 - Centralizar validações em `lib/validations` (Zod) e cálculos em `lib/calculations`.
 
 - Decisão adicional: usar `lib/domain` para funções puras de cálculo relacionadas a milhas (CPM, impactos de compra/venda/transferência) e `lib/validations` (Zod) para validar entradas antes de chegar à camada de domínio. Essa separação facilita testes unitários e portabilidade.
+  \
+  Decisão adicional sobre testes:
+
+- Adotar `Vitest` como framework de testes unitários para funções puras do domínio (rápido e integrado com Vite/esbuild).
+- Manter testes de domínio separados dos testes de UI e integrações; usar `tests/domain` como localização preferida.

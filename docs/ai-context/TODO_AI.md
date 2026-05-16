@@ -35,8 +35,10 @@ Próximos itens prioritários:
 - Implementar UI inicial do dashboard e CRUDs.
 - Integrar autenticação e onboarding.
 - Configurar Stripe e billing.
-
-Status recente:
+  \
+  Status recente:
 
 - `.gitignore` e `.env.example` criados na raiz do projeto com placeholders seguros (16/05/2026).
-- Próximo passo recomendado: provisionar `.env.local` em staging/production e configurar secrets no CI.
+- Testes unitários do domínio adicionados com Vitest. Arquivos em `tests/domain` (16/05/2026).
+
+Próximo passo recomendado: provisionar `.env.local` em staging/production e configurar secrets no CI.
