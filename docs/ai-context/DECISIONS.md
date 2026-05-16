@@ -48,3 +48,4 @@ Database migration & seeds decisions:
 - Usar duas configurações separadas do Drizzle: `drizzle.adm.config.ts` e `drizzle.app.config.ts` para separar a base administrativa (ADM) da base da aplicação (APP).
 - Fluxo principal de migrações: `generate` -> `migrate` (não usar `push` como padrão). Gerar migrações para cada DB separadamente e aplicar com `drizzle-kit migrate`.
 - Seeds idempotentes em `db/seed/` e execução controlada via `npm run db:seed` (scripts usam `tsx` para rodar TypeScript diretamente).
+- Introduzida variável `POSTGRES_ADMIN_DATABASE_URL` e script seguro `db:create-databases` para criar as bases necessárias (`controle_adm_saas_datavisio`, `visiomilhas_app`) antes de aplicar migrations. O admin URL deve apontar para uma base existente (eg. `postgres`) e o usuário deve ter permissão `CREATE DATABASE`.

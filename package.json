@@ -22,7 +22,8 @@
     "db:generate": "npm run db:adm:generate && npm run db:app:generate",
     "db:migrate": "npm run db:adm:migrate && npm run db:app:migrate",
     "db:seed": "tsx db/seed/index.ts",
-    "db:check-env": "tsx db/seed/check-env.ts"
+    "db:check-env": "tsx db/seed/check-env.ts",
+    "db:create-databases": "tsx db/admin/create-databases.ts"
   },
   "dependencies": {
     "pg": "^8.10.0",
@@ -35,6 +36,8 @@
   "devDependencies": {
     "tsx": "^3.12.7",
     "@types/pg": "^8.6.6",
+    "dotenv": "^16.1.4",
+    "dotenv-expand": "^5.1.0",
     "@types/node": "25.8.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

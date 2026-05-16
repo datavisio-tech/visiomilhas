@@ -50,7 +50,4 @@ Status: padronização do runtime
 
 DB: migrações, generate e seeds
 
-- Arquivos de configuração do Drizzle separados: `drizzle.adm.config.ts` e `drizzle.app.config.ts`.
-- Scripts npm adicionados: `db:adm:generate`, `db:app:generate`, `db:adm:migrate`, `db:app:migrate`, `db:generate`, `db:migrate`, `db:seed`, `db:check-env`.
-- `db/seed/` contém seeds idempotentes (`adm-seed.ts`, `app-seed.ts`, `demo-data.ts`) e `index.ts` requer autorização explícita (`VISIOMILHEIRO_ALLOW_DB_SEED=1` ou `--apply`).
-- Não executar `db:migrate` ou `db:seed` sem confirmação explícita.
+- Adicionar script seguro `db:create-databases` e variável `POSTGRES_ADMIN_DATABASE_URL` usada para criar apenas as bases necessárias (`controle_adm_saas_datavisio` e `visiomilhas_app`) quando ausentes. O admin URL é sensível e requerido apenas para esta operação.

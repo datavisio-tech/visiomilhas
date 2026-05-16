@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { safeParseServerEnv } from "../../lib/env";
 
 const missingNames = (() => {

@@ -3,6 +3,8 @@ import { z } from "zod";
 const ServerEnvSchema = z.object({
   ADM_DATABASE_URL: z.string().min(1),
   APP_DATABASE_URL: z.string().min(1),
+  // optional admin URL used only by db admin scripts
+  POSTGRES_ADMIN_DATABASE_URL: z.string().optional(),
   APP_NAME: z.string().min(1),
   APP_URL: z.string().min(1),
   NEXT_PUBLIC_APP_URL: z.string().min(1),
@@ -66,6 +68,36 @@ export function assertServerEnv(
 const envUtils = {
   safeParseServerEnv,
   assertServerEnv,
+  // assert admin DB admin URL presence (throws with names only)
+  assertAdminEnv: function (
+    env: Record<string, string | undefined> = process.env,
+  ) {
+    const required = ["POSTGRES_ADMIN_DATABASE_URL"];
+    const missing = required.filter((k) => !env[k]);
+    if (missing.length > 0) {
+      throw new Error(
+        `Missing required environment variables: ${missing.join(", ")}`,
+      );
+    }
+    return {
+      POSTGRES_ADMIN_DATABASE_URL: env.POSTGRES_ADMIN_DATABASE_URL as string,
+    };
+  },
 };
+
+export function assertAdminEnv(
+  env: Record<string, string | undefined> = process.env,
+) {
+  const required = ["POSTGRES_ADMIN_DATABASE_URL"];
+  const missing = required.filter((k) => !env[k]);
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing required environment variables: ${missing.join(", ")}`,
+    );
+  }
+  return {
+    POSTGRES_ADMIN_DATABASE_URL: env.POSTGRES_ADMIN_DATABASE_URL as string,
+  };
+}
 
 export default envUtils;

@@ -12,6 +12,12 @@ POSTGRES_DB=DATABASE
 ADM_DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/controle_adm_saas_datavisio
 APP_DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/visiomilhas_app
 
+// Admin connection used to create databases if they don't exist
+// Should point to an existing database (eg. 'postgres' or 'template1') and
+// the user must have CREATE DATABASE permission. Sensitive — keep in .env or
+// secrets store, do not expose to client.
+POSTGRES_ADMIN_DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/postgres
+
 // Auth / OAuth
 AUTH_SECRET=CHANGE_ME
 GOOGLE_CLIENT_ID=CHANGE_ME
