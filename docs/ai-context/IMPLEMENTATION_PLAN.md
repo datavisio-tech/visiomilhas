@@ -65,3 +65,11 @@ DB: migrações e seeds (operação segura)
 - Fluxo: `generate` -> `migrate` (usar `drizzle-kit migrate`); evitar `push` como padrão.
 - Seeds idempotentes em `db/seed/` e execução controlada via `npm run db:seed` que exige autorização explícita (`VISIOMILHEIRO_ALLOW_DB_SEED=1` ou `--apply`).
 - Não executar migrações ou seeds sem aprovação explícita do time de desenvolvimento/DBA.
+
+Status operacional (2026-05-16):
+
+- Migrations iniciais geradas e aplicadas com sucesso para ADM e APP usando os arquivos de configuração separados (`drizzle.adm.config.ts` e `drizzle.app.config.ts`).
+- Arquivos de migration gerados:
+  - `db/adm/migrations/0000_strange_thor_girl.sql`
+  - `db/app/migrations/0000_misty_kulan_gath.sql`
+- Seeds: ainda pendentes e não foram executados nesta etapa (requer autorização explícita).

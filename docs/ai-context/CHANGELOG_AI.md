@@ -170,3 +170,21 @@ Notas:
 - Seeds são idempotentes e `db/seed/index.ts` exige autorização explícita (`VISIOMILHEIRO_ALLOW_DB_SEED=1` ou `--apply`).
 - Migrations NÃO foram executadas automaticamente e nenhum seed foi rodado sem autorização.
 - Rodar lint/typecheck/build após scaffold.
+
+## 2026-05-16 — Migrations iniciais geradas e aplicadas
+
+Resumo das ações operacionais (não expõe secrets):
+
+- Migrations geradas: `db/adm/migrations/0000_strange_thor_girl.sql` e `db/app/migrations/0000_misty_kulan_gath.sql`.
+- Migrations aplicadas com sucesso em ambas as databases (ADM e APP) usando os scripts existentes do `package.json` (`db:migrate`).
+- Databases afetadas: `controle_adm_saas_datavisio` (ADM) e `visiomilhas_app` (APP).
+- Principais tabelas criadas (estrutura apenas, sem dados):
+  - ADM: `global_users`, `organizations`, `organization_memberships`, `plans`, `subscriptions`, `billing_events`, `admin_audit_logs`.
+  - APP: `loyalty_programs`, `program_accounts`, `mile_entries`, `mile_purchases`, `mile_sales`, `mile_transfers`, `mile_clubs`, `beneficiaries`, `business_contacts`.
+- Seeds: permanecem pendentes e não foram executados nesta etapa.
+- Validações: `npm run test`, `npm run typecheck` e `npm run lint` passaram após aplicar migrations.
+
+Riscos / observações:
+
+- As migrations representam apenas a modelagem inicial; revisar constraints/fks/índices adicionais conforme necessidades de performance e integridade.
+- Não foram realizadas operações destrutivas; se alguma tabela já existisse seria preservada.

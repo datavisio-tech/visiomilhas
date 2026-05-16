@@ -14,6 +14,7 @@
     "/^node -e \"const d=require\\('dotenv'\\); const exp=require\\('dotenv-expand'\\); const r=d\\.config\\(\\); exp\\(r\\); const \\{ Pool \\} = require\\('pg'\\); \\(async \\(\\)=>\\{ try \\{ const p=new Pool\\(\\{connectionString: process\\.env\\.ADM_DATABASE_URL\\}\\); const res=await p\\.query\\('SELECT 1 as v'\\); console\\.log\\('ADM_OK:'\\+res\\.rows\\[0\\]\\.v\\); await p\\.end\\(\\); \\} catch\\(e\\)\\{ console\\.error\\('ADM_ERR_SAFE:'\\+String\\(e\\.message\\|\\|e\\)\\.replace\\(/\\\\S\\*postgres:\\\\/\\\\/\\\\S\\*/g,'\\[REDACTED\\]'\\)\\); process\\.exit\\(1\\);\\} \\}\\)\\(\\);\"$/": {
       "approve": true,
       "matchCommandLine": true
-    }
+    },
+    "git rev-parse": true
   }
 }

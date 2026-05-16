@@ -48,6 +48,11 @@ Status: padronização do runtime
 - Arquivos `.nvmrc` e `.node-version` adicionados com `24`.
 - Atualizar ambiente local para Node 24 e rodar `npm install` + `npm run test`.
 
+DB: status recente (2026-05-16):
+
+- Migrations iniciais geradas e aplicadas para ADM e APP (ver `db/adm/migrations/0000_strange_thor_girl.sql` e `db/app/migrations/0000_misty_kulan_gath.sql`).
+- Seeds: pendentes — não foram executados nesta etapa e exigem autorização explícita para rodar.
+
 DB: migrações, generate e seeds
 
 - Adicionar script seguro `db:create-databases` e variável `POSTGRES_ADMIN_DATABASE_URL` usada para criar apenas as bases necessárias (`controle_adm_saas_datavisio` e `visiomilhas_app`) quando ausentes. O admin URL é sensível e requerido apenas para esta operação.
