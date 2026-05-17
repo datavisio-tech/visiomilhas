@@ -50,10 +50,14 @@ Database migration & seeds decisions:
 - Seeds idempotentes em `db/seed/` e execução controlada via `npm run db:seed` (scripts usam `tsx` para rodar TypeScript diretamente).
 - Introduzida variável `POSTGRES_ADMIN_DATABASE_URL` e script seguro `db:create-databases` para criar as bases necessárias (`controle_adm_saas_datavisio`, `visiomilhas_app`) antes de aplicar migrations. O admin URL deve apontar para uma base existente (eg. `postgres`) e o usuário deve ter permissão `CREATE DATABASE`.
 
+Decisão sobre extrato (entries):
+
+- Usar `mile_entries` como fonte inicial do extrato consolidado. Compras/vendas/transferências permanecem em suas tabelas e serão integradas ao extrato em etapas futuras; não será feita união complexa nesta fase.
+
 Versionamento operacional:
 
 - Regra: `MVP.Funcionalidade.Commit` (ex.: `1.1.7`)
 - MVP atual: `1` (MVP1)
 - Etapa/Funcionalidade atual: `1.1` — Fundação técnica, banco, migrations e seed inicial
 - Versão operacional atual registrada: `1.1.6` — próxima incremental: `1.1.7`
- - Versão operacional atual registrada: `1.2.1` — próxima incremental: `1.2.2`
+- Versão operacional atual registrada: `1.2.1` — próxima incremental: `1.2.2`

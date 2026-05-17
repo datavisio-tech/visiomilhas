@@ -314,3 +314,32 @@ Pendências:
 - Conectar `/app/entries` e criar CRUDs e autenticação.
 
 Versão operacional agora: `1.2.3` (MVP1, funcionalidade 1.2, commit 3)
+
+## 2026-05-16 — Conexão do extrato ao banco (1.2.4)
+
+Objetivo:
+
+- Conectar `/app/entries` (extrato) ao APP DB e exibir lançamentos reais.
+
+O que foi feito:
+
+- Implementado `lib/data/entries.ts` com função `getEntriesOverview` que consulta `mile_entries` e junta `loyalty_programs` e `program_accounts`.
+- Atualizada a página `app/app/entries/page.tsx` para buscar dados no servidor (Server Component), marcada como dinâmica e com empty state.
+- Atualizado `README.md` e docs operacionais com versão `1.2.4`.
+
+Comandos executados:
+
+- `npm run test`
+- `npm run typecheck`
+- `npm run lint`
+- `npm run build`
+
+Resultado:
+
+- Todos os checks passaram. A página de extrato agora busca dados reais do APP DB em runtime.
+
+Pendências:
+
+- Conectar compras/vendas/transferências e consolidar fluxo de extrato, se necessário.
+
+Versão operacional agora: `1.2.4` (MVP1, funcionalidade 1.2, commit 4)

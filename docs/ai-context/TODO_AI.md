@@ -58,6 +58,7 @@ Próximo passo recomendado: `1.2.4` — conectar `/app/entries` ao banco real.
 Status recente:
 
 - `/app/accounts` conectado ao APP DB (1.2.3). Ver `CHANGELOG_AI` para detalhes.
+- `/app/entries` conectado ao APP DB (1.2.4).
 
 Status recente:
 

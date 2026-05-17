@@ -19,16 +19,12 @@ Arquitetura de banco:
 - APP database: visiomilhas_app
 - Observação: usam-se duas databases separadas (ADM / APP) — não consolidar em um único DB com schemas.
 
-Versão operacional atual: 1.2.2
+Versão operacional atual: 1.2.4
 
 Status do MVP1:
 
-- Técnico / base: 72%–77%
-- Utilizável por usuário: 48%–58%
-  Versão operacional atual: 1.2.3
-
-- Técnico / base: 74%–78%
-- Utilizável por usuário: 50%–60%
+- Técnico / base: 77%–81%
+- Utilizável por usuário: 55%–63%
 
 Comandos principais:
 
@@ -52,9 +48,9 @@ Status das validações (local):
 
 Próximos passos (curto prazo):
 
-- Conectar `/app/accounts` ao banco real (1.2.3)
-- Conectar `/app/entries` e `/app/programs` melhorias (1.2.x)
-- Implementar autenticação e CRUD completo
+- Conectar `/app/entries` ao banco real (1.2.4)
+- Conectar compras/vendas/transferências e CRUDs (1.2.5+)
+- Implementar autenticação e deploy
 
 Passos iniciais para rodar local:
 

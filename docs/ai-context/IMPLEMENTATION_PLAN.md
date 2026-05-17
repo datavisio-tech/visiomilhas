@@ -101,3 +101,12 @@ Progresso estimado (MVP1) atualizado:
 
 - Técnicos/base: 74% - 78%
 - Utilizável por usuário: 50% - 60%
+
+Atualização (1.2.4):
+
+- `/app/entries` conectado ao APP DB com `lib/data/entries.ts` e página dinâmica.
+
+Progresso estimado (MVP1) atualizado:
+
+- Técnicos/base: 77% - 81%
+- Utilizável por usuário: 55% - 63%
