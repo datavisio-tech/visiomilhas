@@ -56,3 +56,12 @@ DB: status recente (2026-05-16):
 DB: migrações, generate e seeds
 
 - Adicionar script seguro `db:create-databases` e variável `POSTGRES_ADMIN_DATABASE_URL` usada para criar apenas as bases necessárias (`controle_adm_saas_datavisio` e `visiomilhas_app`) quando ausentes. O admin URL é sensível e requerido apenas para esta operação.
+
+Seed operacional executado (16/05/2026):
+
+- `db:seed` foi executado com autorização explícita e rodado duas vezes para validar idempotência.
+- Contagens iniciais: todas as tabelas listadas retornaram 0.
+- Resultado final: ADM e APP populados com dados demo; ver `CHANGELOG_AI` para contagens sanitizadas.
+- Observação: a primeira execução inseriu apenas dados ADM; a segunda finalizou inserção APP; uma execução adicional confirmou idempotência (sem alterações nas contagens).
+
+Próximo passo recomendado: conectar as primeiras telas ao banco real e validar fluxos com dados demo.

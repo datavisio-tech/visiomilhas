@@ -73,3 +73,7 @@ Status operacional (2026-05-16):
   - `db/adm/migrations/0000_strange_thor_girl.sql`
   - `db/app/migrations/0000_misty_kulan_gath.sql`
 - Seeds: ainda pendentes e não foram executados nesta etapa (requer autorização explícita).
+
+Atualização operacional (2026-05-16):
+
+- Seed idempotente executado localmente com autorização explícita. A execução foi rodada duas vezes e validada; ver `docs/ai-context/CHANGELOG_AI.md` e `docs/ai-context/TODO_AI.md` para contagens e observações.

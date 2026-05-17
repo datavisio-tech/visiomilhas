@@ -184,6 +184,35 @@ Resumo das ações operacionais (não expõe secrets):
 - Seeds: permanecem pendentes e não foram executados nesta etapa.
 - Validações: `npm run test`, `npm run typecheck` e `npm run lint` passaram após aplicar migrations.
 
+## 2026-05-16 — Execução de seed idempotente (operacional)
+
+Objetivo:
+
+- Executar o seed idempotente do VisioMilhas em ambiente local e validar que não há duplicação ao rodar múltiplas vezes.
+
+Ações executadas:
+
+- `npm run db:check-env` — ALL_PRESENT
+- `npm run db:check-connections` — ADM e APP conectam (databases: controle_adm_saas_datavisio, visiomilhas_app)
+- `npm run db:seed:verify` (antes do seed) — todas as tabelas listadas retornaram 0 registros
+- `npm run db:seed` — executado com autorização explícita; rodado duas vezes para validar idempotência
+- `npm run db:seed:verify` (após seed) — contagens confirmadas; terceira execução de verificação confirmou idempotência
+
+Contagens (sanitizadas):
+
+- Antes do seed: todas as tabelas listadas retornaram 0 registros.
+- Após primeira execução (parcial): ADM populado — `plans: 3, organizations:1, global_users:1, organization_memberships:1, subscriptions:1` (APP ainda 0).
+- Após segunda execução (completa):
+  - ADM: `plans: 3, organizations:1, global_users:1, organization_memberships:1, subscriptions:1`
+  - APP: `loyalty_programs: 5, program_accounts: 3, mile_entries:1, mile_purchases:1, mile_sales:1, mile_transfers:1, mile_clubs:3, beneficiaries:0, business_contacts:0`
+
+Observações:
+
+- A primeira execução gravou apenas dados ADM (a segunda execução completou a inserção APP). Após a terceira execução as contagens permaneceram iguais, confirmando idempotência do runner.
+- Nenhum segredo foi impresso; `.env` permaneceu não versionado.
+
+Próximo passo recomendado: conectar as rotas e telas principais ao banco real e validar fluxos de UI/UX com dados demo.
+
 Riscos / observações:
 
 - As migrations representam apenas a modelagem inicial; revisar constraints/fks/índices adicionais conforme necessidades de performance e integridade.
