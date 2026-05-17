@@ -81,8 +81,8 @@ Atualização operacional (2026-05-16):
 
 Progresso estimado (MVP1):
 
-- Técnicos/base: 70% - 75%
-- Utilizável por usuário: 45% - 55%
+- Técnicos/base: 81% - 85%
+- Utilizável por usuário: 60% - 68%
 
 Atualização (1.2.2):
 

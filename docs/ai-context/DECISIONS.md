@@ -61,3 +61,12 @@ Versionamento operacional:
 - Etapa/Funcionalidade atual: `1.1` — Fundação técnica, banco, migrations e seed inicial
 - Versão operacional atual registrada: `1.1.6` — próxima incremental: `1.1.7`
 - Versão operacional atual registrada: `1.2.1` — próxima incremental: `1.2.2`
+
+Decisão operacional recente (1.2.8):
+
+- Reforçar separação ADM/APP: resolver `organizations` apenas no ADM e ler dados do produto no APP.
+- Erro `42P01` (relation does not exist) deve ser tratado explicitamente com `isMissingRelationError` e usado somente como fallback de desenvolvimento.
+
+Mudanças de lint:
+
+- Remover export default anônimo em helpers (ex.: `lib/data/db-errors.ts`) para evitar warnings `import/no-anonymous-default-export`.

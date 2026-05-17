@@ -8,5 +8,4 @@ export function isMissingRelationError(err: any): boolean {
     (err.code === "42P01" || /relation .* does not exist/i.test(err.message))
   );
 }
-
-export default { isMissingRelationError };
+// Named export only to satisfy ESLint (avoid anonymous default export warning)

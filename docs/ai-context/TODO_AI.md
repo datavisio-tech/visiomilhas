@@ -53,6 +53,11 @@ Versionamento operacional:
 - Regra: `MVP.Funcionalidade.Commit` (ex.: `1.1.7`).
 - Versão operacional atual: `1.2.2`.
 
+Atualização operacional:
+
+- Versão operacional atual: `1.2.8` (fechamento de leituras e clubes).
+- Próximo passo recomendado: `1.3.1` — iniciar CRUD operacional de compras, vendas e transferências.
+
 Próximo passo recomendado: `1.2.4` — conectar `/app/entries` ao banco real.
 
 Status recente:

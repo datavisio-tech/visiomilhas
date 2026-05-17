@@ -19,12 +19,12 @@ Arquitetura de banco:
 - APP database: visiomilhas_app
 - Observação: usam-se duas databases separadas (ADM / APP) — não consolidar em um único DB com schemas.
 
-Versão operacional atual: 1.2.6
+Versão operacional atual: 1.2.8
 
 Status do MVP1:
 
-- Técnico / base: 80%–84%
-- Utilizável por usuário: 58%–66%
+- Técnico / base: 81%–85%
+- Utilizável por usuário: 60%–68%
 
 Comandos principais:
 
@@ -63,9 +63,21 @@ Observações de segurança:
 - Não versionar `.env`.
 - Não expor `APP_DATABASE_URL` / `ADM_DATABASE_URL` em logs.
 
-Notas da versão 1.2.6:
+Notas da versão 1.2.8:
 
-- Corrigida origem de `organizations` para usar exclusivamente o banco ADM (`admPool`) e evitar queries administrativas no APP DB.
-- Adicionado helper `lib/data/db-errors.ts::isMissingRelationError` para detectar especificamente `42P01` e permitir fallback de desenvolvimento sem mascarar outros erros.
-- Script seguro `scripts/check-db-tables.ts` adicionado para verificar existência de tabelas em ADM/APP sem imprimir secrets.
+- Corrigido warning ESLint em `lib/data/db-errors.ts` (remoção de export default anônimo).
+- `/app/clubs` agora consulta `mile_clubs` no APP DB via `lib/data/clubs.ts` (Server Component, fallback seguro quando tabela ausente).
+- `/app/settings` revisado para indicar tela preparatória sem persistência.
+- Mantida separação: `organizations` resolvido via ADM; produto via APP.
 - Recomenda-se remover fallbacks de desenvolvimento antes do deploy de produção.
+
+Módulos conectados ao banco real:
+
+- dashboard
+- programs
+- accounts
+- entries
+- purchases
+- sales
+- transfers
+- clubs

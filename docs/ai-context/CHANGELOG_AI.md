@@ -380,24 +380,37 @@ Versão operacional agora: `1.2.5` (MVP1, funcionalidade 1.2, commit 5)
 
 Objetivo:
 
-- Diagnosticar e corrigir erro runtime `relation "organizations" does not exist` ao abrir `/app/dashboard` e evitar leituras administrativas no APP DB.
-
 O que foi feito:
-
-- Corrigido `lib/server/dashboard.ts` e camadas `lib/data/*` para resolver `organizations` via `admPool()` (ADM DB) e consultar dados de produto via `appPool()` (APP DB).
-- Adicionado `lib/data/db-errors.ts::isMissingRelationError` para detectar especificamente o erro Postgres `42P01` e aplicar fallback apenas em desenvolvimento.
-- Adicionado `scripts/check-db-tables.ts` e script npm `db:check-tables` para verificar existência de tabelas em ADM/APP sem expor credenciais.
-- Removidos artefatos problemáticos (`.next`) e rebuild feitos localmente para resolver erro de chunk ausente durante desenvolvimento.
 
 Validações e resultados:
 
-- `npm run db:check-connections` confirmou conexões e nomes de databases (ADM: `controle_adm_saas_datavisio`, APP: `visiomilhas_app`).
-- `npm run db:check-tables` retornou `OK` para as tabelas listadas em ADM e APP.
-- `npm run test`, `npm run typecheck`, `npm run lint` e `npm run build` passaram localmente.
-
 Decisões e observações:
 
-- FallBacks que retornam `[]` são permitidos apenas para desenvolvimento — não devem mascarar erros em produção.
-- Manter a separação ADM/APP evita erros de inconsistência de schema e segue a arquitetura definida.
-
 Versão operacional agora: `1.2.6` (MVP1, funcionalidade 1.2, commit 6)
+
+## 2026-05-17 — Fechamento leituras e clubes (1.2.8)
+
+Objetivo:
+
+- Corrigir warning de lint, conectar `/app/clubs` ao APP DB e revisar `/app/settings`.
+
+O que foi feito:
+
+- Corrigido `lib/data/db-errors.ts` removendo export default anônimo para atender ESLint.
+- Implementado `lib/data/clubs.ts` com `getClubsOverview` resolvendo `organizations` via ADM e lendo `mile_clubs` via APP.
+- Atualizada a página `app/app/clubs/page.tsx` para Server Component dinâmico (`force-dynamic`) e empty state seguro.
+- Revisada `app/app/settings/page.tsx` para indicar que a persistência ainda não está implementada.
+- Atualizado `README.md` para versão `1.2.8`.
+
+Validações e resultados:
+
+- `npm run db:check-env` → ALL_PRESENT
+- `npm run db:check-connections` → ADM & APP OK
+- `npm run db:check-tables` → todas as tabelas listadas retornaram OK (inclui `mile_clubs`)
+- `npm run test`, `npm run typecheck`, `npm run lint` e `npm run build` passaram (lint sem warnings após correção)
+
+Decisões:
+
+- Manter fallback que retorna lista vazia somente para desenvolvimento quando a tabela estiver ausente (`42P01`), e remover esse fallback em produção.
+
+Versão operacional agora: `1.2.8` (MVP1, funcionalidade 1.2, commit 7)
