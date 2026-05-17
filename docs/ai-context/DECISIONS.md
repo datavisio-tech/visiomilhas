@@ -56,3 +56,4 @@ Versionamento operacional:
 - MVP atual: `1` (MVP1)
 - Etapa/Funcionalidade atual: `1.1` — Fundação técnica, banco, migrations e seed inicial
 - Versão operacional atual registrada: `1.1.6` — próxima incremental: `1.1.7`
+ - Versão operacional atual registrada: `1.2.1` — próxima incremental: `1.2.2`

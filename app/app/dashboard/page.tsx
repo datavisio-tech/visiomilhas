@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import MetricCard from "../../../components/dashboard/metric-card";
 import DashboardChart from "../../../components/dashboard/dashboard-chart";
 import TrialBanner from "../../../components/layout/trial-banner";

@@ -224,3 +224,35 @@ Versionamento operacional
 - MVP atual: `1` (MVP1).
 - Etapa/Funcionalidade atual: `1.1` — Fundação técnica, banco, migrations e seed inicial.
 - Versão operacional atual: `1.1.6`. Próxima incremental: `1.1.7`.
+
+## 2026-05-16 — Conexão do dashboard ao banco (1.2.1)
+
+Objetivo:
+
+- Conectar o dashboard e telas iniciais ao banco real (APP) e validar build/checagens.
+
+O que foi feito:
+
+- Implementado `lib/server/dashboard.ts` com consultas server-side para métricas, lançamentos e compras.
+- Atualizada a página do dashboard `app/app/dashboard/page.tsx` para buscar dados em runtime (Server Component) e marcada como dinâmica.
+- Corrigido warning ESLint (`import/no-anonymous-default-export`) em `lib/server/dashboard.ts`.
+- Rodadas validações: `npm run test`, `npm run typecheck`, `npm run lint`, `npm run build` — todas passaram (build exigiu `force-dynamic` para evitar queries em tempo de build).
+
+Comandos executados:
+
+- `npm run test`
+- `npm run typecheck`
+- `npm run lint`
+- `npm run build`
+
+Resultado:
+
+- Todas as validações passaram. Build final passou após tornar a página dinâmica para evitar queries durante prerender.
+
+Pendências:
+
+- Conectar `/app/programs`, `/app/accounts`, `/app/entries` ao banco real.
+- Criar formulários reais e rotas de CRUD.
+- Revisar FKs/índices e autenticação.
+
+Versão operacional agora: `1.2.1` (MVP1, funcionalidade 1.2, commit 1)

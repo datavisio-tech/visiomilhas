@@ -77,3 +77,9 @@ Status operacional (2026-05-16):
 Atualização operacional (2026-05-16):
 
 - Seed idempotente executado localmente com autorização explícita. A execução foi rodada duas vezes e validada; ver `docs/ai-context/CHANGELOG_AI.md` e `docs/ai-context/TODO_AI.md` para contagens e observações.
+- Conexão inicial do dashboard ao banco (versão operacional `1.2.1`). `lib/server/dashboard.ts` e `app/app/dashboard/page.tsx` adicionados; build e validações executadas com sucesso. Ver `CHANGELOG_AI.md` para detalhes.
+
+Progresso estimado (MVP1):
+
+- Técnicos/base: 70% - 75%
+- Utilizável por usuário: 45% - 55%

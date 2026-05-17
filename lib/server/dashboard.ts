@@ -82,4 +82,6 @@ export async function getRecentPurchases(orgSlug = "demo-visiomilhas") {
   }
 }
 
-export default { getMetrics, getRecentEntries, getRecentPurchases };
+const dashboardApi = { getMetrics, getRecentEntries, getRecentPurchases };
+
+export default dashboardApi;
