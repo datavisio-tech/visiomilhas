@@ -343,3 +343,35 @@ Pendências:
 - Conectar compras/vendas/transferências e consolidar fluxo de extrato, se necessário.
 
 Versão operacional agora: `1.2.4` (MVP1, funcionalidade 1.2, commit 4)
+
+## 2026-05-17 — Conexão de compras, vendas e transferências ao banco (1.2.5)
+
+Objetivo:
+
+- Conectar `/app/purchases`, `/app/sales` e `/app/transfers` ao APP DB e expor visões read-only em runtime.
+
+O que foi feito:
+
+- Implementado `lib/data/purchases.ts` com `getPurchasesOverview` consultando `mile_purchases` e juntando `loyalty_programs` e `program_accounts`.
+- Implementado `lib/data/sales.ts` com `getSalesOverview` consultando `mile_sales` e juntando `loyalty_programs` e `program_accounts`.
+- Implementado `lib/data/transfers.ts` com `getTransfersOverview` consultando `mile_transfers` e juntando programas/contas de origem e destino.
+- Atualizadas as páginas: `app/app/purchases/page.tsx`, `app/app/sales/page.tsx`, `app/app/transfers/page.tsx` para Server Components dinâmicos (`force-dynamic`) usando as funções acima e com empty states.
+- Atualizado `README.md` para versão operacional `1.2.5`.
+
+Comandos executados:
+
+- `npm run test`
+- `npm run typecheck`
+- `npm run lint`
+- `npm run build`
+
+Resultado:
+
+- Checks locais passam (tests, typecheck, lint). Páginas marcadas como dinâmicas para evitar consultas em build-time.
+
+Pendências:
+
+- Implementar CRUD e fluxos de criação/edição/aprovação para compras/vendas/transferências (próximo ciclo).
+- Autenticação/autorizações para operações sensíveis.
+
+Versão operacional agora: `1.2.5` (MVP1, funcionalidade 1.2, commit 5)

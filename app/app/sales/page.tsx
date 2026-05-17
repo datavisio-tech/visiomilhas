@@ -1,7 +1,24 @@
-import PageHeader from "../../../components/ui/page-header";
-import { sales, metrics } from "../../../lib/mock/visiomilhas-data";
+export const dynamic = "force-dynamic";
 
-export default function SalesPage() {
+import PageHeader from "../../../components/ui/page-header";
+import { getSalesOverview } from "../../../lib/data/sales";
+
+export default async function SalesPage() {
+  const sales = await getSalesOverview();
+
+  const revenueCents = sales.reduce(
+    (acc: number, s: any) => acc + (s.revenueCents || 0),
+    0,
+  );
+  const profitCents = sales.reduce(
+    (acc: number, s: any) => acc + (s.profitCents || 0),
+    0,
+  );
+  const milesSold = sales.reduce(
+    (acc: number, s: any) => acc + (s.points || 0),
+    0,
+  );
+
   return (
     <div>
       <PageHeader title="Vendas" subtitle="Resumo e tabela de vendas" />
@@ -9,17 +26,17 @@ export default function SalesPage() {
         <div className="bg-white p-4 rounded border">
           Faturamento
           <br />
-          <strong>R$ {(metrics.revenueCents / 100).toFixed(2)}</strong>
+          <strong>R$ {(revenueCents / 100).toFixed(2)}</strong>
         </div>
         <div className="bg-white p-4 rounded border">
           Lucro
           <br />
-          <strong>R$ {(metrics.profitCents / 100).toFixed(2)}</strong>
+          <strong>R$ {(profitCents / 100).toFixed(2)}</strong>
         </div>
         <div className="bg-white p-4 rounded border">
           Milhas vendidas
           <br />
-          <strong>{metrics.milesSold.toLocaleString()}</strong>
+          <strong>{milesSold.toLocaleString()}</strong>
         </div>
       </div>
       <div className="bg-white p-4 rounded border">
@@ -33,14 +50,22 @@ export default function SalesPage() {
             </tr>
           </thead>
           <tbody>
-            {sales.map((s) => (
-              <tr key={s.id} className="border-t">
-                <td>{s.id}</td>
-                <td>{s.status}</td>
-                <td>{s.points}</td>
-                <td>R$ {(s.valueCents / 100).toFixed(2)}</td>
+            {sales.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="py-4 text-gray-600">
+                  Nenhuma venda encontrada.
+                </td>
               </tr>
-            ))}
+            ) : (
+              sales.map((s: any) => (
+                <tr key={s.id} className="border-t">
+                  <td>{s.id}</td>
+                  <td>{s.status}</td>
+                  <td>{s.points}</td>
+                  <td>R$ {(s.revenueCents / 100).toFixed(2)}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

@@ -19,12 +19,12 @@ Arquitetura de banco:
 - APP database: visiomilhas_app
 - Observação: usam-se duas databases separadas (ADM / APP) — não consolidar em um único DB com schemas.
 
-Versão operacional atual: 1.2.4
+Versão operacional atual: 1.2.5
 
 Status do MVP1:
 
-- Técnico / base: 77%–81%
-- Utilizável por usuário: 55%–63%
+- Técnico / base: 80%–84%
+- Utilizável por usuário: 58%–66%
 
 Comandos principais:
 

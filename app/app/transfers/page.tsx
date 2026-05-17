@@ -1,7 +1,11 @@
-import PageHeader from "../../../components/ui/page-header";
-import { transfers } from "../../../lib/mock/visiomilhas-data";
+export const dynamic = "force-dynamic";
 
-export default function TransfersPage() {
+import PageHeader from "../../../components/ui/page-header";
+import { getTransfersOverview } from "../../../lib/data/transfers";
+
+export default async function TransfersPage() {
+  const transfers = await getTransfersOverview();
+
   return (
     <div>
       <PageHeader title="Transferências" subtitle="Envios entre programas" />
@@ -17,15 +21,23 @@ export default function TransfersPage() {
             </tr>
           </thead>
           <tbody>
-            {transfers.map((t) => (
-              <tr key={t.id} className="border-t">
-                <td>{t.from}</td>
-                <td>{t.to}</td>
-                <td>{t.pointsSent}</td>
-                <td>{t.bonusPercent}%</td>
-                <td>{t.pointsReceived}</td>
+            {transfers.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="py-4 text-gray-600">
+                  Nenhuma transferência encontrada.
+                </td>
               </tr>
-            ))}
+            ) : (
+              transfers.map((t: any) => (
+                <tr key={t.id} className="border-t">
+                  <td>{t.fromProgram || t.fromAccount}</td>
+                  <td>{t.toProgram || t.toAccount}</td>
+                  <td>{t.pointsSent.toLocaleString()}</td>
+                  <td>{t.bonusPercent}%</td>
+                  <td>{t.pointsReceived.toLocaleString()}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
