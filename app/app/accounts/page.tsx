@@ -1,7 +1,11 @@
-import PageHeader from "../../../components/ui/page-header";
-import { accounts } from "../../../lib/mock/visiomilhas-data";
+export const dynamic = "force-dynamic";
 
-export default function AccountsPage() {
+import PageHeader from "../../../components/ui/page-header";
+import { getAccountsOverview } from "../../../lib/data/accounts";
+
+export default async function AccountsPage() {
+  const accounts = await getAccountsOverview();
+
   return (
     <div>
       <PageHeader title="Contas" subtitle="Contas por programa" />
@@ -16,14 +20,22 @@ export default function AccountsPage() {
             </tr>
           </thead>
           <tbody>
-            {accounts.map((a) => (
-              <tr key={a.id} className="border-t">
-                <td>{a.program}</td>
-                <td>{a.nickname}</td>
-                <td>{a.balance.toLocaleString()}</td>
-                <td>R$ {(a.cpmCents / 100).toFixed(2)}</td>
+            {accounts.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="py-4 text-gray-600">
+                  Nenhuma conta encontrada.
+                </td>
               </tr>
-            ))}
+            ) : (
+              accounts.map((a: any) => (
+                <tr key={a.id} className="border-t">
+                  <td>{a.program ?? "—"}</td>
+                  <td>{a.nickname}</td>
+                  <td>{a.balance.toLocaleString()}</td>
+                  <td>R$ {(a.cpmCents / 100).toFixed(2)}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

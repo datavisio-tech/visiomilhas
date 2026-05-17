@@ -25,6 +25,10 @@ Status do MVP1:
 
 - Técnico / base: 72%–77%
 - Utilizável por usuário: 48%–58%
+  Versão operacional atual: 1.2.3
+
+- Técnico / base: 74%–78%
+- Utilizável por usuário: 50%–60%
 
 Comandos principais:
 

@@ -92,3 +92,12 @@ Progresso estimado (MVP1) atualizado:
 
 - Técnicos/base: 72% - 77%
 - Utilizável por usuário: 48% - 58%
+
+Atualização (1.2.3):
+
+- `/app/accounts` conectado ao APP DB com `lib/data/accounts.ts` e página dinâmica.
+
+Progresso estimado (MVP1) atualizado:
+
+- Técnicos/base: 74% - 78%
+- Utilizável por usuário: 50% - 60%

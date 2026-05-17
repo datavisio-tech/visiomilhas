@@ -53,7 +53,11 @@ Versionamento operacional:
 - Regra: `MVP.Funcionalidade.Commit` (ex.: `1.1.7`).
 - Versão operacional atual: `1.2.2`.
 
-Próximo passo recomendado: `1.2.3` — conectar `/app/accounts` ao banco real.
+Próximo passo recomendado: `1.2.4` — conectar `/app/entries` ao banco real.
+
+Status recente:
+
+- `/app/accounts` conectado ao APP DB (1.2.3). Ver `CHANGELOG_AI` para detalhes.
 
 Status recente:
 

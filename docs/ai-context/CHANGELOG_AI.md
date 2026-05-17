@@ -285,3 +285,32 @@ Pendências:
 - Conectar `/app/accounts`, `/app/entries` e criar CRUDs e autenticação.
 
 Versão operacional agora: `1.2.2` (MVP1, funcionalidade 1.2, commit 2)
+
+## 2026-05-16 — Conexão das contas ao banco (1.2.3)
+
+Objetivo:
+
+- Conectar a página de `Contas` (`/app/accounts`) ao APP DB e exibir contas reais.
+
+O que foi feito:
+
+- Implementado `lib/data/accounts.ts` com função `getAccountsOverview` que consulta `program_accounts` (e junta `loyalty_programs` para nome do programa).
+- Atualizada a página `app/app/accounts/page.tsx` para buscar dados no servidor (Server Component), marcada como dinâmica e com empty state.
+- Atualizado `README.md` e docs operacionais com versão `1.2.3`.
+
+Comandos executados:
+
+- `npm run test`
+- `npm run typecheck`
+- `npm run lint`
+- `npm run build`
+
+Resultado:
+
+- Todos os checks passaram. A página de contas agora busca dados reais do APP DB em runtime.
+
+Pendências:
+
+- Conectar `/app/entries` e criar CRUDs e autenticação.
+
+Versão operacional agora: `1.2.3` (MVP1, funcionalidade 1.2, commit 3)
