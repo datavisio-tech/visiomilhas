@@ -256,3 +256,32 @@ Pendências:
 - Revisar FKs/índices e autenticação.
 
 Versão operacional agora: `1.2.1` (MVP1, funcionalidade 1.2, commit 1)
+
+## 2026-05-16 — Conexão dos programas ao banco (1.2.2)
+
+Objetivo:
+
+- Conectar a página de `Programas` (`/app/programs`) ao banco APP e exibir programas reais.
+
+O que foi feito:
+
+- Implementado `lib/data/programs.ts` com função `getProgramsOverview` que consulta `loyalty_programs` no APP DB.
+- Atualizada a página `app/app/programs/page.tsx` para buscar dados no servidor (Server Component) e marcada como dinâmica.
+- Atualizado `README.md` e docs operacionais com versão `1.2.2`.
+
+Comandos executados:
+
+- `npm run test`
+- `npm run typecheck`
+- `npm run lint`
+- `npm run build`
+
+Resultado:
+
+- Todos os checks passaram. A página de programas agora busca dados reais do APP DB em runtime.
+
+Pendências:
+
+- Conectar `/app/accounts`, `/app/entries` e criar CRUDs e autenticação.
+
+Versão operacional agora: `1.2.2` (MVP1, funcionalidade 1.2, commit 2)

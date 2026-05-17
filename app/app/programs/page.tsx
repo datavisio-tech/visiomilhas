@@ -1,7 +1,11 @@
-import PageHeader from "../../../components/ui/page-header";
-import { programs } from "../../../lib/mock/visiomilhas-data";
+export const dynamic = "force-dynamic";
 
-export default function ProgramsPage() {
+import PageHeader from "../../../components/ui/page-header";
+import { getProgramsOverview } from "../../../lib/data/programs";
+
+export default async function ProgramsPage() {
+  const programs = await getProgramsOverview();
+
   return (
     <div>
       <PageHeader
@@ -9,11 +13,18 @@ export default function ProgramsPage() {
         subtitle="Gerencie seus programas de fidelidade"
       />
       <div className="grid grid-cols-3 gap-4">
-        {programs.map((p) => (
-          <div key={p.id} className="bg-white p-4 rounded border">
-            {p.name}
+        {programs.length === 0 ? (
+          <div className="col-span-3 bg-white p-4 rounded border text-gray-600">
+            Nenhum programa encontrado.
           </div>
-        ))}
+        ) : (
+          programs.map((p: any) => (
+            <div key={p.id} className="bg-white p-4 rounded border">
+              <div className="font-semibold">{p.name}</div>
+              <div className="text-sm text-gray-600">{p.type}</div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

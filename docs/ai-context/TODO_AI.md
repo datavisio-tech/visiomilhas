@@ -51,9 +51,13 @@ Status: padronização do runtime
 Versionamento operacional:
 
 - Regra: `MVP.Funcionalidade.Commit` (ex.: `1.1.7`).
-- Versão operacional atual: `1.2.1`.
+- Versão operacional atual: `1.2.2`.
 
-Próximo passo recomendado: `1.2.2` — conectar `/app/programs` ao banco real usando Drizzle.
+Próximo passo recomendado: `1.2.3` — conectar `/app/accounts` ao banco real.
+
+Status recente:
+
+- `/app/programs` conectado ao APP DB (1.2.2). Ver `CHANGELOG_AI` para detalhes.
 
 DB: status recente (2026-05-16):
 
