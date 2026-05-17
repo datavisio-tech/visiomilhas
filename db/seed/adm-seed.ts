@@ -77,12 +77,22 @@ export async function seedAdm(): Promise<number> {
     );
     if (!subRes.rows.length) {
       const trialStart = new Date();
+      // prefer explicit trialDays from demo config or fallback to 15
+      const demoTrialDays =
+        (DEMO_ADMIN.plans.find((x) => x.code === "free_trial")?.trialDays as
+          | number
+          | undefined) ||
+        (DEMO_ADMIN as any).trialDays ||
+        15;
       const trialEnd = new Date(
-        trialStart.getTime() + 1000 * 60 * 60 * 24 * 15,
+        trialStart.getTime() + 1000 * 60 * 60 * 24 * demoTrialDays,
       );
+      const trialPlanCode =
+        DEMO_ADMIN.plans.find((x) => x.code === "free_trial")?.code ||
+        DEMO_ADMIN.plans[0].code;
       await client.query(
         `INSERT INTO subscriptions (organization_id, plan_id, status, trial_starts_at, trial_ends_at, cancel_at_period_end, created_at, updated_at) VALUES ($1, (SELECT id FROM plans WHERE code = $2 LIMIT 1), $3, $4, $5, $6, NOW(), NOW())`,
-        [orgId, "trial_full_15_days", "trialing", trialStart, trialEnd, false],
+        [orgId, trialPlanCode, "trialing", trialStart, trialEnd, false],
       );
     }
 

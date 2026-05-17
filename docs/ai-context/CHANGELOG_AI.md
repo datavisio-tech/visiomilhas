@@ -217,3 +217,10 @@ Riscos / observações:
 
 - As migrations representam apenas a modelagem inicial; revisar constraints/fks/índices adicionais conforme necessidades de performance e integridade.
 - Não foram realizadas operações destrutivas; se alguma tabela já existisse seria preservada.
+
+Versionamento operacional
+
+- Regra adotada: `MVP.Funcionalidade.Commit` (ex.: `1.1.7`).
+- MVP atual: `1` (MVP1).
+- Etapa/Funcionalidade atual: `1.1` — Fundação técnica, banco, migrations e seed inicial.
+- Versão operacional atual: `1.1.6`. Próxima incremental: `1.1.7`.

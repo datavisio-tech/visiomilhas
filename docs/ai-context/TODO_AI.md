@@ -48,6 +48,11 @@ Status: padronização do runtime
 - Arquivos `.nvmrc` e `.node-version` adicionados com `24`.
 - Atualizar ambiente local para Node 24 e rodar `npm install` + `npm run test`.
 
+Versionamento operacional:
+
+- Regra: `MVP.Funcionalidade.Commit` (ex.: `1.1.7`).
+- Versão operacional atual: `1.1.6`. Próxima incremental: `1.1.7`.
+
 DB: status recente (2026-05-16):
 
 - Migrations iniciais geradas e aplicadas para ADM e APP (ver `db/adm/migrations/0000_strange_thor_girl.sql` e `db/app/migrations/0000_misty_kulan_gath.sql`).

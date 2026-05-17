@@ -49,3 +49,10 @@ Database migration & seeds decisions:
 - Fluxo principal de migrações: `generate` -> `migrate` (não usar `push` como padrão). Gerar migrações para cada DB separadamente e aplicar com `drizzle-kit migrate`.
 - Seeds idempotentes em `db/seed/` e execução controlada via `npm run db:seed` (scripts usam `tsx` para rodar TypeScript diretamente).
 - Introduzida variável `POSTGRES_ADMIN_DATABASE_URL` e script seguro `db:create-databases` para criar as bases necessárias (`controle_adm_saas_datavisio`, `visiomilhas_app`) antes de aplicar migrations. O admin URL deve apontar para uma base existente (eg. `postgres`) e o usuário deve ter permissão `CREATE DATABASE`.
+
+Versionamento operacional:
+
+- Regra: `MVP.Funcionalidade.Commit` (ex.: `1.1.7`)
+- MVP atual: `1` (MVP1)
+- Etapa/Funcionalidade atual: `1.1` — Fundação técnica, banco, migrations e seed inicial
+- Versão operacional atual registrada: `1.1.6` — próxima incremental: `1.1.7`
