@@ -19,7 +19,7 @@ Arquitetura de banco:
 - APP database: visiomilhas_app
 - Observação: usam-se duas databases separadas (ADM / APP) — não consolidar em um único DB com schemas.
 
-Versão operacional atual: 1.2.5
+Versão operacional atual: 1.2.6
 
 Status do MVP1:
 
@@ -62,3 +62,10 @@ Observações de segurança:
 
 - Não versionar `.env`.
 - Não expor `APP_DATABASE_URL` / `ADM_DATABASE_URL` em logs.
+
+Notas da versão 1.2.6:
+
+- Corrigida origem de `organizations` para usar exclusivamente o banco ADM (`admPool`) e evitar queries administrativas no APP DB.
+- Adicionado helper `lib/data/db-errors.ts::isMissingRelationError` para detectar especificamente `42P01` e permitir fallback de desenvolvimento sem mascarar outros erros.
+- Script seguro `scripts/check-db-tables.ts` adicionado para verificar existência de tabelas em ADM/APP sem imprimir secrets.
+- Recomenda-se remover fallbacks de desenvolvimento antes do deploy de produção.

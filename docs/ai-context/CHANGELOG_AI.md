@@ -375,3 +375,29 @@ Pendências:
 - Autenticação/autorizações para operações sensíveis.
 
 Versão operacional agora: `1.2.5` (MVP1, funcionalidade 1.2, commit 5)
+
+## 2026-05-17 — Estabilização de leituras e separação ADM/APP (1.2.6)
+
+Objetivo:
+
+- Diagnosticar e corrigir erro runtime `relation "organizations" does not exist` ao abrir `/app/dashboard` e evitar leituras administrativas no APP DB.
+
+O que foi feito:
+
+- Corrigido `lib/server/dashboard.ts` e camadas `lib/data/*` para resolver `organizations` via `admPool()` (ADM DB) e consultar dados de produto via `appPool()` (APP DB).
+- Adicionado `lib/data/db-errors.ts::isMissingRelationError` para detectar especificamente o erro Postgres `42P01` e aplicar fallback apenas em desenvolvimento.
+- Adicionado `scripts/check-db-tables.ts` e script npm `db:check-tables` para verificar existência de tabelas em ADM/APP sem expor credenciais.
+- Removidos artefatos problemáticos (`.next`) e rebuild feitos localmente para resolver erro de chunk ausente durante desenvolvimento.
+
+Validações e resultados:
+
+- `npm run db:check-connections` confirmou conexões e nomes de databases (ADM: `controle_adm_saas_datavisio`, APP: `visiomilhas_app`).
+- `npm run db:check-tables` retornou `OK` para as tabelas listadas em ADM e APP.
+- `npm run test`, `npm run typecheck`, `npm run lint` e `npm run build` passaram localmente.
+
+Decisões e observações:
+
+- FallBacks que retornam `[]` são permitidos apenas para desenvolvimento — não devem mascarar erros em produção.
+- Manter a separação ADM/APP evita erros de inconsistência de schema e segue a arquitetura definida.
+
+Versão operacional agora: `1.2.6` (MVP1, funcionalidade 1.2, commit 6)
