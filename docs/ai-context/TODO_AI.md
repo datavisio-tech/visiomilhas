@@ -92,11 +92,11 @@ Status recente (2026-05-18):
 - Versão operacional `1.3.10` integrada: formulários de compras, vendas e transferências implementados e conectados às Server Actions via endpoints API.
 - Próximo item: testes manuais de criação e ajustes UX/erros.
 
-Status 1.3.12 — Preparação do schema:
+Status 1.3.13 — Refinamento do schema/migration:
 
-- Schema atualizado: `db/app/schema.ts` (adicionada `mile_point_lots`).
-- Migration proposta: `db/app/migrations/0001_add_mile_point_lots.sql` (não aplicada).
-- Próximo passo: 1.3.13 — implementar `lib/services/movements.ts` (motor FIFO) e testes unitários.
+- Schema Drizzle mantido e migration proposta refinada (`db/app/migrations/0001_add_mile_point_lots.sql`) com FKs, índices e checks sugeridos.
+- Migration continua NÃO APLICADA.
+- Próximo passo: 1.3.14 — implementar `lib/services/movements.ts` (motor FIFO) e testes unitários.
 
 Prioridade imediata (1.3.11) — pausa arquitetural:
 

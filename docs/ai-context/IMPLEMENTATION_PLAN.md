@@ -47,6 +47,12 @@ Checklist de entrega 1.3.12:
 - [x] Validações locais rodadas (test/typecheck/lint/build)
 - [x] Commit local criado (sem push)
 
+Atualização 1.3.13:
+
+- Migration proposta refinada com FKs e checks (`db/app/migrations/0001_add_mile_point_lots.sql`).
+- README atualizado para 1.3.13.
+- Próximo passo: 1.3.14 — implementar `lib/services/movements.ts` (motor FIFO).
+
 # IMPLEMENTATION_PLAN - MVP1 (VisioMilhas)
 
 Fase 0: documentação e setup

@@ -82,3 +82,4 @@ Decisão adicional (2026-05-18):
   4. Validar via testes unitários e manuais.
 
 - 2026-05-18: Preparação do schema 1.3.12 — `mile_point_lots` adicionada ao schema Drizzle e migration proposta criada (`db/app/migrations/0001_add_mile_point_lots.sql`). Migration não foi aplicada; objetivo é revisar e validar antes de aplicar em ambientes controlados.
+- 2026-05-18: Refinamento da migration (1.3.13) — a migration proposta foi atualizada com FKs, índices e checks propostos em `db/app/migrations/0001_add_mile_point_lots.sql`. A decisão foi incluir constraints que reforcem integridade, mantendo `ON DELETE RESTRICT` em relações financeiras e `ON DELETE SET NULL` quando apropriado para origem de lotes. Migration está proposta para revisão e NÃO APLICADA.

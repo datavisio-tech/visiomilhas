@@ -482,4 +482,6 @@ Decisões:
 
 Próximos passos:
 
-- 1.3.13 — implementar `lib/services/movements.ts` (motor FIFO) e testes unitários; 1.3.14 — refatorar Server Actions/API Routes para usar services compartilhados.
+- 1.3.13 foi dividido em duas fases:
+  - 1.3.13 — Refinamento de migration e constraints (FKs, índices, checks) — concluído nesta etapa com migration proposta refinada.
+  - 1.3.14 — Implementar `lib/services/movements.ts` (motor FIFO) e testes unitários.

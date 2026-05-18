@@ -19,7 +19,7 @@ Arquitetura de banco:
 - APP database: visiomilhas_app
 - Observação: usam-se duas databases separadas (ADM / APP) — não consolidar em um único DB com schemas.
 
-Versão operacional atual: 1.3.12
+Versão operacional atual: 1.3.13
 
 Status do MVP1:
 
@@ -68,6 +68,10 @@ Notas da versão 1.3.12 (preparação do schema para ledger/FIFO):
 - Ação 1.3.12: adicionado `mile_point_lots` ao schema Drizzle (arquivo `db/app/schema.ts`) e migration proposta em `db/app/migrations/0001_add_mile_point_lots.sql`.
 - Observação: a migration proposta NÃO foi aplicada — apenas commitada para revisão.
 - Próximo passo: 1.3.13 — implementar motor FIFO e serviços transacionais (`lib/services/movements.ts`).
+- Ação 1.3.12: adicionado `mile_point_lots` ao schema Drizzle e migration proposta criada.
+- Ação 1.3.13: migration refinada com FKs, índices e checks propostos (arquivo `db/app/migrations/0001_add_mile_point_lots.sql`).
+- Observação: a migration proposta continua NÃO APLICADA — apenas commitada para revisão.
+- Próximo passo: 1.3.14 — implementar motor FIFO e serviços transacionais (`lib/services/movements.ts`).
 
 Notas da versão 1.2.8:
 
