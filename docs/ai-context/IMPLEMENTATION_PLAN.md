@@ -1,3 +1,52 @@
+VisioMilhas — Plano de Implementação (resumo)
+
+Objetivo: preparar o esquema e o plano para introduzir ledger + lotes (FIFO) no motor de milhas.
+
+Versão alvo: 1.3.12 (preparação de schema) → 1.3.13 (motor FIFO)
+
+Itens entregues nesta etapa (1.3.12):
+
+- Atualização do schema Drizzle (`db/app/schema.ts`) com tabela proposta `mile_point_lots`.
+- Adição de colunas auxiliares em `mile_entries` e `mile_transfers` para referenciar lotes/entries.
+- Migration SQL proposta em `db/app/migrations/0001_add_mile_point_lots.sql` (não aplicada).
+- Atualização de documentação e README para refletir a versão 1.3.12.
+
+Próximo ciclo (1.3.13) — escopo técnico:
+
+1. Implementar `lib/services/movements.ts` com transações que:
+   - criem lotes em compras;
+   - consumam lotes por venda/transferência (FIFO, respeitando expires_at);
+   - criem entradas (`mile_entries`) com referência a lotes consumidos;
+   - atualizem `program_accounts` como snapshot.
+
+2. Cobrir com testes unitários e integrações locais (Vitest) para casos:
+   - compra normal, compra parcelada, compra com fee/discount;
+   - venda simples (FIFO parcial e total), venda insuficiente (erro);
+   - transferência com/sem bônus e com paridade diferente.
+
+3. Criar migrations adicionais se necessário (indexes/constraints), revisar performance em contas com muitos lotes.
+
+4. Refatorar Server Actions e API Routes para consumir `lib/services/movements.ts` (1.3.14), reduzindo dependências e evitando runtime proxies.
+
+Observações operacionais:
+
+- NÃO aplicar migrations ou seeds nesta etapa. Gerar apenas arquivos de migration propostos para revisão.
+- Planejar janelas de manutenção para aplicar migrations em bases grandes.
+
+Riscos conhecidos:
+
+- Operações de consumo FIFO em contas com muitos lotes podem exigir paginação/limitação em queries para performance.
+- Migrações que adicionam colunas/índices podem impactar backups e replicação; coordenar com DBA se necessário.
+
+Checklist de entrega 1.3.12:
+
+- [x] Schema atualizado (`db/app/schema.ts`)
+- [x] Migration proposta criada (`db/app/migrations/0001_add_mile_point_lots.sql`)
+- [x] README atualizado para 1.3.12
+- [x] Docs atualizados em `docs/ai-context`
+- [x] Validações locais rodadas (test/typecheck/lint/build)
+- [x] Commit local criado (sem push)
+
 # IMPLEMENTATION_PLAN - MVP1 (VisioMilhas)
 
 Fase 0: documentação e setup

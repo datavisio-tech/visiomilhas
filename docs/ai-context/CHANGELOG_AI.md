@@ -454,9 +454,6 @@ Versão operacional agora: `1.3.10` (MVP1, funcionalidade 1.3, commit local)
 
 Resumo:
 
-- Pausa da implementação de CRUD operacional para reavaliar o motor de milhas segundo o blueprint ledger + point_lots (FIFO). Foi identificado que o schema atual não persiste lotes (`mile_point_lots`) e que as Server Actions atuais atualizam saldos sem motor de consumo FIFO.
-- Detectado problema runtime: `TypeError: Cannot redefine property: $$id` ao importar Server Actions em API Routes. Decisão: não importar actions diretamente nas rotas; extrair layer de serviços compartilhados (`lib/services/movements.ts`) para uso por Server Actions e API Routes.
-
 Próximos passos (documentação/plano 1.3.11):
 
 1. Mapear campos relevantes em `db/app/schema.ts` e produzir especificação de `mile_point_lots` proposta.
@@ -465,3 +462,24 @@ Próximos passos (documentação/plano 1.3.11):
 4. Documentar a dívida técnica e o racional da pausa em `DECISIONS.md` e `TODO_AI.md`.
 
 Observação: nenhuma alteração de schema será aplicada nesta etapa sem aprovação; este passo é apenas de análise e planejamento.
+
+## 2026-05-18 — Preparação do schema para ledger/FIFO (1.3.12)
+
+Objetivo:
+
+- Preparar o schema APP para persistência de lotes (`mile_point_lots`) e dar suporte a consumo FIFO sem aplicar migrations.
+
+O que foi feito:
+
+- Atualizado `db/app/schema.ts` incluindo `mile_point_lots` (Drizzle) e colunas auxiliares em `mile_entries` e `mile_transfers`.
+- Migration SQL proposta criada em `db/app/migrations/0001_add_mile_point_lots.sql` — NÃO APLICADA.
+- Atualizado README para versão operacional `1.3.12` e adicionado `docs/ai-context/IMPLEMENTATION_PLAN.md` com roadmap para 1.3.13.
+
+Decisões:
+
+- Mantida compatibilidade com tabelas existentes; não renomear ou apagar tables.
+- Não aplicar migrations nesta etapa; gerar artifacts para revisão e commit local.
+
+Próximos passos:
+
+- 1.3.13 — implementar `lib/services/movements.ts` (motor FIFO) e testes unitários; 1.3.14 — refatorar Server Actions/API Routes para usar services compartilhados.

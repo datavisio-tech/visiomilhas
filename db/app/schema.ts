@@ -74,6 +74,9 @@ export const mile_entries = pgTable("mile_entries", {
   updatedAt: timestamp("updated_at").notNull(),
   reversedAt: timestamp("reversed_at"),
   reversalOfEntryId: integer("reversal_of_entry_id"),
+  consumedLotId: integer("consumed_lot_id"),
+  consumedPoints: integer("consumed_points"),
+  lotSnapshot: json("lot_snapshot"),
 });
 
 export const mile_purchases = pgTable("mile_purchases", {
@@ -93,6 +96,24 @@ export const mile_purchases = pgTable("mile_purchases", {
   status: varchar("status", { length: 50 }).notNull(),
   description: text("description"),
   createdByUserId: integer("created_by_user_id"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
+
+export const mile_point_lots = pgTable("mile_point_lots", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").notNull(),
+  programId: integer("program_id"),
+  accountId: integer("account_id"),
+  sourceEntryId: integer("source_entry_id"),
+  acquiredPoints: integer("acquired_points").notNull(),
+  remainingPoints: integer("remaining_points").notNull().default(0),
+  totalCostCents: integer("total_cost_cents"),
+  costPerThousandCents: integer("cost_per_thousand_cents"),
+  issuedAt: timestamp("issued_at").notNull(),
+  expiresAt: timestamp("expires_at"),
+  status: varchar("status", { length: 50 }).notNull(),
+  metadata: json("metadata"),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
 });
@@ -133,6 +154,8 @@ export const mile_transfers = pgTable("mile_transfers", {
     "destination_cost_per_thousand_cents",
   ),
   transferredAt: timestamp("transferred_at"),
+  sourceEntryId: integer("source_entry_id"),
+  destinationEntryId: integer("destination_entry_id"),
   status: varchar("status", { length: 50 }).notNull(),
   description: text("description"),
   createdByUserId: integer("created_by_user_id"),

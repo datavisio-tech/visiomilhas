@@ -80,3 +80,5 @@ Decisão adicional (2026-05-18):
   2. Atualizar Server Actions para delegarem ao service (sem alterar a assinatura pública das actions).
   3. Atualizar `app/api/*/route.ts` para usar o mesmo service e remover import estático de actions.
   4. Validar via testes unitários e manuais.
+
+- 2026-05-18: Preparação do schema 1.3.12 — `mile_point_lots` adicionada ao schema Drizzle e migration proposta criada (`db/app/migrations/0001_add_mile_point_lots.sql`). Migration não foi aplicada; objetivo é revisar e validar antes de aplicar em ambientes controlados.
