@@ -70,3 +70,7 @@ Decisão operacional recente (1.2.8):
 Mudanças de lint:
 
 - Remover export default anônimo em helpers (ex.: `lib/data/db-errors.ts`) para evitar warnings `import/no-anonymous-default-export`.
+
+Decisão adicional (2026-05-18):
+
+- Para integrar Client Components sem duplicar lógica, criar pequenos endpoints API que importem e invoquem as Server Actions existentes. Isso mantém a lógica transacional e validações Zod centralizadas, enquanto permite feedback síncrono via fetch do cliente.

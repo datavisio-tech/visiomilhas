@@ -110,3 +110,14 @@ Progresso estimado (MVP1) atualizado:
 
 - Técnicos/base: 77% - 81%
 - Utilizável por usuário: 55% - 63%
+
+Atualização (1.3.10):
+
+- Integrar formulários de criação nas páginas de compras, vendas e transferências.
+- Criar endpoints API que reutilizam as Server Actions para permitir chamadas fetch a partir de Client Components.
+- Testar manualmente fluxos de criação e validar revalidação de rotas.
+
+Progresso estimado (MVP1) atualizado:
+
+- Técnicos/base: 86% - 90%
+- Utilizável por usuário: 72% - 80%

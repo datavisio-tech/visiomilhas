@@ -86,3 +86,8 @@ Seed operacional executado (16/05/2026):
 - Observação: a primeira execução inseriu apenas dados ADM; a segunda finalizou inserção APP; uma execução adicional confirmou idempotência (sem alterações nas contagens).
 
 Próximo passo recomendado: conectar as primeiras telas ao banco real e validar fluxos com dados demo.
+
+Status recente (2026-05-18):
+
+- Versão operacional `1.3.10` integrada: formulários de compras, vendas e transferências implementados e conectados às Server Actions via endpoints API.
+- Próximo item: testes manuais de criação e ajustes UX/erros.

@@ -19,7 +19,7 @@ Arquitetura de banco:
 - APP database: visiomilhas_app
 - Observação: usam-se duas databases separadas (ADM / APP) — não consolidar em um único DB com schemas.
 
-Versão operacional atual: 1.3.9
+Versão operacional atual: 1.3.10
 
 Status do MVP1:
 
@@ -63,12 +63,12 @@ Observações de segurança:
 - Não versionar `.env`.
 - Não expor `APP_DATABASE_URL` / `ADM_DATABASE_URL` em logs.
 
-Notas da versão 1.3.9 (parcial):
+Notas da versão 1.3.10:
 
-- Commit local: 4e4514d (branch `1.2.1-conecta-dashboard`).
-- Status: backend/server actions para criação de movimentações implementadas (`purchases`, `sales`, `transfers`).
-- Pendências: formulários UI e integração nas páginas (`/app/purchases`, `/app/sales`, `/app/transfers`) ainda não implementados — versão 1.3.9 considerada "parcialmente implementada".
-- Observações: nenhuma migration/seed foi executada; alterações limitadas a validações Zod e Server Actions; mantenha políticas de segurança sobre `.env`.
+- Commit local: integração dos formulários UI nas páginas de operações (compras, vendas, transferências) e endpoints API que reutilizam as Server Actions.
+- Status: formulários integrados e criação via UI habilitada; Server Actions e validações Zod mantidas.
+- Pendências: testes manuais locais para fluxos de saldo e custo médio; melhorias de mensagens de erro/UX.
+- Observações: nenhuma migration/seed foi executada; alterações focadas em UI e integrações, sem exposição de secrets.
 
 Notas da versão 1.2.8:
 

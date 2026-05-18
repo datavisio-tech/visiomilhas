@@ -414,3 +414,38 @@ Decisões:
 - Manter fallback que retorna lista vazia somente para desenvolvimento quando a tabela estiver ausente (`42P01`), e remover esse fallback em produção.
 
 Versão operacional agora: `1.2.8` (MVP1, funcionalidade 1.2, commit 7)
+
+## 2026-05-18 — Integração UI CRUD operacional (1.3.10)
+
+Objetivo:
+
+- Integrar formulários de criação para compras, vendas e transferências nas páginas existentes e reutilizar Server Actions e validações Zod.
+
+Arquivos criados/alterados nesta etapa:
+
+- `components/forms/purchase-form.tsx`
+- `components/forms/sale-form.tsx`
+- `components/forms/transfer-form.tsx`
+- `app/api/purchases/route.ts`
+- `app/api/sales/route.ts`
+- `app/api/transfers/route.ts`
+- `app/app/purchases/page.tsx` (integração do formulário)
+- `app/app/sales/page.tsx` (integração do formulário)
+- `app/app/transfers/page.tsx` (integração do formulário)
+- `README.md` (versão operacional 1.3.10)
+
+Resumo técnico:
+
+- Formulários implementados como Client Components que enviam `FormData` para endpoints API dedicados.
+- Endpoints API reutilizam as Server Actions (`createPurchaseAction`, `createSaleAction`, `createTransferAction`) para manter a lógica transacional e validações Zod.
+- Após criação, as Server Actions fazem `revalidatePath` nas rotas relevantes.
+
+Decisões:
+
+- Reutilizar Server Actions ao invés de duplicar lógica no handler API para manter única fonte de verdade.
+
+Pendências:
+
+- Testes manuais locais e ajustes UX; validação de regras de saldo em casos limites.
+
+Versão operacional agora: `1.3.10` (MVP1, funcionalidade 1.3, commit local)
