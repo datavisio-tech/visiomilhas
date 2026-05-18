@@ -449,3 +449,19 @@ Pendências:
 - Testes manuais locais e ajustes UX; validação de regras de saldo em casos limites.
 
 Versão operacional agora: `1.3.10` (MVP1, funcionalidade 1.3, commit local)
+
+## 2026-05-18 — Pausa e reavaliação arquitetural (1.3.11)
+
+Resumo:
+
+- Pausa da implementação de CRUD operacional para reavaliar o motor de milhas segundo o blueprint ledger + point_lots (FIFO). Foi identificado que o schema atual não persiste lotes (`mile_point_lots`) e que as Server Actions atuais atualizam saldos sem motor de consumo FIFO.
+- Detectado problema runtime: `TypeError: Cannot redefine property: $$id` ao importar Server Actions em API Routes. Decisão: não importar actions diretamente nas rotas; extrair layer de serviços compartilhados (`lib/services/movements.ts`) para uso por Server Actions e API Routes.
+
+Próximos passos (documentação/plano 1.3.11):
+
+1. Mapear campos relevantes em `db/app/schema.ts` e produzir especificação de `mile_point_lots` proposta.
+2. Desenhar motor FIFO: criação de lotes na compra, consumo por venda/transferência, cálculo de cost-basis por lote, registro de entradas de reversão e evidenciação de custos por `mile_sales`.
+3. Planejamento incremental: 1.3.12 (migrations & revisão), 1.3.13 (motor FIFO + testes), 1.3.14 (refatorar Server Actions → services), 1.3.15 (UI reintegração), 1.3.16 (estabilidade e PR).
+4. Documentar a dívida técnica e o racional da pausa em `DECISIONS.md` e `TODO_AI.md`.
+
+Observação: nenhuma alteração de schema será aplicada nesta etapa sem aprovação; este passo é apenas de análise e planejamento.

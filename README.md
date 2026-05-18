@@ -19,7 +19,7 @@ Arquitetura de banco:
 - APP database: visiomilhas_app
 - Observação: usam-se duas databases separadas (ADM / APP) — não consolidar em um único DB com schemas.
 
-Versão operacional atual: 1.3.10
+Versão operacional atual: 1.3.11
 
 Status do MVP1:
 
@@ -63,12 +63,13 @@ Observações de segurança:
 - Não versionar `.env`.
 - Não expor `APP_DATABASE_URL` / `ADM_DATABASE_URL` em logs.
 
-Notas da versão 1.3.10:
+Notas da versão 1.3.11 (pausa arquitetural):
 
-- Commit local: integração dos formulários UI nas páginas de operações (compras, vendas, transferências) e endpoints API que reutilizam as Server Actions.
-- Status: formulários integrados e criação via UI habilitada; Server Actions e validações Zod mantidas.
-- Pendências: testes manuais locais para fluxos de saldo e custo médio; melhorias de mensagens de erro/UX.
-- Observações: nenhuma migration/seed foi executada; alterações focadas em UI e integrações, sem exposição de secrets.
+- Commit local: integração dos formulários UI (1.3.10) e análise arquitetural do motor de milhas para 1.3.11.
+- Status: pausa para reavaliação do motor de milhas (ledger + point_lots) antes de continuar com refatorações e implementação de FIFO real.
+- Motivo: o blueprint técnico indica necessidade de `mile_point_lots` (lotes) e regras FIFO para vendas e transferências; a implementação atual atualiza saldos diretamente e não mantém lotes detalhados.
+- Observação técnica: foi detectado um problema de runtime ao reutilizar Server Actions diretamente em API Routes (`TypeError: Cannot redefine property: $$id`). Isso será resolvido em uma refatoração futura ao introduzir services compartilhados que apliquem a lógica transacional.
+- Pendências: modelagem de `mile_point_lots`, motor FIFO, refatoração para services compartilhados, testes manuais e unitários para regras de custo FIFO.
 
 Notas da versão 1.2.8:
 

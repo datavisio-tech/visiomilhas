@@ -91,3 +91,11 @@ Status recente (2026-05-18):
 
 - Versão operacional `1.3.10` integrada: formulários de compras, vendas e transferências implementados e conectados às Server Actions via endpoints API.
 - Próximo item: testes manuais de criação e ajustes UX/erros.
+
+Prioridade imediata (1.3.11) — pausa arquitetural:
+
+- Mapear schema atual (`db/app/schema.ts`) e listar campos críticos para motor de milhas.
+- Produzir especificação de `mile_point_lots` (colunas e índices) sem aplicar migrations.
+- Projetar e prototipar `lib/services/movements.ts` (contratos e transações) para centralizar lógica de compra/venda/transferência.
+- Refatorar Server Actions e API Routes para chamarem o service compartilhado (evitar import estático de Server Actions em rotas para mitigar o erro `$$id`).
+- Cobrir com testes unitários e integração local antes de aplicar migrations.

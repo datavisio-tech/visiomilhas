@@ -73,4 +73,10 @@ Mudanças de lint:
 
 Decisão adicional (2026-05-18):
 
-- Para integrar Client Components sem duplicar lógica, criar pequenos endpoints API que importem e invoquem as Server Actions existentes. Isso mantém a lógica transacional e validações Zod centralizadas, enquanto permite feedback síncrono via fetch do cliente.
+- Não importar Server Actions diretamente em API Routes. Em vez disso, extrair a lógica transacional e de domínio para um service compartilhado (`lib/services/movements.ts`) que possa ser chamado tanto por Server Actions quanto por handlers de rotas API. Essa separação evita proxies/runtime issues (ex.: `TypeError: Cannot redefine property: $$id`) e mantém uma única fonte de verdade para regras de negócio.
+
+- A estratégia de migração para essa decisão:
+  1. Criar `lib/services/movements.ts` com contratos e implementações transacionais.
+  2. Atualizar Server Actions para delegarem ao service (sem alterar a assinatura pública das actions).
+  3. Atualizar `app/api/*/route.ts` para usar o mesmo service e remover import estático de actions.
+  4. Validar via testes unitários e manuais.
