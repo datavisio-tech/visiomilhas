@@ -4,6 +4,8 @@ import { appPool } from "../../../db/app/client";
 import { admPool } from "../../../db/adm/client";
 import { calculatePurchaseImpact } from "../../../lib/domain/miles-calculations";
 import { revalidatePath } from "next/cache";
+import { isFifoMovementsEngineEnabled } from "../../../lib/featureFlags";
+import { acquireMilesUseCase } from "../../../lib/services/movements.use-cases";
 
 export async function createPurchaseAction(formData: FormData) {
   const parsed = createPurchaseSchema.safeParse(
@@ -59,33 +61,54 @@ export async function createPurchaseAction(formData: FormData) {
           input.description || null,
         ],
       );
+      // If FIFO movements engine is enabled, delegate entry/lot creation and
+      // balance update to the movements use-case. We still insert the purchase
+      // record and update cost-related columns here to preserve pricing data.
+      if (isFifoMovementsEngineEnabled()) {
+        await client.query(
+          `UPDATE program_accounts SET current_avg_cost_per_thousand_cents = $1, current_cost_basis_cents = $2, updated_at = NOW() WHERE id = $3`,
+          [impact.newCpmCents, impact.newTotalCostCents, input.accountId],
+        );
+        await client.query("COMMIT");
 
-      await client.query(
-        `INSERT INTO mile_entries (organization_id, program_id, account_id, type, direction, points, amount_cents, cost_basis_cents, occurred_at, status, description, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,NOW(),NOW())`,
-        [
-          orgId,
-          input.programId,
-          input.accountId,
-          "purchase",
-          "in",
-          input.points,
-          input.totalCostCents,
-          impact.newTotalCostCents,
-          now.toISOString(),
-          "completed",
-          input.description || null,
-        ],
-      );
+        // Call movements engine to create entry/lot and update balance (separate transaction)
+        await acquireMilesUseCase({
+          organizationId: orgId,
+          accountId: input.accountId,
+          amount: Number(input.points),
+          source: "purchase",
+          description: input.description || undefined,
+          occurredAt: now,
+        });
+      } else {
+        await client.query(
+          `INSERT INTO mile_entries (organization_id, program_id, account_id, type, direction, points, amount_cents, cost_basis_cents, occurred_at, status, description, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,NOW(),NOW())`,
+          [
+            orgId,
+            input.programId,
+            input.accountId,
+            "purchase",
+            "in",
+            input.points,
+            input.totalCostCents,
+            impact.newTotalCostCents,
+            now.toISOString(),
+            "completed",
+            input.description || null,
+          ],
+        );
 
-      await client.query(
-        `UPDATE program_accounts SET current_points_balance = $1, current_avg_cost_per_thousand_cents = $2, current_cost_basis_cents = $3, updated_at = NOW() WHERE id = $4`,
-        [
-          impact.newBalance,
-          impact.newCpmCents,
-          impact.newTotalCostCents,
-          input.accountId,
-        ],
-      );
+        await client.query(
+          `UPDATE program_accounts SET current_points_balance = $1, current_avg_cost_per_thousand_cents = $2, current_cost_basis_cents = $3, updated_at = NOW() WHERE id = $4`,
+          [
+            impact.newBalance,
+            impact.newCpmCents,
+            impact.newTotalCostCents,
+            input.accountId,
+          ],
+        );
+        await client.query("COMMIT");
+      }
 
       await client.query("COMMIT");
 

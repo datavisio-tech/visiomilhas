@@ -4,6 +4,8 @@ import { appPool } from "../../../db/app/client";
 import { admPool } from "../../../db/adm/client";
 import { calculateTransferImpact } from "../../../lib/domain/miles-calculations";
 import { revalidatePath } from "next/cache";
+import { isFifoMovementsEngineEnabled } from "../../../lib/featureFlags";
+import { transferMilesUseCase } from "../../../lib/services/movements.use-cases";
 
 export async function createTransferAction(formData: FormData) {
   const parsed = createTransferSchema.safeParse(
@@ -76,55 +78,70 @@ export async function createTransferAction(formData: FormData) {
         ],
       );
 
-      await client.query(
-        `INSERT INTO mile_entries (organization_id, program_id, account_id, type, direction, points, occurred_at, status, description, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),NOW())`,
-        [
-          orgId,
-          null,
-          input.fromAccountId,
-          "transfer",
-          "out",
-          input.pointsSent,
-          now.toISOString(),
-          "completed",
-          input.description || null,
-        ],
-      );
+      if (isFifoMovementsEngineEnabled()) {
+        // commit transfer record and delegate entry/lot updates and balance
+        // updates to the movements engine
+        await client.query("COMMIT");
 
-      await client.query(
-        `INSERT INTO mile_entries (organization_id, program_id, account_id, type, direction, points, occurred_at, status, description, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),NOW())`,
-        [
-          orgId,
-          null,
-          input.toAccountId,
-          "transfer",
-          "in",
-          impact.pointsReceived,
-          now.toISOString(),
-          "completed",
-          input.description || null,
-        ],
-      );
+        await transferMilesUseCase({
+          organizationId: orgId,
+          fromAccountId: input.fromAccountId,
+          toAccountId: input.toAccountId,
+          amount: Number(input.pointsSent),
+          description: input.description || undefined,
+          occurredAt: now,
+        });
+      } else {
+        await client.query(
+          `INSERT INTO mile_entries (organization_id, program_id, account_id, type, direction, points, occurred_at, status, description, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),NOW())`,
+          [
+            orgId,
+            null,
+            input.fromAccountId,
+            "transfer",
+            "out",
+            input.pointsSent,
+            now.toISOString(),
+            "completed",
+            input.description || null,
+          ],
+        );
 
-      await client.query(
-        `UPDATE program_accounts SET current_points_balance = $1, current_avg_cost_per_thousand_cents = $2, updated_at = NOW() WHERE id = $3`,
-        [
-          impact.newOriginBalance,
-          fromAcc.current_avg_cost_per_thousand_cents,
-          input.fromAccountId,
-        ],
-      );
+        await client.query(
+          `INSERT INTO mile_entries (organization_id, program_id, account_id, type, direction, points, occurred_at, status, description, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),NOW())`,
+          [
+            orgId,
+            null,
+            input.toAccountId,
+            "transfer",
+            "in",
+            impact.pointsReceived,
+            now.toISOString(),
+            "completed",
+            input.description || null,
+          ],
+        );
 
-      await client.query(
-        `UPDATE program_accounts SET current_points_balance = $1, current_avg_cost_per_thousand_cents = $2, updated_at = NOW() WHERE id = $3`,
-        [
-          impact.newDestinationBalance,
-          impact.newDestinationCpmCents,
-          input.toAccountId,
-        ],
-      );
+        await client.query(
+          `UPDATE program_accounts SET current_points_balance = $1, current_avg_cost_per_thousand_cents = $2, updated_at = NOW() WHERE id = $3`,
+          [
+            impact.newOriginBalance,
+            fromAcc.current_avg_cost_per_thousand_cents,
+            input.fromAccountId,
+          ],
+        );
 
-      await client.query("COMMIT");
+        await client.query(
+          `UPDATE program_accounts SET current_points_balance = $1, current_avg_cost_per_thousand_cents = $2, updated_at = NOW() WHERE id = $3`,
+          [
+            impact.newDestinationBalance,
+            impact.newDestinationCpmCents,
+            input.toAccountId,
+          ],
+        );
+
+        await client.query("COMMIT");
+      }
 
       revalidatePath("/app/dashboard");
       revalidatePath("/app/accounts");

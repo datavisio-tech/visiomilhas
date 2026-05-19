@@ -4,6 +4,8 @@ import { appPool } from "../../../db/app/client";
 import { admPool } from "../../../db/adm/client";
 import { calculateSaleImpact } from "../../../lib/domain/miles-calculations";
 import { revalidatePath } from "next/cache";
+import { isFifoMovementsEngineEnabled } from "../../../lib/featureFlags";
+import { consumeMilesUseCase } from "../../../lib/services/movements.use-cases";
 
 export async function createSaleAction(formData: FormData) {
   const parsed = createSaleSchema.safeParse(
@@ -62,29 +64,43 @@ export async function createSaleAction(formData: FormData) {
         ],
       );
 
-      await client.query(
-        `INSERT INTO mile_entries (organization_id, program_id, account_id, type, direction, points, amount_cents, cost_basis_cents, occurred_at, status, description, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,NOW(),NOW())`,
-        [
-          orgId,
-          input.programId,
-          input.accountId,
-          "sale",
-          "out",
-          input.points,
-          input.totalAmountCents,
-          impact.costBaseCents,
-          now.toISOString(),
-          "completed",
-          input.description || null,
-        ],
-      );
+      if (isFifoMovementsEngineEnabled()) {
+        // insert sale and commit cost/revenue info, let movements engine
+        // handle entries and balance update
+        await client.query("COMMIT");
 
-      await client.query(
-        `UPDATE program_accounts SET current_points_balance = $1, updated_at = NOW() WHERE id = $2`,
-        [impact.newBalance, input.accountId],
-      );
+        await consumeMilesUseCase({
+          organizationId: orgId,
+          accountId: input.accountId,
+          amount: Number(input.points),
+          description: input.description || undefined,
+          occurredAt: now,
+        });
+      } else {
+        await client.query(
+          `INSERT INTO mile_entries (organization_id, program_id, account_id, type, direction, points, amount_cents, cost_basis_cents, occurred_at, status, description, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,NOW(),NOW())`,
+          [
+            orgId,
+            input.programId,
+            input.accountId,
+            "sale",
+            "out",
+            input.points,
+            input.totalAmountCents,
+            impact.costBaseCents,
+            now.toISOString(),
+            "completed",
+            input.description || null,
+          ],
+        );
 
-      await client.query("COMMIT");
+        await client.query(
+          `UPDATE program_accounts SET current_points_balance = $1, updated_at = NOW() WHERE id = $2`,
+          [impact.newBalance, input.accountId],
+        );
+
+        await client.query("COMMIT");
+      }
 
       revalidatePath("/app/dashboard");
       revalidatePath("/app/accounts");

@@ -35,6 +35,9 @@ NEXT_PUBLIC_APP_URL=https://visiomilhas.visiochat.cloud
 // Application
 APP_NAME=VisioMilhas
 
+// Feature flags
+USE_FIFO_MOVEMENTS_ENGINE=0
+
 // Deploy / CI
 SSH_HOST=CHANGE_ME
 SSH_USER=CHANGE_ME
