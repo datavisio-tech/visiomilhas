@@ -86,4 +86,4 @@ Decisão adicional (2026-05-18):
 
 - 2026-05-18: Consolidação do motor FIFO puro (1.3.14) — o motor de movimentações (`lib/services/movements.ts`) foi consolidado como um service desacoplado da persistência, validado por testes unitários in-memory. A implementação concreta do `MovementsRepo` com Drizzle e transações fica para 1.3.15.
 - Planejamento 1.3.15: implementar `MovementsRepo` usando Drizzle, garantir operações transacionais (atomicidade/rollback) e alinhar migrations/constraints. Esta etapa requer validação em DB de desenvolvimento isolado e backup antes de aplicar migrations em produção.
- - 1.3.16: Implementação concreta do `MovementsRepo` com Drizzle realizada em `lib/repositories/movements.drizzle-repo.ts`. Mantém-se a prática de aplicar constraints/índices via migrations SQL; migratons não foram aplicadas automaticamente nesta etapa.
+- 1.3.16: Implementação concreta do `MovementsRepo` com Drizzle realizada em `lib/repositories/movements.drizzle-repo.ts`. Mantém-se a prática de aplicar constraints/índices via migrations SQL; migratons não foram aplicadas automaticamente nesta etapa.
