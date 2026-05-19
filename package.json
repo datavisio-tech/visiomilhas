@@ -15,6 +15,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:integration": "vitest run tests/integration",
     "db:adm:generate": "drizzle-kit generate --config=drizzle.adm.config.ts",
     "db:app:generate": "drizzle-kit generate --config=drizzle.app.config.ts",
     "db:adm:migrate": "drizzle-kit migrate --config=drizzle.adm.config.ts",

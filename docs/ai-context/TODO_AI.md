@@ -124,3 +124,6 @@ Status 1.3.16 (implementação do repo):
 
 - `lib/repositories/movements.drizzle-repo.ts` implementado como adapter Drizzle.
 - Próximo: preparar testes de integração em DB de desenvolvimento isolado e documento de rollback/aplicação de migration.
+
+Nota (2026-05-18): adicionado esqueleto de testes de integração em `tests/integration/movements.drizzle-repo.test.ts`.
+Estes testes são placeholders e dependem de variáveis de ambiente (`APP_DATABASE_URL` ou `DATABASE_URL`) apontando para um banco de desenvolvimento isolado. Não execute `npm run test:integration` contra bancos de produção.
