@@ -4,6 +4,12 @@ Atualização 1.3.14:
 - Status: 1.3.14 validado localmente (test/typecheck/lint/build OK). Persistência real (MovementsRepo Drizzle) adiada para 1.3.15.
 - Próximo: 1.3.15 — alinhar schema↔migration, refinar `MovementsRepo` (tipos/contratos) e preparar implementação Drizzle com transações. Não aplicar migrations nesta etapa.
 - Próximo: 1.3.16 — implementar `MovementsRepo` concreto usando Drizzle (transações) e preparar testes de integração em ambiente seguro. Não aplicar migrations nesta etapa de implementação.
+
+Atualização 1.3.20:
+
+- Objetivo: integrar a mutation de compra/aquisição ao motor FIFO de forma atômica quando a flag `USE_FIFO_MOVEMENTS_ENGINE` estiver ativa.
+- Implementações: `createDrizzleMovementsRepoFromClient(client)` para criar um repo que reutiliza o `pg` client atual; `createPurchaseAction` delega ao `acquireMilesUseCase(..., txRepo)` antes do `COMMIT`.
+- Observação: essa integração exige validar a migration `db/app/migrations/0001_add_mile_point_lots.sql` em staging antes de ativar a flag em ambiente de produção.
 - Próximo: 1.3.17/1.3.18 — preparar testes de integração e integrar as mutations via camada de use-cases que orquestra `createMovementService` + `MovementsRepo` (Drizzle).
   VisioMilhas — Plano de Implementação (resumo)
 

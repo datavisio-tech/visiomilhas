@@ -21,6 +21,8 @@ Arquitetura de banco:
 
 Versão operacional atual: 1.3.14
 
+Nota: integração atômica da compra ao motor FIFO implementada localmente em 1.3.20 (feature flag, não ativada por padrão). Validar migration em staging antes de ativar.
+
 Status do MVP1:
 
 - Técnico / base: 81%–85%

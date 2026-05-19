@@ -1,4 +1,5 @@
 import { appDb } from "../../db/app/client";
+import { drizzle } from "drizzle-orm/node-postgres";
 import {
   mile_entries,
   mile_point_lots,
@@ -176,3 +177,25 @@ export function createDrizzleMovementsRepo(db = appDb()) {
 }
 
 export default createDrizzleMovementsRepo;
+
+// Create a MovementsRepo bound to an existing `pg` client connection.
+// This allows running repo operations on the same client/transaction already
+// started by higher-level code (e.g. Server Action using `client.query("BEGIN")`).
+export function createDrizzleMovementsRepoFromClient(client: any) {
+  const db = drizzle(client as any);
+
+  const base = createDrizzleMovementsRepo(db as any);
+
+  // When bound to an existing client/transaction, `runInTransaction` should
+  // *not* start a new transaction; instead just execute the callback and
+  // pass the repo as the tx-like object so higher-level code controls the
+  // commit/rollback.
+  const repo = {
+    ...base,
+    runInTransaction: async (cb: any) => {
+      return cb(base);
+    },
+  } as any;
+
+  return repo;
+}

@@ -6,6 +6,7 @@ import { calculatePurchaseImpact } from "../../../lib/domain/miles-calculations"
 import { revalidatePath } from "next/cache";
 import { isFifoMovementsEngineEnabled } from "../../../lib/featureFlags";
 import { acquireMilesUseCase } from "../../../lib/services/movements.use-cases";
+import { createDrizzleMovementsRepoFromClient } from "../../../lib/repositories/movements.drizzle-repo";
 
 export async function createPurchaseAction(formData: FormData) {
   const parsed = createPurchaseSchema.safeParse(
@@ -65,21 +66,28 @@ export async function createPurchaseAction(formData: FormData) {
       // balance update to the movements use-case. We still insert the purchase
       // record and update cost-related columns here to preserve pricing data.
       if (isFifoMovementsEngineEnabled()) {
+        // Update cost-related columns first (still within the same transaction)
         await client.query(
           `UPDATE program_accounts SET current_avg_cost_per_thousand_cents = $1, current_cost_basis_cents = $2, updated_at = NOW() WHERE id = $3`,
           [impact.newCpmCents, impact.newTotalCostCents, input.accountId],
         );
-        await client.query("COMMIT");
 
-        // Call movements engine to create entry/lot and update balance (separate transaction)
-        await acquireMilesUseCase({
-          organizationId: orgId,
-          accountId: input.accountId,
-          amount: Number(input.points),
-          source: "purchase",
-          description: input.description || undefined,
-          occurredAt: now,
-        });
+        // Create a movements repo bound to the current `pg` client so that
+        // the movements use-case executes on the same connection/transaction.
+        const txRepo = createDrizzleMovementsRepoFromClient(client);
+
+        // Delegate to the movements engine *within the same transaction*.
+        await acquireMilesUseCase(
+          {
+            organizationId: orgId,
+            accountId: input.accountId,
+            amount: Number(input.points),
+            source: "purchase",
+            description: input.description || undefined,
+            occurredAt: now,
+          },
+          txRepo,
+        );
       } else {
         await client.query(
           `INSERT INTO mile_entries (organization_id, program_id, account_id, type, direction, points, amount_cents, cost_basis_cents, occurred_at, status, description, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,NOW(),NOW())`,
@@ -107,9 +115,8 @@ export async function createPurchaseAction(formData: FormData) {
             input.accountId,
           ],
         );
-        await client.query("COMMIT");
+        // commit will happen after this branch
       }
-
       await client.query("COMMIT");
 
       // revalidate relevant paths

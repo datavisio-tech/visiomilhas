@@ -85,5 +85,15 @@ Decisão adicional (2026-05-18):
 - 2026-05-18: Refinamento da migration (1.3.13) — a migration proposta foi atualizada com FKs, índices e checks propostos em `db/app/migrations/0001_add_mile_point_lots.sql`. A decisão foi incluir constraints que reforcem integridade, mantendo `ON DELETE RESTRICT` em relações financeiras e `ON DELETE SET NULL` quando apropriado para origem de lotes. Migration está proposta para revisão e NÃO APLICADA.
 
 - 2026-05-18: Consolidação do motor FIFO puro (1.3.14) — o motor de movimentações (`lib/services/movements.ts`) foi consolidado como um service desacoplado da persistência, validado por testes unitários in-memory. A implementação concreta do `MovementsRepo` com Drizzle e transações fica para 1.3.15.
+- 2026-05-18: Consolidação do motor FIFO puro (1.3.14) — o motor de movimentações (`lib/services/movements.ts`) foi consolidado como um service desacoplado da persistência, validado por testes unitários in-memory. A implementação concreta do `MovementsRepo` com Drizzle e transações fica para 1.3.15.
+
+- 2026-05-18: Integração atômica da compra ao motor FIFO (1.3.20)
+
+- Decisão: integrar o fluxo de compra/aquisição ao motor FIFO como primeiro caso de uso atômico.
+- Motivo: compra cria entry + lot de forma determinística, é o fluxo mais simples para validar transação end-to-end.
+- Implementação: `createPurchaseAction` delega ao `acquireMilesUseCase(..., txRepo)` quando `USE_FIFO_MOVEMENTS_ENGINE` estiver ativa; o `txRepo` é criado por `createDrizzleMovementsRepoFromClient(client)` que usa o `pg` client corrente, evitando abertura de nova conexão/transaction.
+- Segurança: a feature flag permanece desligada por padrão; a integração só roda quando explicitamente ativada em staging após validação da migration.
+- Garantia transacional: `acquireMilesUseCase` é executado dentro da mesma transação do `createPurchaseAction` (rollback único em caso de falha).
+- Próximo: validar em staging com a migration `db/app/migrations/0001_add_mile_point_lots.sql` aplicada e testar rollback/rollback scenarios.
 - Planejamento 1.3.15: implementar `MovementsRepo` usando Drizzle, garantir operações transacionais (atomicidade/rollback) e alinhar migrations/constraints. Esta etapa requer validação em DB de desenvolvimento isolado e backup antes de aplicar migrations em produção.
 - 1.3.16: Implementação concreta do `MovementsRepo` com Drizzle realizada em `lib/repositories/movements.drizzle-repo.ts`. Mantém-se a prática de aplicar constraints/índices via migrations SQL; migratons não foram aplicadas automaticamente nesta etapa.

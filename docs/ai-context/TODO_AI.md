@@ -127,3 +127,9 @@ Status 1.3.16 (implementação do repo):
 
 Nota (2026-05-18): adicionado esqueleto de testes de integração em `tests/integration/movements.drizzle-repo.test.ts`.
 Estes testes são placeholders e dependem de variáveis de ambiente (`APP_DATABASE_URL` ou `DATABASE_URL`) apontando para um banco de desenvolvimento isolado. Não execute `npm run test:integration` contra bancos de produção.
+
+Status 1.3.20 — integração atômica da compra ao motor FIFO:
+
+- Implementado `createDrizzleMovementsRepoFromClient(client)` em `lib/repositories/movements.drizzle-repo.ts` para criar um repo Drizzle que usa o `pg` client existente.
+- `createPurchaseAction` em `app/app/purchases/actions.ts` foi atualizado para, quando `USE_FIFO_MOVEMENTS_ENGINE` estiver ativa, delegar ao `acquireMilesUseCase(..., txRepo)` executando o use-case dentro da mesma transação da compra.
+- Pendências: validar a migration `db/app/migrations/0001_add_mile_point_lots.sql` em ambiente isolado, executar testes de integração e validar rollback antes de ativar a flag em staging.

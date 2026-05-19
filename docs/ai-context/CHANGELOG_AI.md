@@ -184,6 +184,28 @@ Resumo das ações operacionais (não expõe secrets):
 - Seeds: permanecem pendentes e não foram executados nesta etapa.
 - Validações: `npm run test`, `npm run typecheck` e `npm run lint` passaram após aplicar migrations.
 
+## 2026-05-18 — Integração atômica da compra ao motor FIFO (1.3.20)
+
+Objetivo:
+
+- Integrar a mutation de compra/aquisição ao motor FIFO de forma atômica sob controle da feature flag `USE_FIFO_MOVEMENTS_ENGINE`.
+
+Principais mudanças:
+
+- `lib/repositories/movements.drizzle-repo.ts`: adicionada função `createDrizzleMovementsRepoFromClient(client)` que cria um repo Drizzle usando o `pg` client corrente.
+- `app/app/purchases/actions.ts`: atualização para delegar ao `acquireMilesUseCase(..., txRepo)` quando a flag estiver ativa, executando o use-case dentro da mesma transação da compra.
+
+Validações realizadas (local):
+
+- `npm run test` — OK (29 tests passed | 3 skipped)
+- `npm run typecheck` — OK
+- `npm run lint` — OK (aviso não bloqueante em `lib/featureFlags.ts`)
+- `npm run build` — OK
+
+Observações:
+
+- A migration `db/app/migrations/0001_add_mile_point_lots.sql` permanece proposta e NÃO APLICADA; validar em staging antes de ativar a flag.
+
 ## 2026-05-16 — Execução de seed idempotente (operacional)
 
 Objetivo:
