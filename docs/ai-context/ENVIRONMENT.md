@@ -36,7 +36,19 @@ NEXT_PUBLIC_APP_URL=https://visiomilhas.visiochat.cloud
 APP_NAME=VisioMilhas
 
 // Feature flags
-USE_FIFO_MOVEMENTS_ENGINE=0
+## Feature flags
+
+### USE_FIFO_MOVEMENTS_ENGINE
+
+Controla se rotas/actions operacionais devem usar o motor FIFO de movimentações (`movements.use-cases`) ou manter o fluxo legado.
+
+- Default seguro: desativado (`0`).
+- Valores considerados ativos: `1`, `true`, `on`.
+- Comparação: ignorar maiúsculas/minúsculas e espaços antes/depois do valor.
+- Quando ausente, vazio, inválido ou diferente dos valores aceitos, o sistema mantém o fluxo legado.
+- Não é secret e deve constar em `.env.example` com valor seguro `0`.
+- Só deve ser ativado após validação da migration de ledger/lotes e testes em ambiente isolado.
+
 
 // Deploy / CI
 SSH_HOST=CHANGE_ME
