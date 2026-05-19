@@ -13,9 +13,13 @@ type Deps = {
   admPool?: any;
   isFifoMovementsEngineEnabled?: any;
   acquireMilesUseCase?: any;
+  revalidatePath?: any;
 };
 
-export async function createPurchaseAction(formData: FormData, deps: Deps = {}) {
+export async function createPurchaseAction(
+  formData: FormData,
+  deps: Deps = {},
+) {
   const parsed = createPurchaseSchema.safeParse(
     Object.fromEntries(formData.entries()),
   );
@@ -72,7 +76,9 @@ export async function createPurchaseAction(formData: FormData, deps: Deps = {}) 
       // If FIFO movements engine is enabled, delegate entry/lot creation and
       // balance update to the movements use-case. We still insert the purchase
       // record and update cost-related columns here to preserve pricing data.
-      if ((deps.isFifoMovementsEngineEnabled ?? isFifoMovementsEngineEnabled)()) {
+      if (
+        (deps.isFifoMovementsEngineEnabled ?? isFifoMovementsEngineEnabled)()
+      ) {
         // Update cost-related columns first (still within the same transaction)
         await client.query(
           `UPDATE program_accounts SET current_avg_cost_per_thousand_cents = $1, current_cost_basis_cents = $2, updated_at = NOW() WHERE id = $3`,
@@ -126,11 +132,11 @@ export async function createPurchaseAction(formData: FormData, deps: Deps = {}) 
       }
       await client.query("COMMIT");
 
-      // revalidate relevant paths
-      revalidatePath("/app/dashboard");
-      revalidatePath("/app/accounts");
-      revalidatePath("/app/entries");
-      revalidatePath("/app/purchases");
+      // revalidate relevant paths (injectable for tests)
+      (deps.revalidatePath ?? revalidatePath)("/app/dashboard");
+      (deps.revalidatePath ?? revalidatePath)("/app/accounts");
+      (deps.revalidatePath ?? revalidatePath)("/app/entries");
+      (deps.revalidatePath ?? revalidatePath)("/app/purchases");
 
       return {
         success: true,
