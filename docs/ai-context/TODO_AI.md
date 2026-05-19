@@ -98,6 +98,14 @@ Status 1.3.13 — Refinamento do schema/migration:
 - Migration continua NÃO APLICADA.
 - Próximo passo: 1.3.14 — implementar `lib/services/movements.ts` (motor FIFO) e testes unitários.
 
+Status 1.3.14 — Consolidação do motor FIFO puro:
+
+- Motor FIFO consolidado em `lib/services/movements.ts` com testes unitários em `lib/services/__tests__/movements.test.ts`.
+- Pendências para 1.3.15:
+  - Alinhar `db/app/schema.ts` com constraints (FKs, checks, índices) presentes na migration proposta.
+  - Implementar `MovementsRepo` concreto com Drizzle e transações.
+  - Testar integração com DB de desenvolvimento isolado e preparar plano de aplicação de migration.
+
 Prioridade imediata (1.3.11) — pausa arquitetural:
 
 - Mapear schema atual (`db/app/schema.ts`) e listar campos críticos para motor de milhas.

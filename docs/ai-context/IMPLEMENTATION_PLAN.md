@@ -1,4 +1,8 @@
-VisioMilhas — Plano de Implementação (resumo)
+Atualização 1.3.14:
+
+- Consolidação do motor FIFO puro/in-memory em `lib/services/movements.ts` com testes unitários em `lib/services/__tests__/movements.test.ts`.
+- Status: 1.3.14 validado localmente (test/typecheck/lint/build OK). Persistência real (MovementsRepo Drizzle) adiada para 1.3.15.
+  VisioMilhas — Plano de Implementação (resumo)
 
 Objetivo: preparar o esquema e o plano para introduzir ledger + lotes (FIFO) no motor de milhas.
 
@@ -18,6 +22,10 @@ Próximo ciclo (1.3.13) — escopo técnico:
    - consumam lotes por venda/transferência (FIFO, respeitando expires_at);
    - criem entradas (`mile_entries`) com referência a lotes consumidos;
    - atualizem `program_accounts` como snapshot.
+     Atualização 1.3.14:
+
+- Consolidação do motor FIFO puro/in-memory em `lib/services/movements.ts` com testes unitários em `lib/services/__tests__/movements.test.ts`.
+- Status: 1.3.14 validado localmente (test/typecheck/lint/build OK). Persistência real (MovementsRepo Drizzle) adiada para 1.3.15.
 
 2. Cobrir com testes unitários e integrações locais (Vitest) para casos:
    - compra normal, compra parcelada, compra com fee/discount;

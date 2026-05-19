@@ -485,3 +485,11 @@ Próximos passos:
 - 1.3.13 foi dividido em duas fases:
   - 1.3.13 — Refinamento de migration e constraints (FKs, índices, checks) — concluído nesta etapa com migration proposta refinada.
   - 1.3.14 — Implementar `lib/services/movements.ts` (motor FIFO) e testes unitários.
+
+  ## 2026-05-18 — Consolidação do motor FIFO puro (1.3.14)
+
+  Resumo:
+  - Objetivo: consolidar o motor FIFO puro/in-memory para validação de regras de domínio sem integração com persistência real.
+  - Arquivos alterados: `lib/services/movements.ts`, `lib/services/__tests__/movements.test.ts`, `docs/ai-context/manual-tests-1.3.14.md`.
+  - Validações executadas: `npm run test` (22/22 OK), `npm run typecheck` (OK), `npm run lint` (OK), `npm run build` (OK).
+  - Observação: migration `db/app/migrations/0001_add_mile_point_lots.sql` permanece proposta e NÃO APLICADA.
