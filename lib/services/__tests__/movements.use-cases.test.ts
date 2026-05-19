@@ -64,20 +64,35 @@ describe("movements use-cases (unit, mocked repo)", () => {
   });
 
   it("acquireMilesUseCase delegates to service and returns result", async () => {
-    const res = await useCases.acquireMilesUseCase({ accountId: 1, amount: 100 }, repo as any);
+    const res = await useCases.acquireMilesUseCase(
+      { accountId: 1, amount: 100 },
+      repo as any,
+    );
     expect(res.acquiredPoints).toBe(100);
   });
 
   it("consumeMilesUseCase delegates to service and consumes points", async () => {
     // seed
-    await useCases.acquireMilesUseCase({ accountId: 1, amount: 200 }, repo as any);
-    const consumed = await useCases.consumeMilesUseCase({ accountId: 1, amount: 50 }, repo as any);
+    await useCases.acquireMilesUseCase(
+      { accountId: 1, amount: 200 },
+      repo as any,
+    );
+    const consumed = await useCases.consumeMilesUseCase(
+      { accountId: 1, amount: 50 },
+      repo as any,
+    );
     expect(consumed.consumedPoints).toBe(50);
   });
 
   it("transferMilesUseCase delegates to service and returns transferId", async () => {
-    await useCases.acquireMilesUseCase({ accountId: 1, amount: 120 }, repo as any);
-    const t = await useCases.transferMilesUseCase({ fromAccountId: 1, toAccountId: 2, amount: 20 }, repo as any);
+    await useCases.acquireMilesUseCase(
+      { accountId: 1, amount: 120 },
+      repo as any,
+    );
+    const t = await useCases.transferMilesUseCase(
+      { fromAccountId: 1, toAccountId: 2, amount: 20 },
+      repo as any,
+    );
     expect(t.transferId).toBeDefined();
   });
 });

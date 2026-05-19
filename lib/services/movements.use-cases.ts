@@ -16,7 +16,10 @@ export async function acquireMilesUseCase(input: any, repo?: any) {
   const r = getRepoOrDefault(repo);
   return r.runInTransaction(async (tx: any) => {
     // If tx already implements MovementsRepo (tests/mocks may pass the repo), use it directly
-    const txRepo = tx && typeof tx.insertEntry === "function" ? tx : createDrizzleMovementsRepo(tx);
+    const txRepo =
+      tx && typeof tx.insertEntry === "function"
+        ? tx
+        : createDrizzleMovementsRepo(tx);
     const svc = createMovementService(txRepo);
     return svc.acquireMiles(input);
   });
@@ -25,7 +28,10 @@ export async function acquireMilesUseCase(input: any, repo?: any) {
 export async function consumeMilesUseCase(input: any, repo?: any) {
   const r = getRepoOrDefault(repo);
   return r.runInTransaction(async (tx: any) => {
-    const txRepo = tx && typeof tx.insertEntry === "function" ? tx : createDrizzleMovementsRepo(tx);
+    const txRepo =
+      tx && typeof tx.insertEntry === "function"
+        ? tx
+        : createDrizzleMovementsRepo(tx);
     const svc = createMovementService(txRepo);
     return svc.consumeMiles(input);
   });
@@ -34,7 +40,10 @@ export async function consumeMilesUseCase(input: any, repo?: any) {
 export async function transferMilesUseCase(input: any, repo?: any) {
   const r = getRepoOrDefault(repo);
   return r.runInTransaction(async (tx: any) => {
-    const txRepo = tx && typeof tx.insertEntry === "function" ? tx : createDrizzleMovementsRepo(tx);
+    const txRepo =
+      tx && typeof tx.insertEntry === "function"
+        ? tx
+        : createDrizzleMovementsRepo(tx);
     const svc = createMovementService(txRepo);
     return svc.transferMiles(input);
   });
