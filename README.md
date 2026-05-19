@@ -52,6 +52,10 @@ Próximos passos (curto prazo):
 - Conectar compras/vendas/transferências e CRUDs (1.2.5+)
 - Implementar autenticação e deploy
 
+Preparação 1.3.15:
+
+- Objetivo: alinhar `db/app/schema.ts` com a migration proposta (`0001_add_mile_point_lots.sql`) e preparar o contrato `MovementsRepo` para implementação Drizzle (transações). Não aplicar migration nesta etapa.
+
 Passos iniciais para rodar local:
 
 1. Preencher `.env.local` com as variáveis em `.env.example` (NÃO commitar `.env.local`).
@@ -72,7 +76,7 @@ Notas da versão 1.3.12 (preparação do schema para ledger/FIFO):
 - Ação 1.3.13: migration refinada com FKs, índices e checks propostos (arquivo `db/app/migrations/0001_add_mile_point_lots.sql`).
 - Observação: a migration proposta continua NÃO APLICADA — apenas commitada para revisão.
 - Próximo passo: 1.3.14 — implementar motor FIFO e serviços transacionais (`lib/services/movements.ts`).
- - Ação 1.3.14: consolidação do motor FIFO puro/in-memory e testes unitários (`lib/services/movements.ts`, `lib/services/__tests__/movements.test.ts`). Migration permanece proposta e NÃO APLICADA.
+- Ação 1.3.14: consolidação do motor FIFO puro/in-memory e testes unitários (`lib/services/movements.ts`, `lib/services/__tests__/movements.test.ts`). Migration permanece proposta e NÃO APLICADA.
 
 Notas da versão 1.2.8:
 

@@ -398,6 +398,16 @@ O que foi feito:
 
 - Corrigido `lib/data/db-errors.ts` removendo export default anônimo para atender ESLint.
 - Implementado `lib/data/clubs.ts` com `getClubsOverview` resolvendo `organizations` via ADM e lendo `mile_clubs` via APP.
+
+## 2026-05-18 — Início 1.3.15 (preparação de persistência do motor FIFO)
+
+Objetivo:
+
+- Alinhar o `db/app/schema.ts` com a migration proposta `0001_add_mile_point_lots.sql` e preparar os tipos/contratos (`MovementsRepo`) para implementação concreta usando Drizzle e transações.
+
+Notas:
+
+- Esta etapa altera apenas a tipagem TypeScript e a documentação, mantendo a migration SQL como proposta. Nenhuma migration será aplicada e nenhum seed será executado durante esta etapa.
 - Atualizada a página `app/app/clubs/page.tsx` para Server Component dinâmico (`force-dynamic`) e empty state seguro.
 - Revisada `app/app/settings/page.tsx` para indicar que a persistência ainda não está implementada.
 - Atualizado `README.md` para versão `1.2.8`.

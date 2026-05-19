@@ -118,6 +118,14 @@ export const mile_point_lots = pgTable("mile_point_lots", {
   updatedAt: timestamp("updated_at").notNull(),
 });
 
+/*
+  Nota: constraints (FKs), índices e checks propostos para `mile_point_lots`
+  estão descritos em `db/app/migrations/0001_add_mile_point_lots.sql`.
+  Drizzle schema mantém as definições de coluna e tipos tipados aqui.
+  A aplicação das constraints/índices fica a cargo das migrations SQL
+  (seguindo o padrão do repositório de manter constraints em migrations).
+*/
+
 export const mile_sales = pgTable("mile_sales", {
   id: serial("id").primaryKey(),
   organizationId: integer("organization_id").notNull(),

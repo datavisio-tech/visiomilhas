@@ -81,21 +81,74 @@ export type PointLot = {
   acquiredPoints: number;
   remainingPoints: number;
   issuedAt: Date;
+  expiresAt?: Date | null;
+  sourceEntryId?: number | null;
+};
+
+export type MileEntryRecord = {
+  id?: number;
+  organizationId?: number | null;
+  programId?: number | null;
+  accountId?: number | null;
+  type?: string;
+  direction?: string;
+  points?: number;
+  amountCents?: number | null;
+  occurredAt?: Date;
+  description?: string | null;
+  source?: string | null;
+  status?: string;
+  metadata?: Record<string, unknown> | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+  consumedLotId?: number | null;
+  consumedPoints?: number | null;
+  lotSnapshot?: Record<string, unknown> | null;
+};
+
+export type MilePointLotRecord = {
+  id?: number;
+  organizationId?: number | null;
+  programId?: number | null;
+  accountId: number;
+  sourceEntryId?: number | null;
+  acquiredPoints: number;
+  remainingPoints: number;
+  totalCostCents?: number | null;
+  costPerThousandCents?: number | null;
+  issuedAt?: Date;
+  expiresAt?: Date | null;
+  status?: string;
+  metadata?: Record<string, unknown> | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+export type TransferRecord = {
+  id?: number;
+  organizationId?: number | null;
+  fromAccountId?: number | null;
+  toAccountId?: number | null;
+  pointsSent?: number;
+  pointsReceived?: number;
+  transferredAt?: Date;
+  status?: string;
+  description?: string | null;
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 export type MovementsRepo = {
   findAccountById(_accountId: number): Promise<{ id: number } | null>;
-  insertEntry(_entry: Partial<Record<string, any>>): Promise<{ id: number }>;
-  insertLot(_lot: Partial<Record<string, any>>): Promise<{ id: number }>;
+  insertEntry(_entry: MileEntryRecord): Promise<{ id: number }>;
+  insertLot(_lot: MilePointLotRecord): Promise<{ id: number }>;
   updateLotRemaining(_lotId: number, _remaining: number): Promise<void>;
   updateProgramAccountBalance(
     _accountId: number,
     _deltaPoints: number,
   ): Promise<void>;
   getAvailableLots(_accountId: number): Promise<PointLot[]>;
-  insertTransfer?(
-    _transfer: Partial<Record<string, any>>,
-  ): Promise<{ id: number }>;
+  insertTransfer?(_transfer: TransferRecord): Promise<{ id: number }>;
 };
 
 // Results
