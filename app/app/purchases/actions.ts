@@ -8,7 +8,14 @@ import { isFifoMovementsEngineEnabled } from "../../../lib/featureFlags";
 import { acquireMilesUseCase } from "../../../lib/services/movements.use-cases";
 import { createDrizzleMovementsRepoFromClient } from "../../../lib/repositories/movements.drizzle-repo";
 
-export async function createPurchaseAction(formData: FormData) {
+type Deps = {
+  appPool?: any;
+  admPool?: any;
+  isFifoMovementsEngineEnabled?: any;
+  acquireMilesUseCase?: any;
+};
+
+export async function createPurchaseAction(formData: FormData, deps: Deps = {}) {
   const parsed = createPurchaseSchema.safeParse(
     Object.fromEntries(formData.entries()),
   );
@@ -16,7 +23,7 @@ export async function createPurchaseAction(formData: FormData) {
     return { success: false, errors: parsed.error.flatten() };
   const input = parsed.data;
 
-  const admClient = await admPool().connect();
+  const admClient = await (deps.admPool ?? admPool)().connect();
   try {
     const orgRes = await admClient.query(
       `SELECT id FROM organizations WHERE slug = $1 LIMIT 1`,
@@ -26,7 +33,7 @@ export async function createPurchaseAction(formData: FormData) {
       return { success: false, error: "organization not found" };
     const orgId = orgRes.rows[0].id;
 
-    const pool = appPool();
+    const pool = (deps.appPool ?? appPool)();
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
@@ -65,7 +72,7 @@ export async function createPurchaseAction(formData: FormData) {
       // If FIFO movements engine is enabled, delegate entry/lot creation and
       // balance update to the movements use-case. We still insert the purchase
       // record and update cost-related columns here to preserve pricing data.
-      if (isFifoMovementsEngineEnabled()) {
+      if ((deps.isFifoMovementsEngineEnabled ?? isFifoMovementsEngineEnabled)()) {
         // Update cost-related columns first (still within the same transaction)
         await client.query(
           `UPDATE program_accounts SET current_avg_cost_per_thousand_cents = $1, current_cost_basis_cents = $2, updated_at = NOW() WHERE id = $3`,
@@ -77,7 +84,7 @@ export async function createPurchaseAction(formData: FormData) {
         const txRepo = createDrizzleMovementsRepoFromClient(client);
 
         // Delegate to the movements engine *within the same transaction*.
-        await acquireMilesUseCase(
+        await (deps.acquireMilesUseCase ?? acquireMilesUseCase)(
           {
             organizationId: orgId,
             accountId: input.accountId,

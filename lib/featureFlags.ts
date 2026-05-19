@@ -10,4 +10,5 @@ export function isFifoMovementsEngineEnabled(
   return v === "1" || v === "true" || v === "on";
 }
 
-export default { isFifoMovementsEngineEnabled };
+export default isFifoMovementsEngineEnabled;
+
