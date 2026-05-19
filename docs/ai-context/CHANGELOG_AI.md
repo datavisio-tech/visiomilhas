@@ -206,6 +206,48 @@ Observações:
 
 - A migration `db/app/migrations/0001_add_mile_point_lots.sql` permanece proposta e NÃO APLICADA; validar em staging antes de ativar a flag.
 
+## 2026-05-18 — Testes unitários da compra com flag e rollback simulado (1.3.21)
+
+Objetivo:
+
+- Garantir que a mutation de aquisição (`createPurchaseAction`) está protegida por testes unitários que cobrem o fluxo legado, a integração atômica com o motor FIFO sob feature flag e o comportamento de rollback quando o use-case falha.
+
+Arquivos criados/alterados nesta etapa:
+
+- `app/app/purchases/__tests__/actions.purchase.test.ts` — novos testes unitários cobrindo: flag off (fluxo legado), flag on (integração com `acquireMilesUseCase`) e flag on com falha (rollback simulado).
+- `app/app/purchases/actions.ts` — refatorado para suportar injeção de `deps` (pool clients, `isFifoMovementsEngineEnabled`, `acquireMilesUseCase`, `revalidatePath`) para aumentar testabilidade.
+- `lib/featureFlags.ts` — pequena correção para lint/exports.
+
+Resumo técnico:
+
+- A feature flag `USE_FIFO_MOVEMENTS_ENGINE` continua desligada por padrão. Quando ligada, `createPurchaseAction` cria um repo Drizzle usando o `pg` client corrente (`createDrizzleMovementsRepoFromClient`) e chama `acquireMilesUseCase` dentro da mesma transação antes do `COMMIT`.
+- Nos testes unitários a atomicidade e rollback são simulados: o `acquireMilesUseCase` é mockado para lançar erro e valida-se que a ação faz `ROLLBACK` e que `COMMIT` não é executado.
+
+Testes adicionados:
+
+- `app/app/purchases/__tests__/actions.purchase.test.ts` — 3 cenários unitários (flag off, flag on, flag on + falha).
+
+Decisões:
+
+- Manter a flag desligada por padrão até validação em staging.
+- Testes unitários simulam rollback; rollback real deve ser verificado em ambiente isolado com DB real.
+
+Riscos:
+
+- A validação do rollback real depende de um ambiente de DB isolado e da aplicação da migration `0001_add_mile_point_lots.sql` em staging.
+
+Pendências:
+
+- Provisionar staging isolado; aplicar migration e rodar testes de integração.
+- Validar operações de rollback reais contra o APP DB isolado.
+
+Validações executadas (local):
+
+- `npm run test` — OK (todos os testes unitários passaram localmente)
+- `npm run typecheck` — OK
+- `npm run lint` — OK
+- `npm run build` — OK
+
 ## 2026-05-16 — Execução de seed idempotente (operacional)
 
 Objetivo:

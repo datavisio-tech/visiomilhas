@@ -19,9 +19,9 @@ Arquitetura de banco:
 - APP database: visiomilhas_app
 - Observação: usam-se duas databases separadas (ADM / APP) — não consolidar em um único DB com schemas.
 
-Versão operacional atual: 1.3.14
+Versão operacional atual: 1.3.21
 
-Nota: integração atômica da compra ao motor FIFO implementada localmente em 1.3.20 (feature flag, não ativada por padrão). Validar migration em staging antes de ativar.
+Nota: integração atômica da compra ao motor FIFO implementada localmente em 1.3.20 (feature flag, não ativada por padrão). Testes unitários da compra com flag e rollback simulado adicionados em 1.3.21. Validar migration em staging antes de ativar a flag em ambientes de produção.
 
 Status do MVP1:
 

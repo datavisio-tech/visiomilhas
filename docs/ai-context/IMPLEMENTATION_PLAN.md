@@ -11,6 +11,12 @@ Atualização 1.3.20:
 - Implementações: `createDrizzleMovementsRepoFromClient(client)` para criar um repo que reutiliza o `pg` client atual; `createPurchaseAction` delega ao `acquireMilesUseCase(..., txRepo)` antes do `COMMIT`.
 - Observação: essa integração exige validar a migration `db/app/migrations/0001_add_mile_point_lots.sql` em staging antes de ativar a flag em ambiente de produção.
 - Próximo: 1.3.17/1.3.18 — preparar testes de integração e integrar as mutations via camada de use-cases que orquestra `createMovementService` + `MovementsRepo` (Drizzle).
+
+Status 1.3.20: concluído
+
+Status 1.3.21: concluído — testes unitários para `createPurchaseAction` adicionados (flag off, flag on, rollback simulado).
+
+Próxima etapa: 1.3.22 (não iniciar nesta tarefa) — preparar testes de integração em staging, validar migration e definir rollout.
   VisioMilhas — Plano de Implementação (resumo)
 
 Objetivo: preparar o esquema e o plano para introduzir ledger + lotes (FIFO) no motor de milhas.

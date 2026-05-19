@@ -97,3 +97,10 @@ Decisão adicional (2026-05-18):
 - Próximo: validar em staging com a migration `db/app/migrations/0001_add_mile_point_lots.sql` aplicada e testar rollback/rollback scenarios.
 - Planejamento 1.3.15: implementar `MovementsRepo` usando Drizzle, garantir operações transacionais (atomicidade/rollback) e alinhar migrations/constraints. Esta etapa requer validação em DB de desenvolvimento isolado e backup antes de aplicar migrations em produção.
 - 1.3.16: Implementação concreta do `MovementsRepo` com Drizzle realizada em `lib/repositories/movements.drizzle-repo.ts`. Mantém-se a prática de aplicar constraints/índices via migrations SQL; migratons não foram aplicadas automaticamente nesta etapa.
+
+Decisões recentes (1.3.21):
+
+- A compra/aquisição foi o primeiro fluxo real integrado ao motor FIFO e protegido por testes unitários.
+- A feature flag `USE_FIFO_MOVEMENTS_ENGINE` permanece OFF por padrão; ativação requer validação em staging e decisão explícita.
+- O rollback foi coberto por testes unitários com mocks (simulação) — o rollback em produção precisa ser validado em DB isolado com a migration aplicada.
+- As integrações de venda/consumo/transferência devem aguardar validação bem-sucedida em staging (aplicação da migration, testes de integração e QA) antes de serem integradas ao motor FIFO.

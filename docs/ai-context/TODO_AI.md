@@ -98,6 +98,16 @@ Status 1.3.13 — Refinamento do schema/migration:
 - Migration continua NÃO APLICADA.
 - Próximo passo: 1.3.14 — implementar `lib/services/movements.ts` (motor FIFO) e testes unitários.
 
+Pendências (relacionadas a 1.3.21):
+
+- Provisionar DB isolado/staging para validar `db/app/migrations/0001_add_mile_point_lots.sql`.
+- Rodar `npm run test:integration` contra o DB isolado após aplicar a migration.
+- Validar rollback real em transações que envolvem `createPurchaseAction` + `acquireMilesUseCase`.
+- Ativar `USE_FIFO_MOVEMENTS_ENGINE` em staging somente após validação completa.
+- QA da compra/aquisição em staging com dados demo (sem afetar produção).
+- Planejar integração de venda/consumo/transferência após sucesso em staging.
+- Revisar implicações contábeis de custo/margem antes de ativar em produção.
+
 Status 1.3.14 — Consolidação do motor FIFO puro:
 
 - Motor FIFO consolidado em `lib/services/movements.ts` com testes unitários em `lib/services/__tests__/movements.test.ts`.
