@@ -119,3 +119,8 @@ Itens prioritários 1.3.15 (preparação de persistência do motor FIFO):
 - Implementar `MovementsRepo` concreto usando Drizzle (assinar métodos e tipos, transações e rollback).
 - Alinhar `db/app/schema.ts` e `db/app/migrations/0001_add_mile_point_lots.sql` quanto a nomes/constraints/índices (sem aplicar migrations automaticamente).
 - Adicionar testes de integração em DB de desenvolvimento isolado (não rodar seed em produção durante validação).
+
+Status 1.3.16 (implementação do repo):
+
+- `lib/repositories/movements.drizzle-repo.ts` implementado como adapter Drizzle.
+- Próximo: preparar testes de integração em DB de desenvolvimento isolado e documento de rollback/aplicação de migration.

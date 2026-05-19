@@ -408,6 +408,16 @@ Objetivo:
 Notas:
 
 - Esta etapa altera apenas a tipagem TypeScript e a documentação, mantendo a migration SQL como proposta. Nenhuma migration será aplicada e nenhum seed será executado durante esta etapa.
+
+## 2026-05-18 — Implementação 1.3.16 (MovementsRepo Drizzle)
+
+Objetivo:
+
+- Implementar um repositório concreto `MovementsRepo` usando Drizzle para operações de ledger/lotes. Essa implementação provê métodos de leitura/escrita e um helper transacional para operações atômicas.
+
+Notas:
+
+- A implementação vive em `lib/repositories/movements.drizzle-repo.ts` e mantém `lib/services/movements.ts` desacoplado (injeção de dependência). Nenhuma migration foi aplicada e nenhum seed foi executado.
 - Atualizada a página `app/app/clubs/page.tsx` para Server Component dinâmico (`force-dynamic`) e empty state seguro.
 - Revisada `app/app/settings/page.tsx` para indicar que a persistência ainda não está implementada.
 - Atualizado `README.md` para versão `1.2.8`.

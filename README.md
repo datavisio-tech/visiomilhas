@@ -56,6 +56,10 @@ Preparação 1.3.15:
 
 - Objetivo: alinhar `db/app/schema.ts` com a migration proposta (`0001_add_mile_point_lots.sql`) e preparar o contrato `MovementsRepo` para implementação Drizzle (transações). Não aplicar migration nesta etapa.
 
+Implementação 1.3.16:
+
+- Implementado `MovementsRepo` concreto com Drizzle em `lib/repositories/movements.drizzle-repo.ts`. O serviço de domínio (`lib/services/movements.ts`) permanece desacoplado e recebe o repo por injeção. Não aplicar migrations nem executar seeds como parte desta etapa.
+
 Passos iniciais para rodar local:
 
 1. Preencher `.env.local` com as variáveis em `.env.example` (NÃO commitar `.env.local`).
