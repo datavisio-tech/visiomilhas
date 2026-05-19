@@ -4,6 +4,7 @@ Atualização 1.3.14:
 - Status: 1.3.14 validado localmente (test/typecheck/lint/build OK). Persistência real (MovementsRepo Drizzle) adiada para 1.3.15.
 - Próximo: 1.3.15 — alinhar schema↔migration, refinar `MovementsRepo` (tipos/contratos) e preparar implementação Drizzle com transações. Não aplicar migrations nesta etapa.
 - Próximo: 1.3.16 — implementar `MovementsRepo` concreto usando Drizzle (transações) e preparar testes de integração em ambiente seguro. Não aplicar migrations nesta etapa de implementação.
+ - Próximo: 1.3.17/1.3.18 — preparar testes de integração e integrar as mutations via camada de use-cases que orquestra `createMovementService` + `MovementsRepo` (Drizzle).
   VisioMilhas — Plano de Implementação (resumo)
 
 Objetivo: preparar o esquema e o plano para introduzir ledger + lotes (FIFO) no motor de milhas.
