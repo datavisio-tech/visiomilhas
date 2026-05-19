@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import * as useCases from "../movements.use-cases";
-import createMovementService, { MovementsRepo } from "../movements";
+import { MovementsRepo } from "../movements";
 
 // Reuse in-memory repo from movements tests pattern
 function createInMemoryRepo(): MovementsRepo & { runInTransaction?: any } {
