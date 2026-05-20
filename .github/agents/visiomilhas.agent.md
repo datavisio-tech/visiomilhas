@@ -83,6 +83,7 @@ Os prompts recebidos no chat podem ser curtos e incrementais. Quando o prompt me
 O agente não deve pedir que o usuário repita contexto já documentado nesses arquivos.
 
 Quando houver conflito entre um prompt curto e este arquivo, o agente deve:
+
 1. obedecer regras de segurança;
 2. preservar dados e produção;
 3. manter feature flags seguras;
@@ -90,6 +91,7 @@ Quando houver conflito entre um prompt curto e este arquivo, o agente deve:
 5. pedir confirmação apenas quando a ação puder causar risco operacional.
 
 O agente deve sempre responder com evidências mínimas:
+
 - branch;
 - status Git;
 - commit;
