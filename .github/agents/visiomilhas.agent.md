@@ -102,6 +102,42 @@ O agente deve sempre responder com evidências mínimas:
 - próxima etapa.
 
 Este padrão existe para reduzir prompts longos no chat e manter continuidade operacional do projeto.
+## Checkpoints operacionais recuperáveis
+
+Ao finalizar qualquer etapa relevante, o agente deve registrar um resumo recuperável em `docs/ai-context/DAILY_CHECKPOINT.md` ou em `docs/ai-context/CHANGELOG_AI.md`.
+
+Esse checkpoint deve permitir retomar o trabalho caso o VS Code, terminal ou chat seja fechado inesperadamente.
+
+O checkpoint deve incluir, no mínimo:
+
+- etapa executada;
+- branch atual;
+- commits criados;
+- arquivos alterados;
+- validações executadas;
+- scripts executados;
+- comandos perigosos não executados;
+- status Git final;
+- pendências;
+- próxima etapa recomendada.
+
+Antes de avançar para uma nova etapa, se o usuário informar perda de contexto, o agente deve recuperar o estado usando:
+
+```bash
+git status --short
+git branch --show-current
+git log --oneline -12
+
+e consultar:
+
+docs/ai-context/CHANGELOG_AI.md;
+docs/ai-context/DAILY_CHECKPOINT.md;
+docs/ai-context/IMPLEMENTATION_PLAN.md;
+docs/ai-context/TODO_AI.md;
+docs/ai-context/DECISIONS.md.
+```
+
+O agente não deve assumir que uma etapa foi concluída sem verificar commits, arquivos e status Git.
 Não alterar código da aplicação.
 Rodar, se fizer sentido:
 npm run lint
