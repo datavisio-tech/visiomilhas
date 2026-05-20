@@ -68,6 +68,19 @@ Observações:
 - Nunca comitar `.env` real. Use `.env.example` com os mesmos nomes sem valores.
 - Prefixos `NEXT_PUBLIC_` somente para variáveis públicas.
 
+## Staging / Test databases
+
+Para operações de validação de migrations e testes de integração, use variáveis de ambiente dedicadas apontando para bases isoladas (staging/test). Não usar variáveis de produção.
+
+- `STAGING_DATABASE_URL`: apontar para o banco de staging isolado usado para validação segura de migrations e QA.
+- `TEST_DATABASE_URL`: opcional, para runners de teste que requeiram DB separado.
+
+Regras:
+
+- Nunca apontar `STAGING_DATABASE_URL` para um banco de produção.
+- `npm run test:integration` só deve ser executado após confirmação explícita de que `STAGING_DATABASE_URL` aponta para um DB isolado e que backups/snapshots foram feitos.
+- Não documentar secrets reais nos arquivos de documentação; use `.env.example` com placeholders e armazene secrets em cofre (GitHub Secrets, Vault).
+
 Operação de migrações e seeds:
 
 - Use `drizzle.adm.config.ts` e `drizzle.app.config.ts` para gerar e aplicar migrações separadas.

@@ -17,7 +17,7 @@ Status 1.3.20: concluído
 Status 1.3.21: concluído — testes unitários para `createPurchaseAction` adicionados (flag off, flag on, rollback simulado).
 
 Próxima etapa: 1.3.22 (não iniciar nesta tarefa) — preparar testes de integração em staging, validar migration e definir rollout.
-  VisioMilhas — Plano de Implementação (resumo)
+VisioMilhas — Plano de Implementação (resumo)
 
 Objetivo: preparar o esquema e o plano para introduzir ledger + lotes (FIFO) no motor de milhas.
 
@@ -136,6 +136,26 @@ Fase 9: deploy e hardening
 Observação:
 
 - Priorizar entregas mínimas por fase com testes e seeds.
+
+## 1.3.22 — Preparar staging e validar migration do ledger/lotes
+
+Objetivo:
+
+- Preparar ambiente de staging/DB isolado; validar `db/app/migrations/0001_add_mile_point_lots.sql` sem aplicá-la de imediato.
+- Definir runbook de aplicação e validação; testar rollback em staging; documentar critérios para ativação da flag `USE_FIFO_MOVEMENTS_ENGINE` em staging.
+
+Entregáveis:
+
+- `docs/ai-context/STAGING_MIGRATION_RUNBOOK.md` (runbook operacional)
+- Atualização de `docs/ai-context/ENVIRONMENT.md` com variáveis e instruções de staging
+- Atualização de `.env.example` com placeholders para `STAGING_DATABASE_URL` e `TEST_DATABASE_URL`
+- Atualizações em `docs/ai-context/CHANGELOG_AI.md`, `docs/ai-context/TODO_AI.md` e `docs/ai-context/DECISIONS.md` registando a etapa 1.3.22
+
+Restrições:
+
+- Não aplicar migration sem autorização explícita.
+- Não executar seeds.
+- Não rodar `npm run test:integration` sem confirmação de DB isolado.
 
 DB: migrações e seeds (operação segura)
 

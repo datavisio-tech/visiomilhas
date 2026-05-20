@@ -1,0 +1,77 @@
+# STAGING MIGRATION RUNBOOK — 1.3.22 ledger/lotes
+
+Objetivo: validar com segurança a migration `db/app/migrations/0001_add_mile_point_lots.sql` em um ambiente de staging isolado, garantindo rollback e critérios para ativar a feature flag `USE_FIFO_MOVEMENTS_ENGINE` apenas após validação completa.
+
+Pré-requisitos:
+
+- Ter um banco de staging isolado (não produção) acessível e com snapshot/backup recente.
+- Variável `STAGING_DATABASE_URL` apontando para o DB de staging configurada em secrets/ambiente.
+- Acesso a um usuário com permissões para aplicar migrations em staging (restringir privilégios em produção).
+- Confirmação explícita do time antes de aplicar qualquer migration.
+
+Checklist pré-aplicação (auditoria):
+
+1. Verificar branch e working tree limpo:
+   - `git branch --show-current`
+   - `git status --short`
+2. Conferir a migration proposta: `db/app/migrations/0001_add_mile_point_lots.sql` — revisar FKs, índices e checks.
+3. Conferir o schema Drizzle em `db/app/schema.ts` e garantir consistência de nomes e tipos.
+4. Verificar scripts de DB em `package.json` (`db:app:migrate`, `db:app:generate`).
+5. Garantir snapshot/backup do staging antes de aplicar.
+6. Confirmar que `USE_FIFO_MOVEMENTS_ENGINE` permanece OFF em staging até validação completa.
+
+Passo-a-passo controlado (sem execução automática neste documento):
+A. Preparação
+
+1. Confirmar `STAGING_DATABASE_URL` nas secrets do ambiente de staging.
+2. Criar snapshot/backup do DB de staging (procedimento da infra/DBA).
+3. Garantir que ninguém esteja rodando cargas em staging que possam conflitar.
+
+B. Aplicação controlada (aplicar somente com autorização explícita)
+
+1. `npm run db:app:migrate -- --env STAGING` (ou usar `drizzle-kit migrate --config=drizzle.app.config.ts` apontando para `STAGING_DATABASE_URL`).
+2. Registrar horário e commit relacionado.
+3. Validar tabelas/colunas criadas:
+   - `SELECT count(*) FROM information_schema.tables WHERE table_name IN ('mile_point_lots');`
+   - Conferir colunas auxiliares em `mile_entries` e `mile_transfers`.
+4. Rodar os checks de constraints (ex.: inserir dados de teste) em transação controlada e reverter.
+
+C. Validação funcional
+
+1. Executar testes de integração contra staging:
+   - `npm run test:integration` (APENAS após confirmação que `STAGING_DATABASE_URL` aponta para staging isolado)
+2. Testes manuais de compra/aquisição com dados demo (sem afectar produção): criar compra e verificar `mile_entries` e `mile_point_lots`.
+3. Testar rollback real: forçar erro dentro de transação que executa `createPurchaseAction` + `acquireMilesUseCase` e confirmar que nenhum dado foi gravado.
+
+D. Critérios para ativar `USE_FIFO_MOVEMENTS_ENGINE` em staging
+
+- Migração aplicada com sucesso e sem erros de schema.
+- Testes de integração passando (incl. rollback test).
+- QA de compra/aquisição aprovada (evidências registradas).
+- Plano de reversão testado e validado.
+
+E. Reversão
+
+- Caso seja necessário reverter, usar backup/snapshot para restaurar staging.
+- Registrar tempo de restauração e impactos.
+
+Registros e evidências a manter
+
+- Branch e commit usados
+- Output das validações (test/typecheck/lint/build)
+- Logs de migration (sem expor secrets)
+- Resultado dos testes de integração
+- Screenshots / outputs de QA (sanitizados)
+
+Notas de segurança
+
+- Nunca executar migrations em produção sem autorização explícita.
+- Nunca armazenar ou commitar credenciais no repositório.
+- Usar secrets do CI (GitHub Secrets / Vault) para `STAGING_DATABASE_URL`.
+
+Critérios de sucesso
+
+- Migração aplicada em staging com validações passando e rollback testado.
+- Documento de decisão para ativar `USE_FIFO_MOVEMENTS_ENGINE` assinado pelo time.
+
+Próximo passo recomendado após validação: ativar flag em staging para um período controlado e monitorar telemetria por 24-48 horas antes de planejar rollout em produção.

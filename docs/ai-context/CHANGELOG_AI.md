@@ -186,6 +186,23 @@ Resumo das ações operacionais (não expõe secrets):
 
 ## 2026-05-18 — Integração atômica da compra ao motor FIFO (1.3.20)
 
+## 2026-05-20 — Preparação da etapa 1.3.22 (staging/migration)
+
+Objetivo:
+
+- Preparar o runbook e documentação para validar `db/app/migrations/0001_add_mile_point_lots.sql` em staging isolado (não aplicar nesta etapa).
+
+Arquivos criados/alterados nesta etapa:
+
+- `docs/ai-context/STAGING_MIGRATION_RUNBOOK.md` — roteiro operacional para validação segura da migration.
+- `.env.example` — placeholders adicionados: `STAGING_DATABASE_URL`, `TEST_DATABASE_URL`.
+- `docs/ai-context/ENVIRONMENT.md` — adição de seção sobre staging/test DB e regras de uso.
+- `docs/ai-context/IMPLEMENTATION_PLAN.md` — adicionado plano 1.3.22.
+
+Notas:
+
+- Migração permanece NÃO APLICADA. Nenhuma alteração em código da aplicação nem seeds aplicadas.
+
 Objetivo:
 
 - Integrar a mutation de compra/aquisição ao motor FIFO de forma atômica sob controle da feature flag `USE_FIFO_MOVEMENTS_ENGINE`.

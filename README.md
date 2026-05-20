@@ -50,7 +50,14 @@ Status das validações (local):
 
 Próximos passos (curto prazo):
 
-- Conectar `/app/entries` ao banco real (1.2.4)
+Planejamento 1.3.22:
+
+- Preparar staging/DB isolado e validar `db/app/migrations/0001_add_mile_point_lots.sql` usando o runbook em `docs/ai-context/STAGING_MIGRATION_RUNBOOK.md`.
+- Não aplicar migration sem autorização explícita.
+
+Notas da versão 1.3.21:
+
+- Testes unitários da compra com flag e rollback simulado adicionados em 1.3.21. Validar migration em staging antes de ativar a flag em ambientes de produção.
 - Conectar compras/vendas/transferências e CRUDs (1.2.5+)
 - Implementar autenticação e deploy
 
