@@ -16,6 +16,14 @@ Validações locais (2026-05-20):
 - `npm run build`: OK
 
 Pendência operacional: configurar `TEST_DATABASE_URL` no GitHub Secrets e rodar o workflow manualmente para concluir a validação end-to-end (preflight, migrations e `npm run test:integration`).
+
+## CHECKPOINT - 1.3.25.3 (execução manual do workflow CI)
+
+Data: 2026-05-20
+
+- Objetivo: instruir operador a configurar `TEST_DATABASE_URL` em GitHub Secrets e executar manualmente o workflow `Integration Tests - MovementsRepo`.
+- Ações: documentos atualizados com passos de configuração manual e observações de segurança; scripts auditados para masking (preflight/migrate/validate/apply scripts usam masking e evitam imprimir segredos).
+- Pendência: operador humano adiciona o secret `TEST_DATABASE_URL` no repositório e executa o workflow (workflow_dispatch). Após isto, coletar logs sanitizados e confirmar passagem completa.
 # CHECKPOINT - Encerramento do dia — 1.3.21
 
 Data: 2026-05-18

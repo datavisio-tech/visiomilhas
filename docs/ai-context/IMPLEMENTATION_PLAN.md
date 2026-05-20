@@ -220,3 +220,9 @@ Progresso estimado (MVP1) atualizado:
 
 - Objetivo: integrar execução controlada dos testes de integração no CI (GitHub Actions) usando `TEST_DATABASE_URL` secret e sem tocar staging ou production.
 - Ação tomada: criado `.github/workflows/integration-tests.yml` (manual via `workflow_dispatch`) que valida secret, executa preflight, aplica/valida migrations de teste e roda `npm run test:integration`.
+
+### 2026-05-20 — 1.3.25.3 (execução manual do workflow CI)
+
+- Objetivo: garantir que o operador humano pode configurar o secret `TEST_DATABASE_URL` e executar o workflow `Integration Tests - MovementsRepo` com segurança.
+- Ação: documentação criada/atualizada com passos para adicionar o secret no GitHub e rodar o workflow manual (`workflow_dispatch`). Scripts de preflight/migrate/validate foram inspecionados para confirmar masking e detecção de comandos destrutivos.
+- Próximo: operador adiciona `TEST_DATABASE_URL` como secret e executa o workflow; após sucesso, planejar PR/push e migração para QA em staging (sob autorização).

@@ -746,3 +746,23 @@ Próximo passo recomendado:
 
 1. Configurar `TEST_DATABASE_URL` como secret no repositório do GitHub apontando para um DB de teste isolado e descartável.
 2. Rodar o workflow manualmente e coletar artefatos sanitizados se passar.
+
+## 2026-05-20 — 1.3.25.3 — execução manual segura do workflow CI
+
+Objetivo:
+
+- Fornecer instruções passo a passo para um operador humano configurar o secret `TEST_DATABASE_URL` no GitHub e executar o workflow `Integration Tests - MovementsRepo` sem expor segredos.
+
+Instruções resumidas para o operador:
+
+- No GitHub do repositório: Settings → Secrets and variables → Actions → New repository secret.
+  - Nome: `TEST_DATABASE_URL`
+  - Valor: URL segura do banco de teste (ex.: `postgres://user:pass@host:port/test_db`) — **não** gravar este valor nos arquivos do repositório.
+- Em Actions, selecionar `Integration Tests - MovementsRepo` e clicar em `Run workflow`. Selecionar a branch `1.3.25.3-ci-manual-run-instructions` (ou `1.3.25.2-ci-integration-tests-test-db`) e executar.
+- Conferir logs sanitizados e confirmar que os passos passaram: `db:preflight:test`, `db:migrate:test:base`, `db:validate:test:base`, `db:migrate:test:ledger`, `db:validate:test:ledger`, `test:integration`.
+
+Notas de segurança:
+
+- O workflow faz masking do connection string e não imprime segredos (scripts usam masking). Ainda assim, nunca cole o valor do secret em conversas públicas ou documentos versionados.
+- Este agente NÃO configura o secret automaticamente; solicite ao responsável de infraestrutura/owner para adicionar o secret.
+- Se houver falha, coletar apenas logs sanitizados e abrir investigação; não executar ações manuais em `staging` ou `production`.

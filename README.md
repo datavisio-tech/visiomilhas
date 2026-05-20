@@ -97,6 +97,12 @@ Notas da versão 1.3.12 (preparação do schema para ledger/FIFO):
 
 CI: para executar os testes de integração no GitHub Actions, configure o secret `TEST_DATABASE_URL` apontando para um DB de teste isolado e use o workflow manual `.github/workflows/integration-tests.yml`.
 
+Execução manual do workflow (resumo):
+
+- Adicionar secret `TEST_DATABASE_URL` em Settings → Secrets and variables → Actions.
+- Ir em Actions → `Integration Tests - MovementsRepo` → Run workflow → selecionar branch `1.3.25.3-ci-manual-run-instructions` → Run.
+- Conferir passos: `db:preflight:test`, `db:migrate:test:base`, `db:validate:test:base`, `db:migrate:test:ledger`, `db:validate:test:ledger`, `test:integration`.
+
 Notas da versão 1.2.8:
 
 - Corrigido warning ESLint em `lib/data/db-errors.ts` (remoção de export default anônimo).

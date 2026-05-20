@@ -124,6 +124,13 @@ Pendências (relacionadas a 1.3.21):
 - Configurar secret `TEST_DATABASE_URL` no GitHub e executar o workflow `.github/workflows/integration-tests.yml` manualmente para validar regressão CI.
   - Observação: este agente não configura o secret automaticamente. Após configurar o secret, executar manualmente o workflow via GitHub (workflow_dispatch) e coletar artefatos sanitizados.
 
+2026-05-20 — 1.3.25.3 (execução manual do workflow CI)
+
+- Adicionar instruções para operador:
+  1. GitHub → Settings → Secrets and variables → Actions → New repository secret → `TEST_DATABASE_URL`.
+  2. Actions → `Integration Tests - MovementsRepo` → Run workflow → selecionar branch `1.3.25.3-ci-manual-run-instructions` → Run.
+  3. Conferir logs sanitizados e validar passos (`preflight`, `migrate`, `validate`, `test:integration`).
+
 Status 1.3.14 — Consolidação do motor FIFO puro:
 
 - Motor FIFO consolidado em `lib/services/movements.ts` com testes unitários em `lib/services/__tests__/movements.test.ts`.
