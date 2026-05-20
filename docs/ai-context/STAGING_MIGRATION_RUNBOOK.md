@@ -84,6 +84,17 @@ Registro de execução (2026-05-20):
 - Resultado: falha de interpretação da string de conexão (`ERR_INVALID_URL`).
 - A falha indica necessidade de revisão das variáveis `STAGING_DATABASE_URL` / `TEST_DATABASE_URL` no ambiente/secret store — ajustar formato para um URL Postgres válido antes de reexecutar o preflight.
 
+Registro subsequente (2026-05-20) — preflight reexecutado após correção:
+
+- `npm run db:preflight:staging` — **OK** (mascarado): host `72.60.143.***`, database `staging_db`, user `p***s`, `current_database()`: `staging_db`, `current_user()`: `postgres`, versão: `PostgreSQL 17.6 (...)`, public tables (sample): `[]`.
+- `npm run db:preflight:test` — **OK** (mascarado): host `72.60.143.***`, database `test_db`, user `p***s`, `current_database()`: `test_db`, `current_user()`: `postgres`, versão: `PostgreSQL 17.6 (...)`, public tables (sample): `[]`.
+
+Observações:
+
+- Ambos os bancos retornaram identidade correta e são distintos (`staging_db` vs `test_db`).
+- Não houve escrita, migration ou seed executados pelo preflight.
+- Próximo passo: confirmar snapshot/backup e autorização explícita antes de aplicar qualquer migration em staging.
+
 Registros e evidências a manter
 
 - Branch e commit usados

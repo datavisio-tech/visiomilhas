@@ -235,6 +235,15 @@ Ação recomendada:
 - Corrigir o formato e re-executar `npm run db:preflight:staging` e `npm run db:preflight:test`.
 - Não prosseguir para aplicar qualquer migration até que o preflight retorne `current_database()` correspondente ao DB esperado e backups/snapshots estejam confirmados.
 
+## 2026-05-20 — 1.3.23 preflight (validação bem-sucedida)
+
+Resultado (mascarado):
+
+- `staging` — host: `72.60.143.***`, database: `staging_db`, user: `p***s`, conexão: `OK`, `current_database()`: `staging_db`, `current_user()`: `postgres`, versão: `PostgreSQL 17.6 (...)`, public tables (sample): `[]`.
+- `test` — host: `72.60.143.***`, database: `test_db`, user: `p***s`, conexão: `OK`, `current_database()`: `test_db`, `current_user()`: `postgres`, versão: `PostgreSQL 17.6 (...)`, public tables (sample): `[]`.
+
+Conclusão: ambos os bancos isolados de staging e test responderam corretamente ao preflight e aparentam ser bases distintas e não-produtivas; nenhuma escrita, migration ou seed foi executada nesta validação.
+
 Objetivo:
 
 - Integrar a mutation de compra/aquisição ao motor FIFO de forma atômica sob controle da feature flag `USE_FIFO_MOVEMENTS_ENGINE`.
