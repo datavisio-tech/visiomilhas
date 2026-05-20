@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import { Client } from "pg";
+import dotenvExpand from "dotenv-expand";
 
 dotenv.config();
 
@@ -29,6 +30,9 @@ async function main() {
 
   const envVar =
     target === "staging" ? "STAGING_DATABASE_URL" : "TEST_DATABASE_URL";
+  // ensure .env variables with ${VAR} are expanded before reading
+  const env = dotenv.config();
+  dotenvExpand(env);
   const connStr = process.env[envVar];
   if (!connStr) {
     console.error(`Missing ${envVar} in environment. Aborting.`);
