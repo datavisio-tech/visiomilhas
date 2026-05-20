@@ -102,6 +102,7 @@ O agente deve sempre responder com evidências mínimas:
 - próxima etapa.
 
 Este padrão existe para reduzir prompts longos no chat e manter continuidade operacional do projeto.
+
 ## Checkpoints operacionais recuperáveis
 
 Ao finalizar qualquer etapa relevante, o agente deve registrar um resumo recuperável em `docs/ai-context/DAILY_CHECKPOINT.md` ou em `docs/ai-context/CHANGELOG_AI.md`.
@@ -138,6 +139,14 @@ docs/ai-context/DECISIONS.md.
 ```
 
 O agente não deve assumir que uma etapa foi concluída sem verificar commits, arquivos e status Git.
+## Separação entre staging e test
+
+- `STAGING_DATABASE_URL` deve ser usado para validação estrutural, homologação e QA controlado.
+- `TEST_DATABASE_URL` deve ser usado para testes automatizados de integração e deve apontar para um banco descartável (`test_db`).
+- O agente não deve rodar `npm run test:integration` contra `STAGING_DATABASE_URL`.
+- Testes de integração podem inserir, alterar e limpar dados; por isso devem rodar apenas em banco descartável de teste.
+- Antes de qualquer teste de integração, confirmar `current_database() = test_db` usando `npm run db:preflight:test`.
+- Nunca usar `DATABASE_URL` como fallback para staging ou test.
 Não alterar código da aplicação.
 Rodar, se fizer sentido:
 npm run lint
