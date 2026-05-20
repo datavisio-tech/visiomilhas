@@ -24,6 +24,23 @@ Data: 2026-05-20
 - Objetivo: instruir operador a configurar `TEST_DATABASE_URL` em GitHub Secrets e executar manualmente o workflow `Integration Tests - MovementsRepo`.
 - Ações: documentos atualizados com passos de configuração manual e observações de segurança; scripts auditados para masking (preflight/migrate/validate/apply scripts usam masking e evitam imprimir segredos).
 - Pendência: operador humano adiciona o secret `TEST_DATABASE_URL` no repositório e executa o workflow (workflow_dispatch). Após isto, coletar logs sanitizados e confirmar passagem completa.
+
+Checklist operacional (para o operador):
+
+- [ ] Acessar o repositório no GitHub.
+- [ ] Settings → Secrets and variables → Actions → New repository secret → criar `TEST_DATABASE_URL` (valor: URL do test_db).
+- [ ] Ir em Actions → `Integration Tests - MovementsRepo` → Run workflow → selecionar branch `1.3.25.3-ci-manual-run-instructions` (ou `1.3.25.4-ci-workflow-run-record`) → Run.
+- [ ] Monitorar passos: Validate required secret, Preflight, Apply base, Validate base, Apply ledger, Validate ledger, Run integration tests.
+- [ ] Coletar logs sanitizados (sem connection strings completas) e confirmar PASS/FAIL.
+
+Registre aqui a data/hora e o resultado (operador):
+
+- Data/hora: 
+- Branch usada: 
+- Resultado geral: 
+- Passos que passaram: 
+- Passo que falhou (se houver): 
+- Mensagem sanitizada de erro (se houver): 
 # CHECKPOINT - Encerramento do dia — 1.3.21
 
 Data: 2026-05-18

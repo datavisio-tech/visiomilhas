@@ -103,6 +103,12 @@ Execução manual do workflow (resumo):
 - Ir em Actions → `Integration Tests - MovementsRepo` → Run workflow → selecionar branch `1.3.25.3-ci-manual-run-instructions` → Run.
 - Conferir passos: `db:preflight:test`, `db:migrate:test:base`, `db:validate:test:base`, `db:migrate:test:ledger`, `db:validate:test:ledger`, `test:integration`.
 
+Checklist (operator):
+
+- Add secret `TEST_DATABASE_URL` in repo Settings → Secrets and variables → Actions.
+- Actions → Integration Tests - MovementsRepo → Run workflow → branch `1.3.25.3-ci-manual-run-instructions` (or `1.3.25.4-ci-workflow-run-record`).
+- Verify steps and collect sanitized logs.
+
 Notas da versão 1.2.8:
 
 - Corrigido warning ESLint em `lib/data/db-errors.ts` (remoção de export default anônimo).
