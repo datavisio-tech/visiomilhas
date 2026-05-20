@@ -255,7 +255,7 @@ Erro mascarado registrado:
 Ação recomendada:
 
 - Executar migrations base/anteriores que criam `mile_entries`, `program_accounts` e demais dependências antes de aplicar esta migration, ou ajustar a migration para ser aplicável em um banco vazio (incluir guards que criem/ignore indexes e constraints somente quando as tabelas existirem).
-- Como alternativa, provisionar staging com esquema base ou executar `db:app:migrate` com cautela (preferir revisão/coordenação com DBA).  
+- Como alternativa, provisionar staging com esquema base ou executar `db:app:migrate` com cautela (preferir revisão/coordenação com DBA).
 
 Decisão tomada nesta tentativa: **não aplicar** correções automáticas; a operação foi abortada e registros foram mantidos para investigação e ação subsequente.
 
