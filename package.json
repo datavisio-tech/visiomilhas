@@ -27,7 +27,9 @@
     "db:create-databases": "tsx db/admin/create-databases.ts",
     "db:check-connections": "tsx db/seed/check-db-connections.ts",
     "db:check-tables": "tsx scripts/check-db-tables.ts",
-    "db:seed:verify": "tsx db/seed/verify-seed.ts"
+    "db:seed:verify": "tsx db/seed/verify-seed.ts",
+    "db:preflight:staging": "tsx scripts/preflight-db.ts staging",
+    "db:preflight:test": "tsx scripts/preflight-db.ts test"
   },
   "dependencies": {
     "lucide-react": "^1.16.0",
