@@ -65,9 +65,9 @@ Verificações realizadas:
 
 - `package.json` contém scripts `db:migrate:staging:base`, `db:validate:staging:base`, `db:validate:staging:ledger`.
 - Arquivos de script presentes em `scripts/`:
-	- `apply-staging-base-migrations.ts`
-	- `validate-staging-base-schema.ts`
-	- `validate-staging-ledger-migration.ts`
+  - `apply-staging-base-migrations.ts`
+  - `validate-staging-base-schema.ts`
+  - `validate-staging-ledger-migration.ts`
 - Inspeção rápida dos três scripts: usam `STAGING_DATABASE_URL`, validam `current_database()`, consultam apenas `information_schema` quando apropriado, não imprimem credenciais completas, aplicam migração controlada e não executam seeds.
 
 Alterações efetuadas:
@@ -88,3 +88,30 @@ Pendências e próxima etapa recomendada:
 3. Antes de aplicar migrations em staging, executar `npm run db:preflight:staging` e confirmar `current_database()` aponta para o DB de staging.
 
 Notas de segurança: não exibi nem gravei variáveis de ambiente ou secrets. Todas as ações locais respeitam a regra de usar apenas `STAGING_DATABASE_URL` para operações de staging.
+
+---
+
+# CHECKPOINT - 1.3.24.2 aplicação controlada
+
+Data: 2026-05-20
+
+- Branch criada: `1.3.24.2-apply-base-and-ledger-staging` (local).
+- Preflight: `npm run db:preflight:staging` — `current_database() = staging_db` (mascarado) — OK.
+- Aplicado: `npm run db:migrate:staging:base` → `0000_misty_kulan_gath.sql` (transacional) — OK.
+- Validado base: `npm run db:validate:staging:base` → `program_accounts`, `mile_entries`, `mile_transfers` — FOUND.
+- Aplicado: `npm run db:migrate:staging:ledger` → `0001_add_mile_point_lots.sql` — OK.
+- Validado ledger: `npm run db:validate:staging:ledger` → `mile_point_lots`, `mile_transfers`, índices principais — FOUND.
+
+Comandos perigosos NÃO executados:
+
+- `npm run db:seed` — NÃO executado
+- `npm run test:integration` — NÃO executado
+
+Commits criados/alterados nesta sequência:
+
+- cd176cd — docs: adiciona checkpoints recuperaveis ao agente
+
+Próxima etapa recomendada:
+
+1. Registrar evidências de QA e executar `npm run test:integration` em ambiente isolado (apenas após confirmação de backup/snapshot).
+2. Manter flag `USE_FIFO_MOVEMENTS_ENGINE` desativada até validação completa de integração/QA.

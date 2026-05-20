@@ -655,3 +655,22 @@ Próximos passos:
   - Arquivos alterados: `lib/services/movements.ts`, `lib/services/__tests__/movements.test.ts`, `docs/ai-context/manual-tests-1.3.14.md`.
   - Validações executadas: `npm run test` (22/22 OK), `npm run typecheck` (OK), `npm run lint` (OK), `npm run build` (OK).
   - Observação: migration `db/app/migrations/0001_add_mile_point_lots.sql` permanece proposta e NÃO APLICADA.
+
+  ## 2026-05-20 — 1.3.24.2 — schema base e ledger aplicados e validados em staging
+
+  Resumo:
+  - Branch criada: `1.3.24.2-apply-base-and-ledger-staging` (local).
+  - Preflight (`npm run db:preflight:staging`) executado e confirmou `current_database() = staging_db` (mascarado).
+  - `npm run db:migrate:staging:base` aplicado: `db/app/migrations/0000_misty_kulan_gath.sql` — aplicado com sucesso em transação.
+  - `npm run db:validate:staging:base` validou existência de `program_accounts`, `mile_entries`, `mile_transfers` e colunas principais.
+  - `npm run db:migrate:staging:ledger` aplicado: `db/app/migrations/0001_add_mile_point_lots.sql` — aplicado com sucesso.
+  - `npm run db:validate:staging:ledger` validou `mile_point_lots`, `mile_transfers` e índices principais esperados.
+
+  Notas de segurança:
+  - Não foram expostos secrets ou URLs completas nos registros.
+  - Nenhum seed foi executado.
+  - `npm run test:integration` NÃO foi executado como parte desta operação.
+
+  Pendências / recomendações:
+  - Manter snapshot/backup do staging e validar testes de integração em ambiente isolado antes de ativar `USE_FIFO_MOVEMENTS_ENGINE`.
+  - Registrar evidências de QA e testes de integração antes de considerar rollout controlado.

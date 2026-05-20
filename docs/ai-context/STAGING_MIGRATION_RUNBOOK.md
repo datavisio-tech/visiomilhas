@@ -141,3 +141,14 @@ Entradas de `package.json` adicionadas (local):
 - `db:validate:staging:ledger` -> `tsx scripts/validate-staging-ledger-migration.ts`
 
 Observação operacional: os scripts foram adicionados à branch `1.3.24.1-staging-base-schema` mas **não foram executados**. Próxima etapa é revisar/autorizar execução conforme plano.
+
+Registro de aplicação bem-sucedida (2026-05-20) — base e ledger aplicados
+
+- Branch de trabalho criada: `1.3.24.2-apply-base-and-ledger-staging` (local).
+- Preflight executado: `npm run db:preflight:staging` — confirmou `current_database() = staging_db` (mascarado).
+- Aplicação controlada da migration base: `npm run db:migrate:staging:base` aplicou `db/app/migrations/0000_misty_kulan_gath.sql` com `BEGIN/COMMIT` e rollback em falha.
+- Validação base: `npm run db:validate:staging:base` confirmou `program_accounts`, `mile_entries`, `mile_transfers` e colunas principais.
+- Aplicação ledger: `npm run db:migrate:staging:ledger` aplicou `db/app/migrations/0001_add_mile_point_lots.sql` com sucesso.
+- Validação ledger: `npm run db:validate:staging:ledger` confirmou `mile_point_lots`, `mile_transfers` e índices principais.
+
+Observações: nenhuma seed foi executada; logs de migration foram mascarados e gravados localmente. Próximo passo: rodar testes de integração em ambiente isolado e registrar evidências de QA antes de ativar `USE_FIFO_MOVEMENTS_ENGINE`.
