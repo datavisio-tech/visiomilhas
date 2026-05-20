@@ -30,7 +30,10 @@
     "db:seed:verify": "tsx db/seed/verify-seed.ts",
     "db:preflight:staging": "tsx scripts/preflight-db.ts staging",
     "db:preflight:test": "tsx scripts/preflight-db.ts test",
-    "db:migrate:staging:ledger": "tsx scripts/apply-staging-migration.ts db/app/migrations/0001_add_mile_point_lots.sql"
+    "db:migrate:staging:ledger": "tsx scripts/apply-staging-migration.ts db/app/migrations/0001_add_mile_point_lots.sql",
+    "db:migrate:staging:base": "tsx scripts/apply-staging-base-migrations.ts",
+    "db:validate:staging:base": "tsx scripts/validate-staging-base-schema.ts",
+    "db:validate:staging:ledger": "tsx scripts/validate-staging-ledger-migration.ts"
   },
   "dependencies": {
     "lucide-react": "^1.16.0",

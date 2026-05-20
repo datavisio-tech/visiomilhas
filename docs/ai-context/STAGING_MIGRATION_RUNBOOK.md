@@ -127,3 +127,17 @@ Ações recomendadas após a falha:
 - Aplicar migrations base que criam `mile_entries`, `program_accounts` e demais dependências, ou
 - Ajustar a migration para tornar criação de índices/constraints condicional à existência das tabelas (ex.: testar `pg_catalog.pg_class`), ou
 - Provisionar staging com esquema base antes de aplicar apenas esta migration.
+
+Scripts criados (2026-05-20) — revisão/execução futura
+
+- `scripts/apply-staging-base-migrations.ts` — runner controlado que aplica explicitamente as migrations base listadas (interna: `db/app/migrations/0000_misty_kulan_gath.sql`). Executa cada arquivo em transação, verifica current_database(), e faz varredura por comandos destrutivos antes de executar. NÃO EXECUTAR sem autorização explícita.
+- `scripts/validate-staging-base-schema.ts` — validador read-only que verifica existência de `program_accounts`, `mile_entries`, `mile_transfers` e colunas chave via `information_schema`.
+- `scripts/validate-staging-ledger-migration.ts` — validador read-only para os artefatos que `0001_add_mile_point_lots.sql` criaria (tabelas e índices principais).
+
+Entradas de `package.json` adicionadas (local):
+
+- `db:migrate:staging:base` -> `tsx scripts/apply-staging-base-migrations.ts`
+- `db:validate:staging:base` -> `tsx scripts/validate-staging-base-schema.ts`
+- `db:validate:staging:ledger` -> `tsx scripts/validate-staging-ledger-migration.ts`
+
+Observação operacional: os scripts foram adicionados à branch `1.3.24.1-staging-base-schema` mas **não foram executados**. Próxima etapa é revisar/autorizar execução conforme plano.
