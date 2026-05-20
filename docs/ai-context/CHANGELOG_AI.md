@@ -518,6 +518,30 @@ Pendências:
 
 Versão operacional agora: `1.2.5` (MVP1, funcionalidade 1.2, commit 5)
 
+## 2026-05-20 — 1.3.25.1 — ampliação dos testes de integração MovementsRepo (test_db)
+
+Resumo:
+
+- Implementados e validados localmente testes de integração contra `TEST_DATABASE_URL` cobrindo:
+  - rollback transacional real;
+  - consumo FIFO por lotes;
+  - transferência entre contas;
+  - limpeza/cleanup seguro ao final dos testes.
+
+Resultados:
+
+- `npm run test:integration` (contra `TEST_DATABASE_URL`) — OK (5/5 tests);
+- `npm run test`, `npm run typecheck`, `npm run lint`, `npm run build` — OK;
+- Nenhuma alteração em staging ou execução de seeds;
+- Feature flag `USE_FIFO_MOVEMENTS_ENGINE` permanece OFF.
+
+Observações operacionais:
+
+- Branch criada localmente: `1.3.25.1-integration-tests-rollback-transfer`;
+- Não foram expostas URLs nem secrets nos registros.
+
+Próximo passo recomendado: coletar evidências sanitizadas e integrar regressão em CI apontando para DB de teste isolado.
+
 ## 2026-05-17 — Estabilização de leituras e separação ADM/APP (1.2.6)
 
 Objetivo:
@@ -678,7 +702,6 @@ Próximos passos:
   ## 2026-05-20 — 1.3.25 — testes de integração MovementsRepo contra test_db
 
   Resumo:
-
   - Branch criada: `1.3.25-integration-tests-movements-test-db` (local).
   - Scripts criados em `scripts/` para preparar/validar `test_db` usando `TEST_DATABASE_URL`.
   - `db:migrate:test:base` aplicado com sucesso (`0000_misty_kulan_gath.sql`).
@@ -688,10 +711,8 @@ Próximos passos:
   - `npm run test:integration` rodou contra `test_db` e passou (cenários básicos implementados).
 
   Notas de segurança:
-
   - Nenhuma alteração em `staging` foi feita nesta etapa.
   - Nenhum secret ou URL completo foi registrado.
 
   Próximo passo:
-
   - Expandir cenários de integração (rollback transacional, transfers) e coletar evidências de QA antes de ativar flags.

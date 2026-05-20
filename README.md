@@ -113,3 +113,8 @@ Módulos conectados ao banco real:
 - sales
 - transfers
 - clubs
+
+## 2026-05-20 — 1.3.25.1
+
+- Ampliados e validados localmente os testes de integração do `MovementsRepo` contra `TEST_DATABASE_URL`, cobrindo rollback transacional, consumo FIFO por lotes e transferência entre contas. Testes e validações locais passaram (`npm run test:integration`, `npm run test`, `npm run typecheck`, `npm run lint`, `npm run build`).
+- Observação: staging/production/seed não foram usados; `USE_FIFO_MOVEMENTS_ENGINE` permanece OFF.

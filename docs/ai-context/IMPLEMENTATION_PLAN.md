@@ -210,3 +210,8 @@ Progresso estimado (MVP1) atualizado:
 
 - Técnicos/base: 86% - 90%
 - Utilizável por usuário: 72% - 80%
+
+### 2026-05-20 — 1.3.25.1 (ampliação dos testes de integração MovementsRepo)
+
+- Objetivo: consolidar e validar testes de integração reais do `MovementsRepo` contra `TEST_DATABASE_URL` cobrindo rollback, consumo FIFO por lotes e transferências.
+- Status: testes implementados e validados localmente; recomendado rodar regressão em CI apontando para DB de teste isolado.

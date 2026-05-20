@@ -38,7 +38,23 @@ Comandos perigosos NÃO executados:
 
 Próxima etapa recomendada:
 
-1. Agendar execução de regressão de integração completa e coletar logs/outputs sanitizados para QA.  
+1. Agendar execução de regressão de integração completa e coletar logs/outputs sanitizados para QA.
+
+---
+
+## CHECKPOINT - 1.3.25.1 (ampliação dos testes de integração MovementsRepo)
+
+Data: 2026-05-20
+
+- Branch criada: `1.3.25.1-integration-tests-rollback-transfer` (local).
+- Objetivo: ampliar e validar testes de integração do `MovementsRepo` contra `TEST_DATABASE_URL`.
+- Ações executadas:
+  - Adicionados testes em `tests/integration/movements.drizzle-repo.test.ts` cobrindo rollback, FIFO e transferências.
+  - Rodado `npm run test:integration` contra `TEST_DATABASE_URL` — OK (5/5).
+  - Rodado `npm run test`, `npm run typecheck`, `npm run lint`, `npm run build` — OK.
+- Comandos perigosos NÃO executados: staging, seeds, push/PR.
+
+Próximo passo: reunir evidências sanitizadas e programar regressão CI contra DB de teste isolado.
 
 Status dos testes e validações (local):
 

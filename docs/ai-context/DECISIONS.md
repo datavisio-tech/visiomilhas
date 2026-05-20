@@ -108,3 +108,8 @@ Decisões recentes (1.3.21):
 - A feature flag `USE_FIFO_MOVEMENTS_ENGINE` permanece OFF por padrão; ativação requer validação em staging e decisão explícita.
 - O rollback foi coberto por testes unitários com mocks (simulação) — o rollback em produção precisa ser validado em DB isolado com a migration aplicada.
 - As integrações de venda/consumo/transferência devem aguardar validação bem-sucedida em staging (aplicação da migration, testes de integração e QA) antes de serem integradas ao motor FIFO.
+
+### 2026-05-20 — decisão complementar 1.3.25.1
+
+- Confirmar testes de integração do `MovementsRepo` contra `TEST_DATABASE_URL` (rollback, FIFO, transfer) antes de qualquer ativação de flag em ambientes compartilhados. Testes foram executados e validados localmente.
+- Permanecer com `USE_FIFO_MOVEMENTS_ENGINE` OFF até validação em staging/CI com evidências sanitizadas.

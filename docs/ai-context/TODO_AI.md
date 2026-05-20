@@ -69,7 +69,10 @@ Atualização operacional:
 - Versão operacional atual: `1.2.8` (fechamento de leituras e clubes).
 - Próximo passo recomendado: `1.3.1` — iniciar CRUD operacional de compras, vendas e transferências.
 
-Próximo passo recomendado: `1.2.4` — conectar `/app/entries` ao banco real.
+2026-05-20 — 1.3.25.1 (ampliação dos testes de integração MovementsRepo)
+
+- Implementar e validar localmente testes de integração do `MovementsRepo` contra `TEST_DATABASE_URL` (rollback, FIFO, transfer) — CONCLUÍDO localmente;
+- Próximo: coletar evidências sanitizadas e integrar regressão em CI contra DB de teste isolado.
 
 Status recente:
 
