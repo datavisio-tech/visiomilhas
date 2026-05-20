@@ -121,6 +121,7 @@ Pendências (relacionadas a 1.3.21):
 - QA da compra/aquisição em staging com dados demo (sem afetar produção).
 - Planejar integração de venda/consumo/transferência após sucesso em staging.
 - Revisar implicações contábeis de custo/margem antes de ativar em produção.
+- Configurar secret `TEST_DATABASE_URL` no GitHub e executar o workflow `.github/workflows/integration-tests.yml` manualmente para validar regressão CI.
 
 Status 1.3.14 — Consolidação do motor FIFO puro:
 

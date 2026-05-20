@@ -716,3 +716,24 @@ Próximos passos:
 
   Próximo passo:
   - Expandir cenários de integração (rollback transacional, transfers) e coletar evidências de QA antes de ativar flags.
+
+## 2026-05-20 — 1.3.25.2 — preparar CI para testes de integração MovementsRepo (test_db)
+
+Objetivo:
+
+- Criar um workflow CI seguro para rodar os testes de integração do `MovementsRepo` apontando exclusivamente para `TEST_DATABASE_URL` (banco de teste isolado/descartável).
+
+O que foi implementado:
+
+- Adicionado workflow GitHub Actions: `.github/workflows/integration-tests.yml` (manual via `workflow_dispatch`).
+- O workflow valida a presença de `TEST_DATABASE_URL`, executa `npm run db:preflight:test`, aplica e valida esquemas (`db:migrate:test:*`, `db:validate:test:*`) e executa `npm run test:integration`.
+
+Segurança:
+
+- `USE_FIFO_MOVEMENTS_ENGINE` definido como `0` no workflow; o job não usa `DATABASE_URL` nem `STAGING_DATABASE_URL`.
+- O workflow depende do secret `TEST_DATABASE_URL` (não registrado aqui nem em logs).
+
+Próximo passo recomendado:
+
+1. Configurar `TEST_DATABASE_URL` como secret no repositório do GitHub apontando para um DB de teste isolado e descartável.
+2. Rodar o workflow manualmente e coletar artefatos sanitizados se passar.

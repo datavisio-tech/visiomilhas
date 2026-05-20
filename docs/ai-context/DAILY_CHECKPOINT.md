@@ -1,3 +1,12 @@
+---
+
+## CHECKPOINT - 1.3.25.2 (CI de integração MovementsRepo)
+
+Data: 2026-05-20
+
+- Arquivo de workflow criado: `.github/workflows/integration-tests.yml`.
+- Objetivo: permitir execução manual segura dos testes de integração contra `TEST_DATABASE_URL` no GitHub Actions.
+- Próximo passo: adicionar `TEST_DATABASE_URL` como secret no repositório e executar o workflow manualmente.
 # CHECKPOINT - Encerramento do dia — 1.3.21
 
 Data: 2026-05-18
@@ -165,3 +174,5 @@ Próxima etapa recomendada:
 
 1. Registrar evidências de QA e executar `npm run test:integration` em ambiente isolado (apenas após confirmação de backup/snapshot).
 2. Manter flag `USE_FIFO_MOVEMENTS_ENGINE` desativada até validação completa de integração/QA.
+
+---

@@ -215,3 +215,8 @@ Progresso estimado (MVP1) atualizado:
 
 - Objetivo: consolidar e validar testes de integração reais do `MovementsRepo` contra `TEST_DATABASE_URL` cobrindo rollback, consumo FIFO por lotes e transferências.
 - Status: testes implementados e validados localmente; recomendado rodar regressão em CI apontando para DB de teste isolado.
+
+### 2026-05-20 — 1.3.25.2 (CI de integração MovementsRepo)
+
+- Objetivo: integrar execução controlada dos testes de integração no CI (GitHub Actions) usando `TEST_DATABASE_URL` secret e sem tocar staging ou production.
+- Ação tomada: criado `.github/workflows/integration-tests.yml` (manual via `workflow_dispatch`) que valida secret, executa preflight, aplica/valida migrations de teste e roda `npm run test:integration`.

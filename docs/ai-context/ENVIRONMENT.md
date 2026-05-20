@@ -75,6 +75,8 @@ Para operações de validação de migrations e testes de integração, use vari
 - `STAGING_DATABASE_URL`: apontar para o banco de staging isolado usado para validação segura de migrations e QA.
 - `TEST_DATABASE_URL`: opcional, para runners de teste que requeiram DB separado.
 
+Nota operacional: o CI do repositório requer que o secret `TEST_DATABASE_URL` seja configurado no GitHub (apontando para um DB de teste isolado). Não use `DATABASE_URL` ou `STAGING_DATABASE_URL` para esse propósito.
+
 Regras:
 
 - Nunca apontar `STAGING_DATABASE_URL` para um banco de produção.

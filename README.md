@@ -95,6 +95,8 @@ Notas da versão 1.3.12 (preparação do schema para ledger/FIFO):
 - Próximo passo: 1.3.14 — implementar motor FIFO e serviços transacionais (`lib/services/movements.ts`).
 - Ação 1.3.14: consolidação do motor FIFO puro/in-memory e testes unitários (`lib/services/movements.ts`, `lib/services/__tests__/movements.test.ts`). Migration permanece proposta e NÃO APLICADA.
 
+CI: para executar os testes de integração no GitHub Actions, configure o secret `TEST_DATABASE_URL` apontando para um DB de teste isolado e use o workflow manual `.github/workflows/integration-tests.yml`.
+
 Notas da versão 1.2.8:
 
 - Corrigido warning ESLint em `lib/data/db-errors.ts` (remoção de export default anônimo).

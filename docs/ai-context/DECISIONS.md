@@ -113,3 +113,8 @@ Decisões recentes (1.3.21):
 
 - Confirmar testes de integração do `MovementsRepo` contra `TEST_DATABASE_URL` (rollback, FIFO, transfer) antes de qualquer ativação de flag em ambientes compartilhados. Testes foram executados e validados localmente.
 - Permanecer com `USE_FIFO_MOVEMENTS_ENGINE` OFF até validação em staging/CI com evidências sanitizadas.
+
+### 2026-05-20 — decisão operacional CI (1.3.25.2)
+
+- Criar workflow manual (`workflow_dispatch`) para executar testes de integração contra `TEST_DATABASE_URL` no GitHub Actions; o job valida a presença do secret `TEST_DATABASE_URL`, aplica/valida migrations de teste e roda `npm run test:integration`.
+- O workflow não deve expor secrets, não executa seeds e mantém `USE_FIFO_MOVEMENTS_ENGINE=0` durante a execução.
