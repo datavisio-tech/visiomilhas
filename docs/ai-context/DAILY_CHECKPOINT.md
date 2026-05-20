@@ -2,9 +2,43 @@
 
 Data: 2026-05-18
 
-- Versão atual: 1.3.21
-- Branch atual: 1.3.21-tests-purchase-fifo
-- Último commit: 0716bf2 — test(purchases): unit tests for createPurchaseAction covering FIFO flag and rollback 1.3.21
+---
+
+# CHECKPOINT - 1.3.25 integração MovementsRepo em test_db
+
+Data: 2026-05-20
+
+- Branch: `1.3.25-integration-tests-movements-test-db` (local).
+- Objetivo: preparar `test_db` via `TEST_DATABASE_URL`, aplicar schema base e ledger, e rodar testes de integração.
+
+Ações realizadas:
+
+- Criados scripts seguros para `test_db` em `scripts/`:
+  - `apply-test-base-migrations.ts`
+  - `apply-test-ledger-migration.ts`
+  - `validate-test-base-schema.ts`
+  - `validate-test-ledger-migration.ts`
+- `package.json` atualizado com os scripts `db:migrate:test:base`, `db:migrate:test:ledger`, `db:validate:test:base`, `db:validate:test:ledger`.
+- Preflight: `npm run db:preflight:test` — `current_database() = test_db` — OK.
+- Aplicado: `npm run db:migrate:test:base` — `0000_misty_kulan_gath.sql` — OK.
+- Validado: `npm run db:validate:test:base` — `program_accounts`, `mile_entries`, `mile_transfers` — FOUND.
+- Aplicado: `npm run db:migrate:test:ledger` — `0001_add_mile_point_lots.sql` — OK.
+- Validado: `npm run db:validate:test:ledger` — `mile_point_lots`, `mile_transfers`, índices — FOUND.
+- Testes de integração: `npm run test:integration` — passou (2 tests).
+
+Commits relevantes:
+
+- `55fe906` — test: roda integracao do MovementsRepo contra test db 1.3.25 (scripts e testes)
+
+Comandos perigosos NÃO executados:
+
+- Não alterei staging; nenhuma operação em `STAGING_DATABASE_URL` foi executada nesta etapa.
+- `npm run db:seed` — NÃO executado
+- `npm run test:integration` — executado apenas contra `test_db` (permitido)
+
+Próxima etapa recomendada:
+
+1. Agendar execução de regressão de integração completa e coletar logs/outputs sanitizados para QA.  
 
 Status dos testes e validações (local):
 

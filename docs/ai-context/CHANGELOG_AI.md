@@ -674,3 +674,24 @@ Próximos passos:
   Pendências / recomendações:
   - Manter snapshot/backup do staging e validar testes de integração em ambiente isolado antes de ativar `USE_FIFO_MOVEMENTS_ENGINE`.
   - Registrar evidências de QA e testes de integração antes de considerar rollout controlado.
+
+  ## 2026-05-20 — 1.3.25 — testes de integração MovementsRepo contra test_db
+
+  Resumo:
+
+  - Branch criada: `1.3.25-integration-tests-movements-test-db` (local).
+  - Scripts criados em `scripts/` para preparar/validar `test_db` usando `TEST_DATABASE_URL`.
+  - `db:migrate:test:base` aplicado com sucesso (`0000_misty_kulan_gath.sql`).
+  - `db:validate:test:base` confirmou `program_accounts`, `mile_entries`, `mile_transfers`.
+  - `db:migrate:test:ledger` aplicado com sucesso (`0001_add_mile_point_lots.sql`).
+  - `db:validate:test:ledger` confirmou `mile_point_lots`, `mile_transfers` e índices principais.
+  - `npm run test:integration` rodou contra `test_db` e passou (cenários básicos implementados).
+
+  Notas de segurança:
+
+  - Nenhuma alteração em `staging` foi feita nesta etapa.
+  - Nenhum secret ou URL completo foi registrado.
+
+  Próximo passo:
+
+  - Expandir cenários de integração (rollback transacional, transfers) e coletar evidências de QA antes de ativar flags.
