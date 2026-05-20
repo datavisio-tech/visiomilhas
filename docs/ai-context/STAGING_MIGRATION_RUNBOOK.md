@@ -115,3 +115,15 @@ Critérios de sucesso
 - Documento de decisão para ativar `USE_FIFO_MOVEMENTS_ENGINE` assinado pelo time.
 
 Próximo passo recomendado após validação: ativar flag em staging para um período controlado e monitorar telemetria por 24-48 horas antes de planejar rollout em produção.
+
+Registro de aplicação (2026-05-20) — tentativa de aplicação em staging:
+
+- A tentativa de aplicar `db/app/migrations/0001_add_mile_point_lots.sql` foi iniciada usando o script controlado `scripts/apply-staging-migration.ts`.
+- Resultado: falha ao executar o SQL devido a dependência ausente — `relation "public.mile_entries" does not exist`.
+- Interpretação: a migration pressupõe existência de tabelas auxiliares que não estão presentes no staging vazio. Por segurança, a execução foi abortada e não houve alterações no banco.
+
+Ações recomendadas após a falha:
+
+- Aplicar migrations base que criam `mile_entries`, `program_accounts` e demais dependências, ou
+- Ajustar a migration para tornar criação de índices/constraints condicional à existência das tabelas (ex.: testar `pg_catalog.pg_class`), ou
+- Provisionar staging com esquema base antes de aplicar apenas esta migration.

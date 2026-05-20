@@ -244,6 +244,21 @@ Resultado (mascarado):
 
 Conclusão: ambos os bancos isolados de staging e test responderam corretamente ao preflight e aparentam ser bases distintas e não-produtivas; nenhuma escrita, migration ou seed foi executada nesta validação.
 
+## 2026-05-20 — 1.3.24 tentativa de aplicação em staging (bloqueada)
+
+Resumo: tentativa de aplicar `db/app/migrations/0001_add_mile_point_lots.sql` em `staging_db` falhou.
+
+Erro mascarado registrado:
+
+- `Migration failed: relation "public.mile_entries" does not exist` — indica que a migration assume a existência de tabelas auxiliares (`mile_entries`, `mile_transfers`, `program_accounts`) que não existem no banco staging atual.
+
+Ação recomendada:
+
+- Executar migrations base/anteriores que criam `mile_entries`, `program_accounts` e demais dependências antes de aplicar esta migration, ou ajustar a migration para ser aplicável em um banco vazio (incluir guards que criem/ignore indexes e constraints somente quando as tabelas existirem).
+- Como alternativa, provisionar staging com esquema base ou executar `db:app:migrate` com cautela (preferir revisão/coordenação com DBA).  
+
+Decisão tomada nesta tentativa: **não aplicar** correções automáticas; a operação foi abortada e registros foram mantidos para investigação e ação subsequente.
+
 Objetivo:
 
 - Integrar a mutation de compra/aquisição ao motor FIFO de forma atômica sob controle da feature flag `USE_FIFO_MOVEMENTS_ENGINE`.
