@@ -19,6 +19,10 @@ Checklist pré-aplicação (auditoria):
 4. Verificar scripts de DB em `package.json` (`db:app:migrate`, `db:app:generate`).
 5. Garantir snapshot/backup do staging antes de aplicar.
 6. Confirmar que `USE_FIFO_MOVEMENTS_ENGINE` permanece OFF em staging até validação completa.
+7. Validar as variáveis de ambiente relacionadas ao DB:
+   - Verificar que `DATABASE_STAGING` e `DATABASE_TEST` estão definidos como nomes de banco (placeholders) e documentados.
+   - Confirmar que `STAGING_DATABASE_URL` aponta para o staging isolado (usar secrets do CI) e `TEST_DATABASE_URL` aponta para o DB de testes/integration.
+   - Nunca usar `DATABASE_URL` para executar `test:integration` ou migrations quando for ambíguo; preferir `STAGING_DATABASE_URL` ou `TEST_DATABASE_URL` explicitamente.
 
 Passo-a-passo controlado (sem execução automática neste documento):
 A. Preparação
@@ -54,6 +58,25 @@ E. Reversão
 
 - Caso seja necessário reverter, usar backup/snapshot para restaurar staging.
 - Registrar tempo de restauração e impactos.
+
+Preflight obrigatório antes da migration
+
+Antes de qualquer tentativa de aplicar a migration em staging, executar o preflight para validar identidade do DB e evitar ambiguidades:
+
+- `npm run db:preflight:staging` — valida `STAGING_DATABASE_URL`
+- `npm run db:preflight:test` — valida `TEST_DATABASE_URL`
+
+Se os scripts não estiverem disponíveis, executar o comando manual equivalente utilizando `psql` ou `pg` client, garantindo que apenas `STAGING_DATABASE_URL` / `TEST_DATABASE_URL` sejam usados explicitamente.
+
+Critérios adicionais para avançar para migration:
+
+- `current_database()` corresponde ao banco esperado;
+- target não é produção;
+- conexão usa `STAGING_DATABASE_URL`;
+- `TEST_DATABASE_URL` está separado;
+- backup/snapshot confirmado;
+- responsável pela execução identificado;
+- autorização explícita recebida.
 
 Registros e evidências a manter
 

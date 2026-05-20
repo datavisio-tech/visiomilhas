@@ -97,3 +97,42 @@ Operação de migrações e seeds:
 - Verifique `ADM_DATABASE_URL` e `APP_DATABASE_URL` antes de executar migrações/seeds. Nunca imprima valores de conexão em logs.
 
 Observação: `drizzle-kit push` NÃO é o fluxo recomendado aqui; prefira gerar migrações e aplicar com `drizzle-kit migrate` para controle do histórico e revisão de mudanças.
+
+## Padrão recomendado das variáveis de ambiente (placeholders seguros)
+
+Use os nomes abaixo como referência para staging/test/admin/app. Nunca coloque valores reais neste arquivo — use `.env.example` apenas com placeholders e armazene secrets em cofre/CI.
+
+Postgres base:
+
+- `POSTGRES_HOST` — host do Postgres
+- `POSTGRES_PORT` — porta (padrão 5432)
+- `POSTGRES_USER` — usuário do Postgres
+- `POSTGRES_PASSWORD` — senha do Postgres (usar secrets)
+
+Database names:
+
+- `POSTGRES_DB` — nome do DB principal (dev/local)
+- `SAAS_DB` — nome da DB administrativa (ADM)
+- `APP_DB` — nome da DB da aplicação (APP)
+- `DATABASE_STAGING` — nome do DB de staging (ex.: staging_db)
+- `DATABASE_TEST` — nome do DB de testes/integration (ex.: test_db)
+
+URLs formadas:
+
+- `DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}`
+- `ADM_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${SAAS_DB}`
+- `APP_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${APP_DB}`
+- `STAGING_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${DATABASE_STAGING}`
+- `TEST_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${DATABASE_TEST}`
+
+MongoDB:
+
+- `MONGODB_SERVER_IP`, `MONGODB_USER`, `MONGODB_USER_PASSWORD`, `MONGODB_DATABASE`
+- `MONGODB_URI=mongodb://${MONGODB_USER}:${MONGODB_USER_PASSWORD}@${MONGODB_SERVER_IP}/${MONGODB_DATABASE}`
+
+Regras operacionais adicionais:
+
+- `STAGING_DATABASE_URL` e `TEST_DATABASE_URL` nunca devem apontar para produção.
+- Preferir usar `STAGING_DATABASE_URL`/`TEST_DATABASE_URL` explicitamente em scripts e CI para evitar ambiguidade com `DATABASE_URL`.
+- Migrations só devem ser aplicadas após revisão e autorização explícita; registrar backups/snapshots antes de aplicar.
+- Secrets reais devem ser mantidos no cofre/CI (GitHub Secrets, Vault); não versionar `.env` reais.

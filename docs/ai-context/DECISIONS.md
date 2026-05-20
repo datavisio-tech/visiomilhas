@@ -98,6 +98,10 @@ Decisão adicional (2026-05-18):
 - Planejamento 1.3.15: implementar `MovementsRepo` usando Drizzle, garantir operações transacionais (atomicidade/rollback) e alinhar migrations/constraints. Esta etapa requer validação em DB de desenvolvimento isolado e backup antes de aplicar migrations em produção.
 - 1.3.16: Implementação concreta do `MovementsRepo` com Drizzle realizada em `lib/repositories/movements.drizzle-repo.ts`. Mantém-se a prática de aplicar constraints/índices via migrations SQL; migratons não foram aplicadas automaticamente nesta etapa.
 
+Nota operacional (2026-05-20):
+
+- As bases `DATABASE_STAGING` e `DATABASE_TEST` foram criadas pelo usuário e devem ser acessadas exclusivamente por `STAGING_DATABASE_URL` e `TEST_DATABASE_URL` (armazenadas em secrets/`.env.local` ou no cofre do CI). Nunca apontar `STAGING_DATABASE_URL`/`TEST_DATABASE_URL` para produção.
+
 Decisões recentes (1.3.21):
 
 - A compra/aquisição foi o primeiro fluxo real integrado ao motor FIFO e protegido por testes unitários.

@@ -55,6 +55,10 @@ Planejamento 1.3.22:
 - Preparar staging/DB isolado e validar `db/app/migrations/0001_add_mile_point_lots.sql` usando o runbook em `docs/ai-context/STAGING_MIGRATION_RUNBOOK.md`.
 - Não aplicar migration sem autorização explícita.
 
+Nota operacional (2026-05-20):
+
+- As bases `DATABASE_STAGING` e `DATABASE_TEST` foram criadas e estão disponíveis; use `STAGING_DATABASE_URL` e `TEST_DATABASE_URL` explicitamente para preflights e validações. Não usar `DATABASE_URL` como fallback quando houver risco de ambiguidade.
+
 Notas da versão 1.3.21:
 
 - Testes unitários da compra com flag e rollback simulado adicionados em 1.3.21. Validar migration em staging antes de ativar a flag em ambientes de produção.

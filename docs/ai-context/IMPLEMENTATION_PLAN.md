@@ -141,17 +141,12 @@ Observação:
 
 Objetivo:
 
-- Preparar ambiente de staging/DB isolado; validar `db/app/migrations/0001_add_mile_point_lots.sql` sem aplicá-la de imediato.
-- Definir runbook de aplicação e validação; testar rollback em staging; documentar critérios para ativação da flag `USE_FIFO_MOVEMENTS_ENGINE` em staging.
-
 Entregáveis:
 
-- `docs/ai-context/STAGING_MIGRATION_RUNBOOK.md` (runbook operacional)
-- Atualização de `docs/ai-context/ENVIRONMENT.md` com variáveis e instruções de staging
-- Atualização de `.env.example` com placeholders para `STAGING_DATABASE_URL` e `TEST_DATABASE_URL`
-- Atualizações em `docs/ai-context/CHANGELOG_AI.md`, `docs/ai-context/TODO_AI.md` e `docs/ai-context/DECISIONS.md` registando a etapa 1.3.22
+Nota operacional (2026-05-20):
 
-Restrições:
+- As bases `DATABASE_STAGING` e `DATABASE_TEST` foram criadas e estão disponíveis; usar `STAGING_DATABASE_URL` e `TEST_DATABASE_URL` explicitamente para preflights e testes de integração. Não usar `DATABASE_URL` como fallback para executar migrations ou testes em ambientes onde a ambiguidade possa apontar para produção.
+  Restrições:
 
 - Não aplicar migration sem autorização explícita.
 - Não executar seeds.

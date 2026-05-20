@@ -203,6 +203,21 @@ Notas:
 
 - Migração permanece NÃO APLICADA. Nenhuma alteração em código da aplicação nem seeds aplicadas.
 
+## 2026-05-20 — 1.3.22 complementar — alinhamento de variáveis de ambiente
+
+Objetivo:
+
+- Padronizar `.env.example` com placeholders seguros para `STAGING_DATABASE_URL`, `TEST_DATABASE_URL`, `DATABASE_STAGING` e `DATABASE_TEST`.
+- Atualizar documentação para explicar o uso e as regras de staging/test.
+
+Arquivos alterados nesta etapa complementar:
+
+- `.env.example` — atualizada com padrão de variáveis para staging/test/admin/app
+- `docs/ai-context/ENVIRONMENT.md` — seção adicionada com padrões e regras
+- `docs/ai-context/STAGING_MIGRATION_RUNBOOK.md` — validações complementares para variáveis de DB
+
+Nota: nenhuma migration foi aplicada; alterações são documentais e de preparação.
+
 Objetivo:
 
 - Integrar a mutation de compra/aquisição ao motor FIFO de forma atômica sob controle da feature flag `USE_FIFO_MOVEMENTS_ENGINE`.
