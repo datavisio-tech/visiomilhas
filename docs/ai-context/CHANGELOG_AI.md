@@ -218,6 +218,23 @@ Arquivos alterados nesta etapa complementar:
 
 Nota: nenhuma migration foi aplicada; alterações são documentais e de preparação.
 
+## 2026-05-20 — 1.3.23 preflight (tentativa)
+
+Objetivo:
+
+- Executar preflight seguro em `STAGING_DATABASE_URL` e `TEST_DATABASE_URL` para validar identidade dos bancos antes de aplicar migrations.
+
+Resultado da execução (resumido e mascarado):
+
+- `preflight` em `staging` e `test` foram executados, mas falharam ao tentar interpretar a string de conexão presente nas variáveis de ambiente (`ERR_INVALID_URL`).
+- A falha indica que o valor de `STAGING_DATABASE_URL` / `TEST_DATABASE_URL` definido localmente não está no formato esperado por `pg`/URL ou contém caracteres inesperados.
+
+Ação recomendada:
+
+- Verificar o formato das variáveis `STAGING_DATABASE_URL` e `TEST_DATABASE_URL` no host/secret store (deve ser um URL Postgres válido: `postgres://user:pass@host:port/dbname`).
+- Corrigir o formato e re-executar `npm run db:preflight:staging` e `npm run db:preflight:test`.
+- Não prosseguir para aplicar qualquer migration até que o preflight retorne `current_database()` correspondente ao DB esperado e backups/snapshots estejam confirmados.
+
 Objetivo:
 
 - Integrar a mutation de compra/aquisição ao motor FIFO de forma atômica sob controle da feature flag `USE_FIFO_MOVEMENTS_ENGINE`.

@@ -78,6 +78,12 @@ Critérios adicionais para avançar para migration:
 - responsável pela execução identificado;
 - autorização explícita recebida.
 
+Registro de execução (2026-05-20):
+
+- Tentativa de preflight executada localmente em `staging` e `test`.
+- Resultado: falha de interpretação da string de conexão (`ERR_INVALID_URL`).
+- A falha indica necessidade de revisão das variáveis `STAGING_DATABASE_URL` / `TEST_DATABASE_URL` no ambiente/secret store — ajustar formato para um URL Postgres válido antes de reexecutar o preflight.
+
 Registros e evidências a manter
 
 - Branch e commit usados
