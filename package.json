@@ -33,8 +33,8 @@
     "db:migrate:staging:ledger": "tsx scripts/apply-staging-migration.ts db/app/migrations/0001_add_mile_point_lots.sql",
     "db:migrate:staging:base": "tsx scripts/apply-staging-base-migrations.ts",
     "db:validate:staging:base": "tsx scripts/validate-staging-base-schema.ts",
-    "db:validate:staging:ledger": "tsx scripts/validate-staging-ledger-migration.ts"
-    ,"db:migrate:test:base": "tsx scripts/apply-test-base-migrations.ts",
+    "db:validate:staging:ledger": "tsx scripts/validate-staging-ledger-migration.ts",
+    "db:migrate:test:base": "tsx scripts/apply-test-base-migrations.ts",
     "db:migrate:test:ledger": "tsx scripts/apply-test-ledger-migration.ts",
     "db:validate:test:base": "tsx scripts/validate-test-base-schema.ts",
     "db:validate:test:ledger": "tsx scripts/validate-test-ledger-migration.ts"

@@ -23,7 +23,9 @@ async function run() {
       process.exit(3);
     }
     if (!/test/i.test(currentDb) && !process.env.TEST_DATABASE_NAME) {
-      console.error(`current_database()=${currentDb} does not look like test DB. Aborting.`);
+      console.error(
+        `current_database()=${currentDb} does not look like test DB. Aborting.`,
+      );
       process.exit(4);
     }
 
@@ -43,7 +45,10 @@ async function run() {
       "idx_mt_source_dest",
     ];
     for (const ix of idxs) {
-      const q = await client.query(`SELECT EXISTS(SELECT 1 FROM pg_class WHERE relname=$1) as exists`, [ix]);
+      const q = await client.query(
+        `SELECT EXISTS(SELECT 1 FROM pg_class WHERE relname=$1) as exists`,
+        [ix],
+      );
       console.log(`${ix}: ${q.rows[0]?.exists ? "FOUND" : "MISSING"}`);
     }
   } finally {

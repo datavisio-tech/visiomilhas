@@ -139,6 +139,7 @@ docs/ai-context/DECISIONS.md.
 ```
 
 O agente não deve assumir que uma etapa foi concluída sem verificar commits, arquivos e status Git.
+
 ## Separação entre staging e test
 
 - `STAGING_DATABASE_URL` deve ser usado para validação estrutural, homologação e QA controlado.
@@ -147,23 +148,23 @@ O agente não deve assumir que uma etapa foi concluída sem verificar commits, a
 - Testes de integração podem inserir, alterar e limpar dados; por isso devem rodar apenas em banco descartável de teste.
 - Antes de qualquer teste de integração, confirmar `current_database() = test_db` usando `npm run db:preflight:test`.
 - Nunca usar `DATABASE_URL` como fallback para staging ou test.
-Não alterar código da aplicação.
-Rodar, se fizer sentido:
-npm run lint
-Criar commit local:
-git add .github/agents/visiomilhas.agent.md
-git commit -m "docs: define agente como contexto residente do VisioMilhas"
-Regras
-Não alterar código da aplicação.
-Não aplicar migration.
-Não executar seed.
-Não fazer push.
-Não publicar PR.
-Não expor secrets.
-Responder com
-Branch atual.
-Arquivo atualizado.
-Commit criado.
-Validação executada, se houver.
-Status Git final.
-Próxima etapa recomendada.
+  Não alterar código da aplicação.
+  Rodar, se fizer sentido:
+  npm run lint
+  Criar commit local:
+  git add .github/agents/visiomilhas.agent.md
+  git commit -m "docs: define agente como contexto residente do VisioMilhas"
+  Regras
+  Não alterar código da aplicação.
+  Não aplicar migration.
+  Não executar seed.
+  Não fazer push.
+  Não publicar PR.
+  Não expor secrets.
+  Responder com
+  Branch atual.
+  Arquivo atualizado.
+  Commit criado.
+  Validação executada, se houver.
+  Status Git final.
+  Próxima etapa recomendada.

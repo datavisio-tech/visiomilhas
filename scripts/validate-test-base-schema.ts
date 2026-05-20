@@ -23,7 +23,9 @@ async function run() {
       process.exit(3);
     }
     if (!/test/i.test(currentDb) && !process.env.TEST_DATABASE_NAME) {
-      console.error(`current_database()=${currentDb} does not look like test DB. Aborting.`);
+      console.error(
+        `current_database()=${currentDb} does not look like test DB. Aborting.`,
+      );
       process.exit(4);
     }
 
@@ -54,7 +56,9 @@ async function run() {
       );
       const existing = new Set(colRes.rows.map((r: any) => r.column_name));
       const missing = cols.filter((c) => !existing.has(c));
-      console.log(`${tbl} missing columns: ${missing.length ? missing.join(", ") : "none"}`);
+      console.log(
+        `${tbl} missing columns: ${missing.length ? missing.join(", ") : "none"}`,
+      );
     }
   } finally {
     await client.end();

@@ -23,7 +23,12 @@ async function run() {
     process.exit(2);
   }
 
-  const migration = path.join("db", "app", "migrations", "0001_add_mile_point_lots.sql");
+  const migration = path.join(
+    "db",
+    "app",
+    "migrations",
+    "0001_add_mile_point_lots.sql",
+  );
 
   const client = new Client({ connectionString: conn });
   try {
@@ -35,7 +40,9 @@ async function run() {
       process.exit(3);
     }
     if (!/test/i.test(currentDb) && !process.env.TEST_DATABASE_NAME) {
-      console.error(`current_database()=${currentDb} does not look like test DB. Aborting.`);
+      console.error(
+        `current_database()=${currentDb} does not look like test DB. Aborting.`,
+      );
       process.exit(4);
     }
 
@@ -45,15 +52,24 @@ async function run() {
     }
 
     // Idempotency: if mile_point_lots exists, skip
-    const existsRes = await client.query("SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='mile_point_lots') as exists");
+    const existsRes = await client.query(
+      "SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='mile_point_lots') as exists",
+    );
     if (existsRes.rows[0]?.exists) {
-      console.log("Ledger migration appears already applied in test DB; skipping.");
+      console.log(
+        "Ledger migration appears already applied in test DB; skipping.",
+      );
       return;
     }
 
     const sql = fs.readFileSync(migration, "utf8");
     const upper = sql.toUpperCase();
-    if (upper.includes("DROP DATABASE") || upper.includes("DROP SCHEMA") || upper.includes("TRUNCATE ") || upper.match(/DELETE\s+FROM\s+/)) {
+    if (
+      upper.includes("DROP DATABASE") ||
+      upper.includes("DROP SCHEMA") ||
+      upper.includes("TRUNCATE ") ||
+      upper.match(/DELETE\s+FROM\s+/)
+    ) {
       console.error(`Destructive command detected in ${migration}. Aborting.`);
       process.exit(6);
     }
@@ -71,7 +87,10 @@ async function run() {
       process.exit(7);
     }
 
-    console.log("Ledger migration applied to test DB. Masked connection:", mask(conn));
+    console.log(
+      "Ledger migration applied to test DB. Masked connection:",
+      mask(conn),
+    );
   } finally {
     await client.end();
   }
