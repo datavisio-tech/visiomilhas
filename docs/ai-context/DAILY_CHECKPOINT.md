@@ -35,12 +35,12 @@ Checklist operacional (para o operador):
 
 Registre aqui a data/hora e o resultado (operador):
 
-- Data/hora: 
-- Branch usada: 
-- Resultado geral: 
-- Passos que passaram: 
-- Passo que falhou (se houver): 
-- Mensagem sanitizada de erro (se houver): 
+- Data/hora:
+- Branch usada:
+- Resultado geral:
+- Passos que passaram:
+- Passo que falhou (se houver):
+- Mensagem sanitizada de erro (se houver):
 # CHECKPOINT - Encerramento do dia — 1.3.21
 
 Data: 2026-05-18

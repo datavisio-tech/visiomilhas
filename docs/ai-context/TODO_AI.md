@@ -132,10 +132,9 @@ Pendências (relacionadas a 1.3.21):
   3. Conferir logs sanitizados e validar passos (`preflight`, `migrate`, `validate`, `test:integration`).
 
   Checklist rápido para operador (copiar/colar):
-
   1. GitHub → Settings → Secrets and variables → Actions → New repository secret
-    - Nome: TEST_DATABASE_URL
-    - Valor: (URL segura do test_db)
+  - Nome: TEST_DATABASE_URL
+  - Valor: (URL segura do test_db)
   2. Actions → Integration Tests - MovementsRepo → Run workflow → selecionar branch `1.3.25.3-ci-manual-run-instructions` → Run
   3. Aguardar execução e confirmar que os passos passaram; coletar logs sanitizados.
 
