@@ -7,6 +7,15 @@ Data: 2026-05-20
 - Arquivo de workflow criado: `.github/workflows/integration-tests.yml`.
 - Objetivo: permitir execução manual segura dos testes de integração contra `TEST_DATABASE_URL` no GitHub Actions.
 - Próximo passo: adicionar `TEST_DATABASE_URL` como secret no repositório e executar o workflow manualmente.
+
+Validações locais (2026-05-20):
+
+- `npm run test` (unit + integração local): OK — observação: `test:integration` não foi executado isoladamente porque `TEST_DATABASE_URL` não está configurado no ambiente deste agente.
+- `npm run typecheck`: OK
+- `npm run lint`: OK
+- `npm run build`: OK
+
+Pendência operacional: configurar `TEST_DATABASE_URL` no GitHub Secrets e rodar o workflow manualmente para concluir a validação end-to-end (preflight, migrations e `npm run test:integration`).
 # CHECKPOINT - Encerramento do dia — 1.3.21
 
 Data: 2026-05-18

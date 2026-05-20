@@ -122,6 +122,7 @@ Pendências (relacionadas a 1.3.21):
 - Planejar integração de venda/consumo/transferência após sucesso em staging.
 - Revisar implicações contábeis de custo/margem antes de ativar em produção.
 - Configurar secret `TEST_DATABASE_URL` no GitHub e executar o workflow `.github/workflows/integration-tests.yml` manualmente para validar regressão CI.
+  - Observação: este agente não configura o secret automaticamente. Após configurar o secret, executar manualmente o workflow via GitHub (workflow_dispatch) e coletar artefatos sanitizados.
 
 Status 1.3.14 — Consolidação do motor FIFO puro:
 

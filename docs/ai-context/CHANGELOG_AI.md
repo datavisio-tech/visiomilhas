@@ -728,6 +728,15 @@ O que foi implementado:
 - Adicionado workflow GitHub Actions: `.github/workflows/integration-tests.yml` (manual via `workflow_dispatch`).
 - O workflow valida a presença de `TEST_DATABASE_URL`, executa `npm run db:preflight:test`, aplica e valida esquemas (`db:migrate:test:*`, `db:validate:test:*`) e executa `npm run test:integration`.
 
+Validações locais (2026-05-20):
+
+- `npm run test` (unit + integração local): OK (observação: `test:integration` não foi executado isoladamente porque `TEST_DATABASE_URL` não está configurado no ambiente deste agente). Os testes unitários e checks relacionados passaram localmente.
+- `npm run typecheck`: OK
+- `npm run lint`: OK
+- `npm run build`: OK
+
+Observação: a execução completa de `npm run test:integration` e dos scripts de preflight/migrate/test depende da configuração local de `TEST_DATABASE_URL` (secret). Próximo passo: configurar `TEST_DATABASE_URL` como secret no repositório e executar o workflow manualmente no GitHub Actions.
+
 Segurança:
 
 - `USE_FIFO_MOVEMENTS_ENGINE` definido como `0` no workflow; o job não usa `DATABASE_URL` nem `STAGING_DATABASE_URL`.
