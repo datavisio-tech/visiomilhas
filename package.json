@@ -29,8 +29,7 @@
     "db:check-tables": "tsx scripts/check-db-tables.ts",
     "db:seed:verify": "tsx db/seed/verify-seed.ts",
     "db:preflight:staging": "tsx scripts/preflight-db.ts staging",
-    "db:preflight:test": "tsx scripts/preflight-db.ts test"
-    ,
+    "db:preflight:test": "tsx scripts/preflight-db.ts test",
     "db:migrate:staging:ledger": "tsx scripts/apply-staging-migration.ts db/app/migrations/0001_add_mile_point_lots.sql"
   },
   "dependencies": {
