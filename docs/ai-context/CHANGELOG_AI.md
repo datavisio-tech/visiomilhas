@@ -259,6 +259,11 @@ Ação recomendada:
 
 Decisão tomada nesta tentativa: **não aplicar** correções automáticas; a operação foi abortada e registros foram mantidos para investigação e ação subsequente.
 
+2026-05-20 — 1.3.24.1: preparação de scripts de schema base
+
+- Adicionados scripts de aplicação/validação para staging: `scripts/apply-staging-base-migrations.ts`, `scripts/validate-staging-base-schema.ts`, `scripts/validate-staging-ledger-migration.ts`.
+- Scripts adicionados apenas à branch `1.3.24.1-staging-base-schema` e **não executados** durante esta etapa.
+
 Objetivo:
 
 - Integrar a mutation de compra/aquisição ao motor FIFO de forma atômica sob controle da feature flag `USE_FIFO_MOVEMENTS_ENGINE`.

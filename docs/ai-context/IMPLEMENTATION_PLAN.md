@@ -145,18 +145,14 @@ Entregáveis:
 
 Nota operacional (2026-05-20):
 
-- As bases `DATABASE_STAGING` e `DATABASE_TEST` foram criadas e estão disponíveis; usar `STAGING_DATABASE_URL` e `TEST_DATABASE_URL` explicitamente para preflights e testes de integração. Não usar `DATABASE_URL` como fallback para executar migrations ou testes em ambientes onde a ambiguidade possa apontar para produção.
-  Restrições:
+Restrições:
 
-- Não aplicar migration sem autorização explícita.
-- Não executar seeds.
-- Não rodar `npm run test:integration` sem confirmação de DB isolado.
+2026-05-20 — 1.3.24.1: preparação de scripts
+
+- Criados scripts locais para aplicar e validar o schema base em staging sem execução automática. Próxima etapa: revisão e autorização explícita para executar `npm run db:migrate:staging:base`.
 
 DB: migrações e seeds (operação segura)
 
-- Separar migrações/saídas por database: `drizzle.adm.config.ts` e `drizzle.app.config.ts`.
-- Fluxo: `generate` -> `migrate` (usar `drizzle-kit migrate`); evitar `push` como padrão.
-- Seeds idempotentes em `db/seed/` e execução controlada via `npm run db:seed` que exige autorização explícita (`VISIOMILHEIRO_ALLOW_DB_SEED=1` ou `--apply`).
 - Não executar migrações ou seeds sem aprovação explícita do time de desenvolvimento/DBA.
 
 Status operacional (2026-05-16):

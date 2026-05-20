@@ -43,11 +43,14 @@ Próximos itens prioritários:
 
 Próximo passo recomendado: provisionar `.env.local` em staging/production e configurar secrets no CI.
 
-Tarefa 1.3.22 — Preparar staging e validar migration do ledger/lotes:
-
 - Criar `docs/ai-context/STAGING_MIGRATION_RUNBOOK.md` (feito)
-- Adicionar placeholders `STAGING_DATABASE_URL` / `TEST_DATABASE_URL` em `.env.example` (feito)
-- Confirmar processo de snapshot/backup para staging e definir responsável (pendente)
+
+2026-05-20 — 1.3.24.1: preparar scripts de schema base em staging
+
+- Criar `scripts/apply-staging-base-migrations.ts` (feito)
+- Criar `scripts/validate-staging-base-schema.ts` (feito)
+- Criar `scripts/validate-staging-ledger-migration.ts` (feito)
+- Revisar e autorizar execução em etapa seguinte.
 - Validar `db/app/migrations/0001_add_mile_point_lots.sql` em revisão (pendente)
 - Planejar execução controlada em staging (pendente)
 
