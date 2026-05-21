@@ -57,3 +57,11 @@ Decisões iniciais:
 Observações:
 
 - Código e identidade visual próprios; não copiar código proprietário de terceiros.
+
+Versionamento operacional
+
+- Regra: `MVP.Funcionalidade.Commit` (ex.: `1.1.7`)
+- MVP: 1 (MVP1)
+- Funcionalidade/etapa atual: 1.1 — Fundação técnica, banco, migrations e seed inicial
+- Versão operacional atual registrada: `1.1.6`
+- Próxima versão incremental será: `1.1.7`

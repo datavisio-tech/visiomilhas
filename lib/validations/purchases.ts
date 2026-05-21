@@ -1,5 +1,28 @@
 import { z } from "zod";
 
+export const createPurchaseSchema = z.object({
+  orgSlug: z.string().optional(),
+  accountId: z.string().transform((s) => Number(s)),
+  programId: z
+    .string()
+    .optional()
+    .transform((s) => (s ? Number(s) : null)),
+  points: z
+    .string()
+    .transform((s) => Number(s))
+    .refine((n) => n > 0, "points must be > 0"),
+  totalCostCents: z
+    .string()
+    .transform((s) => Number(s))
+    .refine((n) => n >= 0, "totalCostCents must be >= 0"),
+  purchasedAt: z.string().optional(),
+  description: z.string().max(1024).optional(),
+});
+
+export type CreatePurchaseInput = z.infer<typeof createPurchaseSchema>;
+
+export default createPurchaseSchema;
+
 export const purchaseSchema = z
   .object({
     organizationId: z.union([z.string(), z.number()]),

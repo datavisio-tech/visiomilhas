@@ -1,5 +1,29 @@
 import { z } from "zod";
 
+export const createSaleSchema = z.object({
+  orgSlug: z.string().optional(),
+  accountId: z.string().transform((s) => Number(s)),
+  programId: z
+    .string()
+    .optional()
+    .transform((s) => (s ? Number(s) : null)),
+  points: z
+    .string()
+    .transform((s) => Number(s))
+    .refine((n) => n > 0, "points must be > 0"),
+  totalAmountCents: z
+    .string()
+    .transform((s) => Number(s))
+    .refine((n) => n >= 0, "totalAmountCents must be >= 0"),
+  soldAt: z.string().optional(),
+  customerName: z.string().max(255).optional(),
+  description: z.string().max(1024).optional(),
+});
+
+export type CreateSaleInput = z.infer<typeof createSaleSchema>;
+
+export default createSaleSchema;
+
 export const saleSchema = z.object({
   organizationId: z.union([z.string(), z.number()]),
   programAccountId: z.union([z.string(), z.number()]),
