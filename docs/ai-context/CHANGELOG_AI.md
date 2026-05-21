@@ -218,6 +218,37 @@ Arquivos alterados nesta etapa complementar:
 
 Nota: nenhuma migration foi aplicada; alterações são documentais e de preparação.
 
+## 2026-05-20 — 1.3.26 — preparo e validação inicial de QA FIFO em staging
+
+Objetivo:
+
+- Consolidar a documentação operacional da etapa 1.3.26 e validar a base de staging antes do QA manual de compra FIFO.
+
+Ações executadas nesta rodada:
+
+- Confirmado o branch de trabalho `1.3.26-qa-compra-fifo-staging`.
+- Sincronizada a referência remota `origin/main` e conferido que `main` está alinhado ao merge da PR #1.
+- Executado `npm run db:preflight:staging` com sucesso.
+- Executado `npm run db:validate:staging:base` com sucesso.
+- Executado `npm run db:validate:staging:ledger` com sucesso.
+
+Resultado resumido:
+
+- `current_database(): staging_db`
+- Schema base de staging: OK
+- Schema ledger de staging: OK
+
+Pendências:
+
+- Rodar as validações locais `npm run test`, `npm run typecheck`, `npm run lint` e `npm run build`.
+- Executar o checklist manual de QA de compra FIFO em staging antes de considerar qualquer ativação da flag.
+
+Notas de segurança:
+
+- Nenhuma seed foi executada.
+- Nenhum dado de produção foi tocado.
+- Nenhuma URL completa foi exposta nos logs desta etapa.
+
 ## 2026-05-20 — 1.3.23 preflight (tentativa)
 
 Objetivo:

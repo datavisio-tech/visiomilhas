@@ -138,6 +138,15 @@ Pendências (relacionadas a 1.3.21):
   2. Actions → Integration Tests - MovementsRepo → Run workflow → selecionar branch `1.3.25.3-ci-manual-run-instructions` → Run
   3. Aguardar execução e confirmar que os passos passaram; coletar logs sanitizados.
 
+2026-05-20 — 1.3.26 (QA compra FIFO em staging)
+
+- Branch de trabalho: `1.3.26-qa-compra-fifo-staging`
+- Preflight staging: concluído com `current_database(): staging_db`
+- Validação base staging: concluída
+- Validação ledger staging: concluída
+- Próximo passo: executar validações locais (`test`, `typecheck`, `lint`, `build`) e depois o checklist manual de QA da compra FIFO em staging
+- Regra: não ativar `USE_FIFO_MOVEMENTS_ENGINE` em produção; qualquer ativação em staging depende de nova autorização explícita
+
 Status 1.3.14 — Consolidação do motor FIFO puro:
 
 - Motor FIFO consolidado em `lib/services/movements.ts` com testes unitários em `lib/services/__tests__/movements.test.ts`.
