@@ -1,3 +1,19 @@
+# CHECKPOINT - 1.3.29 — production env e secrets registrados
+
+Data: 2026-05-21
+
+- Branch atual: `1.3.29-production-env-registered`.
+- Status Git inicial desta etapa: `?? .claude/`.
+- GitHub Environment `production` já foi criado pelo operador.
+- Secrets de production já foram cadastradas pelo operador no Environment `production`.
+- `.env.production` não foi criado nesta etapa.
+- `USE_FIFO_MOVEMENTS_ENGINE` permanece `0` na produção inicial.
+- Objetivo da próxima etapa: auditoria read-only de Docker, Traefik, Swarm, Portainer e diretório remoto.
+
+Próxima etapa recomendada:
+
+1. Executar a auditoria 1.3.30 apenas com comandos read-only no servidor remoto.
+
 # CHECKPOINT - 1.3.27.1 — diagnóstico do runtime da compra FIFO
 
 Data: 2026-05-21

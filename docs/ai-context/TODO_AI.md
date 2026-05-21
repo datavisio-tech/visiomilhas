@@ -1,5 +1,17 @@
 # TODO_AI - Pendências e próximas ações
 
+## 1.3.29 — production env/secrets registrados
+
+- Auditar servidor via SSH antes de qualquer deploy.
+- Identificar se o ambiente remoto usa Docker Compose standalone ou Docker Swarm.
+- Identificar a rede do Traefik existente.
+- Identificar labels e entrypoints usados pelo Traefik.
+- Confirmar a estratégia de build da imagem de produção.
+- Definir healthcheck para o container da aplicação.
+- Definir rollback operacional para o primeiro deploy.
+- Manter `USE_FIFO_MOVEMENTS_ENGINE=0` na produção inicial.
+- Não criar `.env.production` real no repositório.
+
 Concluído recentemente:
 
 - Diagnóstico 1.3.27.1 do runtime local: usa `APP_DATABASE_URL`, aponta para `visiomilhas_app` e não possui `mile_point_lots`.
@@ -8,6 +20,10 @@ Pendência imediata:
 
 - Não usar localhost para concluir o QA staging.
 - Executar a compra manual no app staging real, onde `mile_point_lots` já foi validado.
+
+Pendência para a próxima etapa:
+
+- Rodar apenas comandos read-only na auditoria de produção e registrar host, diretório remoto, modo Docker e Traefik.
 
 Observação:
 

@@ -101,6 +101,22 @@ O agente deve sempre responder com evidências mínimas:
 - pendências;
 - próxima etapa.
 
+## Decisões de deploy e ambiente production
+
+- O deploy de produção será remoto via GitHub Actions, não via localhost.
+- O usuário SSH de deploy é `gitdatavisiodeploy`.
+- O diretório remoto de publicação é `/opt/datavisio/visiomilhas`.
+- O domínio público de produção é `https://visiomilhas.visiochat.cloud`.
+- O GitHub Environment `production` já foi criado pelo operador.
+- As secrets de production já foram cadastradas pelo operador no Environment `production`.
+- O workflow final deve usar `environment: production`.
+- O workflow deve gerar `.env.production` no servidor a partir das Environment Secrets.
+- `.env.production` nunca deve ser commitado.
+- `.env.example` deve conter apenas placeholders seguros.
+- `USE_FIFO_MOVEMENTS_ENGINE` deve permanecer `0` na produção inicial.
+- Antes do deploy final, auditar o Traefik existente, o modo Docker/Swarm e o diretório remoto.
+- Não criar um novo Traefik; reutilizar a infraestrutura existente após auditoria.
+
 Este padrão existe para reduzir prompts longos no chat e manter continuidade operacional do projeto.
 
 ## Checkpoints operacionais recuperáveis

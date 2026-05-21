@@ -137,4 +137,12 @@ Decisões recentes (1.3.21):
 - Skills podem ser consultadas para recomendações, auditorias de código e sugestões, mas NÃO podem autorizar ações operacionais (push, PR, merge, deploy, seed, migration) sem aprovação humana explícita.
 - Em caso de conflito entre a recomendação de uma skill e a documentação/decisões do projeto, o agente deve registrar o conflito, documentar o risco e solicitar confirmação do operador.
 
+### 2026-05-21 — produção e deploy remoto
+
+- GitHub Actions gera `.env.production` no servidor a partir das Environment Secrets de `production`.
+- O GitHub Environment `production` e suas secrets já foram cadastrados manualmente pelo operador.
+- O deploy final depende de auditoria prévia do Docker, do modo Compose/Swarm, do Portainer e do Traefik existente.
+- O deploy remoto usa o usuário SSH `gitdatavisiodeploy`, o diretório `/opt/datavisio/visiomilhas` e não utiliza root.
+- A produção inicial mantém `USE_FIFO_MOVEMENTS_ENGINE=0`.
+
 Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `security-review`, `test`.

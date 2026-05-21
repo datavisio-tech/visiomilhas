@@ -137,6 +137,57 @@ Observação:
 
 - Priorizar entregas mínimas por fase com testes e seeds.
 
+## 1.3.29 — production env/secrets registrados
+
+Objetivo:
+
+- Registrar que o GitHub Environment `production` e as secrets já foram criados pelo operador.
+- Preparar a auditoria do ambiente Docker/Traefik/Swarm/Portainer antes do workflow final de deploy.
+
+Entregáveis desta etapa:
+
+- Atualização do agente residente com as decisões de deploy.
+- Atualização de `ENVIRONMENT.md`, `ARCHITECTURE.md`, `PROJECT_CONTEXT.md`, `DECISIONS.md`, `TODO_AI.md`, `CHANGELOG_AI.md` e `DAILY_CHECKPOINT.md`.
+- Criação de runbook de deploy de production com comandos read-only para a próxima auditoria.
+
+## 1.3.30 — auditoria Docker/Traefik/Swarm/Portainer
+
+Objetivo:
+
+- Auditar o servidor remoto, a pilha Docker e o Traefik existente antes de montar o workflow final.
+
+Checklist da etapa:
+
+- Verificar `whoami`, `hostname`, `pwd` e o diretório remoto esperado.
+- Identificar se o ambiente usa Docker Compose standalone ou Docker Swarm.
+- Identificar rede(s) e labels do Traefik existente.
+- Confirmar containers/serviços existentes e o ponto de entrada de produção.
+- Definir estratégia de build da imagem, healthcheck e rollback.
+
+## 1.3.31 — artefatos Docker de produção
+
+Objetivo:
+
+- Definir os artefatos Docker necessários para produção com base na auditoria.
+
+## 1.3.32 — workflow de deploy
+
+Objetivo:
+
+- Criar o workflow de GitHub Actions para deploy remoto usando `environment: production`.
+
+## 1.3.33 — primeiro deploy controlado
+
+Objetivo:
+
+- Executar o primeiro deploy controlado em produção com rollback documentado.
+
+## 1.3.34 — QA pós-deploy
+
+Objetivo:
+
+- Validar o ambiente pós-deploy com QA funcional e revisão operacional.
+
 ## 1.3.22 — Preparar staging e validar migration do ledger/lotes
 
 Objetivo:

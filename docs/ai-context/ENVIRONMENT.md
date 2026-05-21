@@ -79,65 +79,89 @@ Para operações de validação de migrations e testes de integração, use vari
 
 Nota operacional: o CI do repositório requer que o secret `TEST_DATABASE_URL` seja configurado no GitHub (apontando para um DB de teste isolado). Não use `DATABASE_URL` ou `STAGING_DATABASE_URL` para esse propósito.
 
-Regras:
+# ENVIRONMENT - variáveis de ambiente e ambientes
 
-- Nunca apontar `STAGING_DATABASE_URL` para um banco de produção.
-- `npm run test:integration` só deve ser executado após confirmação explícita de que `STAGING_DATABASE_URL` aponta para um DB isolado e que backups/snapshots foram feitos.
-- Não documentar secrets reais nos arquivos de documentação; use `.env.example` com placeholders e armazene secrets em cofre (GitHub Secrets, Vault).
+## Status operacional
 
-Operação de migrações e seeds:
+- O GitHub Environment `production` já foi criado pelo operador.
+- As secrets de production já foram cadastradas no Environment `production`.
+- Não imprimir, registrar em log ou versionar valores reais de secrets.
+- `.env.production` remoto deve receber `chmod 600` após ser gerado no servidor.
 
-- Use `drizzle.adm.config.ts` e `drizzle.app.config.ts` para gerar e aplicar migrações separadas.
-- Fluxo principal: `generate` -> `migrate` (não usar `push` como padrão).
-- Scripts disponíveis (padrão DataVisio):
-  - `npm run db:adm:generate` — gerar migração ADM
-  - `npm run db:app:generate` — gerar migração APP
-  - `npm run db:adm:migrate` — aplicar migração ADM
-  - `npm run db:app:migrate` — aplicar migração APP
-  - `npm run db:generate` — gera ambas (ADM + APP)
-  - `npm run db:migrate` — aplica ambas (ADM + APP)
-  - `npm run db:check-env` — verifica presença segura das variáveis necessárias
-  - `npm run db:seed` — executa `db/seed/index.ts` (REquer autorização explícita, veja `db/seed/index.ts`)
-- Verifique `ADM_DATABASE_URL` e `APP_DATABASE_URL` antes de executar migrações/seeds. Nunca imprima valores de conexão em logs.
+## Ambiente local
 
-Observação: `drizzle-kit push` NÃO é o fluxo recomendado aqui; prefira gerar migrações e aplicar com `drizzle-kit migrate` para controle do histórico e revisão de mudanças.
+- `.env.example`: somente placeholders seguros e exemplos públicos, sem valores reais.
+- `.env.local`: arquivo local de desenvolvimento, não commitado.
+- `APP_DATABASE_URL`: conexão do runtime local para a base da aplicação.
+- `DATABASE_URL`: não usar como fallback silencioso para staging, test ou production.
 
-## Padrão recomendado das variáveis de ambiente (placeholders seguros)
+## Ambiente de staging
 
-Use os nomes abaixo como referência para staging/test/admin/app. Nunca coloque valores reais neste arquivo — use `.env.example` apenas com placeholders e armazene secrets em cofre/CI.
+- `STAGING_DATABASE_URL`: base isolada para QA e validação read-only.
+- `TEST_DATABASE_URL`: base isolada para testes automatizados de integração.
+- `USE_FIFO_MOVEMENTS_ENGINE`: pode ser ativada explicitamente em staging quando houver validação e autorização.
 
-Postgres base:
+## Ambiente de production
 
-- `POSTGRES_HOST` — host do Postgres
-- `POSTGRES_PORT` — porta (padrão 5432)
-- `POSTGRES_USER` — usuário do Postgres
-- `POSTGRES_PASSWORD` — senha do Postgres (usar secrets)
+- `environment: production` deve ser usado no workflow final de deploy.
+- O workflow de produção deve gerar `.env.production` no servidor a partir das Environment Secrets.
+- `USE_FIFO_MOVEMENTS_ENGINE=0` é o estado inicial da produção.
+- O deploy deve reutilizar o Traefik existente após auditoria prévia.
+- O deploy final deve acontecer via GitHub Actions com o usuário SSH `gitdatavisiodeploy`.
 
-Database names:
+## Nomes esperados de secrets em production
 
-- `POSTGRES_DB` — nome do DB principal (dev/local)
-- `SAAS_DB` — nome da DB administrativa (ADM)
-- `APP_DB` — nome da DB da aplicação (APP)
-- `DATABASE_STAGING` — nome do DB de staging (ex.: staging_db)
-- `DATABASE_TEST` — nome do DB de testes/integration (ex.: test_db)
+Os valores abaixo devem existir no GitHub Environment `production`, sem serem expostos em documentação operacional fora dos nomes.
 
-URLs formadas:
+- `APP_URL`
+- `NEXT_PUBLIC_APP_URL`
+- `APP_DATABASE_URL`
+- `ADM_DATABASE_URL`
+- `POSTGRES_HOST`
+- `POSTGRES_PORT`
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `POSTGRES_DB`
+- `SAAS_DB`
+- `APP_DB`
+- `AUTH_SECRET`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `SSH_HOST`
+- `SSH_USER`
+- `SSH_PRIVATE_KEY`
 
-- `DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}`
-- `ADM_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${SAAS_DB}`
-- `APP_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${APP_DB}`
-- `STAGING_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${DATABASE_STAGING}`
-- `TEST_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${DATABASE_TEST}`
+## Regras operacionais
 
-MongoDB:
-
-- `MONGODB_SERVER_IP`, `MONGODB_USER`, `MONGODB_USER_PASSWORD`, `MONGODB_DATABASE`
-- `MONGODB_URI=mongodb://${MONGODB_USER}:${MONGODB_USER_PASSWORD}@${MONGODB_SERVER_IP}/${MONGODB_DATABASE}`
-
-Regras operacionais adicionais:
-
+- Nunca imprimir secrets em logs, documentação ou saída de scripts.
+- Nunca commitar `.env.production`.
+- Nunca usar `DATABASE_URL` como substituto implícito para `APP_DATABASE_URL`, `STAGING_DATABASE_URL` ou `TEST_DATABASE_URL`.
+- `APP_URL` e `NEXT_PUBLIC_APP_URL` devem apontar para o domínio público da aplicação em production.
 - `STAGING_DATABASE_URL` e `TEST_DATABASE_URL` nunca devem apontar para produção.
-- Preferir usar `STAGING_DATABASE_URL`/`TEST_DATABASE_URL` explicitamente em scripts e CI para evitar ambiguidade com `DATABASE_URL`.
-- Migrations só devem ser aplicadas após revisão e autorização explícita; registrar backups/snapshots antes de aplicar.
-- Secrets reais devem ser mantidos no cofre/CI (GitHub Secrets, Vault); não versionar `.env` reais.
-- Ativação temporária de `USE_FIFO_MOVEMENTS_ENGINE=1` só é aceita em staging, nunca em produção.
+- `npm run test:integration` deve continuar restrito ao banco de teste isolado.
+
+## Deploy remoto
+
+- O diretório remoto esperado é `/opt/datavisio/visiomilhas`.
+- O usuário SSH de deploy é `gitdatavisiodeploy`.
+- O workflow de deploy deve gerar `.env.production` no host remoto e aplicar permissões restritas.
+- Antes do primeiro deploy, auditar Docker, Docker Compose/Swarm, Portainer e Traefik existentes.
+
+## Fluxo de migrações e seeds
+
+- Usar `drizzle.adm.config.ts` e `drizzle.app.config.ts` para separar migrações ADM e APP.
+- Fluxo preferencial: `generate` -> `migrate`.
+- `drizzle-kit push` não é o fluxo recomendado.
+- Seeds só podem ser executados com autorização explícita.
+
+## Resumo de diferenças entre arquivos de ambiente
+
+- `.env.example`: documentação de nomes e placeholders seguros.
+- `.env.local`: desenvolvimento local, não versionado.
+- `.env.production`: gerado no servidor durante deploy, não versionado.
+- `STAGING_DATABASE_URL`: staging isolado.
+- `TEST_DATABASE_URL`: teste isolado.
+- `APP_DATABASE_URL`: runtime da aplicação fora do staging/test.

@@ -54,6 +54,17 @@ Decisões iniciais:
 - Trial full: 15 dias por organização.
 - Modelo de cobrança: por organização/plano.
 
+Deploy de produção:
+
+- Deploy remoto via GitHub Actions para a VPS Hostinger já existente.
+- Usuário SSH de deploy: `gitdatavisiodeploy`.
+- Diretório remoto: `/opt/datavisio/visiomilhas`.
+- Domínio de produção: `https://visiomilhas.visiochat.cloud`.
+- GitHub Environment `production` já criado e com secrets cadastradas pelo operador.
+- O workflow final deve gerar `.env.production` no servidor e não versionar esse arquivo.
+- A produção inicial deve começar com `USE_FIFO_MOVEMENTS_ENGINE=0`.
+- Antes do deploy final, auditar Docker, Docker Compose/Swarm, Portainer e Traefik existentes.
+
 Observações:
 
 - Código e identidade visual próprios; não copiar código proprietário de terceiros.

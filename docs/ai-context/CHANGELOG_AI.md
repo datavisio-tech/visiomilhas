@@ -1,5 +1,45 @@
 # CHANGELOG_AI
 
+## 2026-05-21 — 1.3.29 — production env e secrets registrados
+
+Objetivo:
+
+- Registrar que o GitHub Environment `production` e suas secrets já foram criados pelo operador.
+- Preparar a etapa de auditoria Docker/Traefik/Swarm/Portainer antes do workflow final de deploy.
+
+Arquivos atualizados nesta etapa:
+
+- `.github/agents/visiomilhas.agent.md`
+- `.env.example`
+- `docs/ai-context/ENVIRONMENT.md`
+- `docs/ai-context/ARCHITECTURE.md`
+- `docs/ai-context/PROJECT_CONTEXT.md`
+- `docs/ai-context/DECISIONS.md`
+- `docs/ai-context/IMPLEMENTATION_PLAN.md`
+- `docs/ai-context/TODO_AI.md`
+- `docs/ai-context/CHANGELOG_AI.md`
+- `docs/ai-context/DAILY_CHECKPOINT.md`
+- `docs/ai-context/PRODUCTION_DEPLOY_RUNBOOK.md`
+
+Decisões registradas:
+
+- Deploy remoto via GitHub Actions.
+- Usuário SSH `gitdatavisiodeploy`.
+- Diretório remoto `/opt/datavisio/visiomilhas`.
+- Environment `production` já criado e secrets já cadastradas.
+- `.env.production` deve ser gerado no servidor e nunca commitado.
+- `USE_FIFO_MOVEMENTS_ENGINE=0` na produção inicial.
+- Traefik/Docker/Swarm/Portainer precisam ser auditados antes do deploy final.
+
+Pendências:
+
+- Executar auditoria read-only da infraestrutura remota.
+- Definir estratégia final de deploy com base na auditoria.
+
+Próxima etapa recomendada:
+
+1. Rodar a auditoria 1.3.30 com comandos read-only no servidor remoto.
+
 ## 2026-05-21 — 1.3.27.1 — diagnóstico do runtime da compra FIFO
 
 Objetivo:

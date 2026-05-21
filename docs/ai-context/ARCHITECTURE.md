@@ -46,7 +46,10 @@ Domain & Validation layer:
 Deploy:
 
 - CI via GitHub Actions (lint, typecheck, build).
-- Deploy remoto preparado para servidor atrás de proxy reverso; não assumir localhost.
+- Deploy remoto via GitHub Actions para a VPS Hostinger existente.
+- Reutilizar o Traefik existente após auditoria; não criar novo proxy reverso.
+- O deploy final deve usar o usuário SSH `gitdatavisiodeploy` e publicar em `/opt/datavisio/visiomilhas`.
+- O workflow de produção deve rodar em `environment: production` e gerar `.env.production` no host remoto.
 
 Observações operacionais:
 
