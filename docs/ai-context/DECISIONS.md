@@ -118,3 +118,9 @@ Decisões recentes (1.3.21):
 
 - Criar workflow manual (`workflow_dispatch`) para executar testes de integração contra `TEST_DATABASE_URL` no GitHub Actions; o job valida a presença do secret `TEST_DATABASE_URL`, aplica/valida migrations de teste e roda `npm run test:integration`.
 - O workflow não deve expor secrets, não executa seeds e mantém `USE_FIFO_MOVEMENTS_ENGINE=0` durante a execução.
+
+### 2026-05-20 — decisão operacional 1.3.26.1
+
+- A preparação do QA manual da compra FIFO deve ser documentada primeiro e executada com ativação explícita da flag apenas em staging.
+- O validador read-only deve aceitar parâmetros seguros para localizar a compra e a conta, sem fazer writes.
+- Em caso de falha no QA, o rollback operacional é desligar `USE_FIFO_MOVEMENTS_ENGINE` em staging e recarregar a aplicação, sem tocar em produção.

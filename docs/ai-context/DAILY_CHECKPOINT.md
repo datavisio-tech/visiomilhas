@@ -124,6 +124,44 @@ Próxima etapa recomendada:
 
 ---
 
+# CHECKPOINT - 1.3.26.1 preparação do QA manual FIFO
+
+Data: 2026-05-20
+
+- Branch atual: `1.3.26-qa-compra-fifo-staging`.
+- Objetivo: preparar o QA manual da compra FIFO em staging sem ativar a flag automaticamente.
+
+Ações executadas nesta rodada:
+
+- Checklist de QA expandido com pré-condições, ativação controlada da flag, roteiro de compra, validação read-only e rollback.
+- Script `scripts/validate-staging-purchase-fifo.ts` revisado para exigir `STAGING_DATABASE_URL`, validar `current_database() = staging_db` e aceitar parâmetros seguros opcionais.
+- Script npm `db:validate:staging:purchase-fifo` adicionado ao `package.json`.
+- Documentação operacional atualizada para manter `USE_FIFO_MOVEMENTS_ENGINE=1` somente em staging e `0` em produção.
+
+Resumo sanitizado:
+
+- Validador read-only preparado para `--account-id`, `--purchase-id` e `--entry-id`.
+- Nenhuma compra executada.
+- Nenhuma alteração em staging ainda aplicada nesta etapa.
+
+Comandos perigosos NÃO executados:
+
+- `npm run db:seed`
+- qualquer deploy
+- qualquer alteração em produção
+- qualquer uso de `DATABASE_URL`/`TEST_DATABASE_URL` para staging
+
+Pendências:
+
+- Operador ativa a flag em staging, registra horário e executa a compra de teste.
+- Depois, rodar `npm run db:validate:staging:purchase-fifo` com os identificadores coletados.
+
+Próxima etapa recomendada:
+
+1. Aguardar o operador executar a compra de teste em staging e fornecer `accountId`, `purchaseId`/`entryId`, pontos e horário aproximado.
+
+---
+
 ## CHECKPOINT - 1.3.25.1 (ampliação dos testes de integração MovementsRepo)
 
 Data: 2026-05-20

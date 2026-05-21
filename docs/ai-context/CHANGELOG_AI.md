@@ -249,6 +249,36 @@ Notas de segurança:
 - Nenhum dado de produção foi tocado.
 - Nenhuma URL completa foi exposta nos logs desta etapa.
 
+## 2026-05-20 — 1.3.26.1 — preparação do QA manual da compra FIFO em staging
+
+Objetivo:
+
+- Preparar o roteiro operacional para o QA manual da compra FIFO em staging, incluindo ativação controlada da flag, parâmetros de validação read-only e plano de rollback.
+
+Ações executadas nesta rodada:
+
+- Revisado e expandido o checklist [docs/ai-context/STAGING_QA_FIFO_PURCHASE.md](docs/ai-context/STAGING_QA_FIFO_PURCHASE.md).
+- Atualizado o script read-only [scripts/validate-staging-purchase-fifo.ts](scripts/validate-staging-purchase-fifo.ts) para validar `current_database()` e aceitar parâmetros seguros opcionais.
+- Adicionado o script npm [package.json](package.json) para `db:validate:staging:purchase-fifo`.
+- Atualizados os documentos operacionais para registrar flag ON apenas em staging e plano de rollback para `USE_FIFO_MOVEMENTS_ENGINE=0`.
+
+Resultado resumido:
+
+- Checklist de QA: pronto e detalhado.
+- Validador read-only: pronto para uso com `--account-id`, `--purchase-id` e `--entry-id`.
+- Flag: instruções documentadas apenas para staging.
+
+Pendências:
+
+- Aguardar o operador ativar a flag em staging e executar a compra de teste.
+- Depois da compra, rodar o validador read-only com os identificadores coletados.
+
+Notas de segurança:
+
+- Nenhuma seed foi executada.
+- Nenhum deploy foi realizado.
+- Nenhuma mudança em produção foi permitida.
+
 ## 2026-05-20 — 1.3.23 preflight (tentativa)
 
 Objetivo:

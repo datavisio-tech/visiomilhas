@@ -39,6 +39,7 @@ npm run typecheck
 npm run db:check-env
 npm run db:check-connections
 npm run db:seed (exige autorização explícita)
+npm run db:validate:staging:purchase-fifo (read-only; usar após QA manual em staging)
 ```
 
 Status das validações (local):
@@ -58,6 +59,7 @@ Planejamento 1.3.22:
 Nota operacional (2026-05-20):
 
 - As bases `DATABASE_STAGING` e `DATABASE_TEST` foram criadas e estão disponíveis; use `STAGING_DATABASE_URL` e `TEST_DATABASE_URL` explicitamente para preflights e validações. Não usar `DATABASE_URL` como fallback quando houver risco de ambiguidade.
+- O QA manual de compra FIFO em staging usa `USE_FIFO_MOVEMENTS_ENGINE=1` apenas em staging e o validador read-only `npm run db:validate:staging:purchase-fifo` com identificadores seguros da compra/conta.
 
 Notas da versão 1.3.21:
 

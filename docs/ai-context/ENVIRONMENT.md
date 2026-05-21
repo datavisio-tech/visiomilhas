@@ -49,6 +49,8 @@ Controla se rotas/actions operacionais devem usar o motor FIFO de movimentaçõe
 - Quando ausente, vazio, inválido ou diferente dos valores aceitos, o sistema mantém o fluxo legado.
 - Não é secret e deve constar em `.env.example` com valor seguro `0`.
 - Só deve ser ativado após validação da migration de ledger/lotes e testes em ambiente isolado.
+- Para o QA manual de compra FIFO em staging, a ativação deve ser explícita, temporária e acompanhada por registro de horário e responsável.
+- O fluxo de validação read-only pós-compra usa `npm run db:validate:staging:purchase-fifo` com `STAGING_DATABASE_URL` apenas.
 
 // Deploy / CI
 SSH_HOST=CHANGE_ME
@@ -138,3 +140,4 @@ Regras operacionais adicionais:
 - Preferir usar `STAGING_DATABASE_URL`/`TEST_DATABASE_URL` explicitamente em scripts e CI para evitar ambiguidade com `DATABASE_URL`.
 - Migrations só devem ser aplicadas após revisão e autorização explícita; registrar backups/snapshots antes de aplicar.
 - Secrets reais devem ser mantidos no cofre/CI (GitHub Secrets, Vault); não versionar `.env` reais.
+- Ativação temporária de `USE_FIFO_MOVEMENTS_ENGINE=1` só é aceita em staging, nunca em produção.

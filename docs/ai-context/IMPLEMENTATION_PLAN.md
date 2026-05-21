@@ -226,3 +226,9 @@ Progresso estimado (MVP1) atualizado:
 - Objetivo: garantir que o operador humano pode configurar o secret `TEST_DATABASE_URL` e executar o workflow `Integration Tests - MovementsRepo` com segurança.
 - Ação: documentação criada/atualizada com passos para adicionar o secret no GitHub e rodar o workflow manual (`workflow_dispatch`). Scripts de preflight/migrate/validate foram inspecionados para confirmar masking e detecção de comandos destrutivos.
 - Próximo: operador adiciona `TEST_DATABASE_URL` como secret e executa o workflow; após sucesso, planejar PR/push e migração para QA em staging (sob autorização).
+
+### 2026-05-20 — 1.3.26.1 (preparação do QA manual FIFO em staging)
+
+- Objetivo: preparar a execução controlada do QA manual da compra FIFO em staging.
+- Entregáveis: checklist de QA expandido, validador read-only parametrizado, comando npm explícito e instruções de ativação/rollback da flag em staging.
+- Regras: não executar compra automaticamente, não alterar produção, não usar `DATABASE_URL`/`TEST_DATABASE_URL` para staging e não ativar `USE_FIFO_MOVEMENTS_ENGINE` sem confirmação do operador.

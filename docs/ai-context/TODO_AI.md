@@ -147,6 +147,12 @@ Pendências (relacionadas a 1.3.21):
 - Próximo passo: executar validações locais (`test`, `typecheck`, `lint`, `build`) e depois o checklist manual de QA da compra FIFO em staging
 - Regra: não ativar `USE_FIFO_MOVEMENTS_ENGINE` em produção; qualquer ativação em staging depende de nova autorização explícita
 
+2026-05-20 — 1.3.26.1 (preparação do QA manual FIFO)
+
+- Checklist de QA expandido com roteiro de ativação da flag em staging, rollback operacional e parâmetros de validação.
+- Adicionado script npm `db:validate:staging:purchase-fifo`.
+- Próximo passo: aguardar o operador ativar `USE_FIFO_MOVEMENTS_ENGINE=1` apenas em staging, registrar os IDs da compra e então executar a validação read-only.
+
 Status 1.3.14 — Consolidação do motor FIFO puro:
 
 - Motor FIFO consolidado em `lib/services/movements.ts` com testes unitários em `lib/services/__tests__/movements.test.ts`.
