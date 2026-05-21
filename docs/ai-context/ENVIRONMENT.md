@@ -65,6 +65,39 @@
 - O workflow de deploy deve gerar `.env.production` no servidor e nunca commitar esse arquivo.
 - `.env.production` remoto deve receber `chmod 600` após ser gerado.
 
+## Secrets obrigatorias no Environment production
+
+- `APP_NAME`
+- `APP_URL`
+- `NEXT_PUBLIC_APP_URL`
+- `NODE_ENV`
+- `USE_FIFO_MOVEMENTS_ENGINE`
+- `POSTGRES_HOST`
+- `POSTGRES_PORT`
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `POSTGRES_DB`
+- `SAAS_DB`
+- `APP_DB`
+- `DATABASE_URL`
+- `ADM_DATABASE_URL`
+- `APP_DATABASE_URL`
+- `MONGODB_SERVER_IP`
+- `MONGODB_USER`
+- `MONGODB_USER_PASSWORD`
+- `MONGODB_DATABASE`
+- `MONGODB_URI`
+- `AUTH_SECRET`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `PRODUCTION_SSH_HOST`
+- `PRODUCTION_SSH_PORT`
+- `PRODUCTION_SSH_USER`
+- `PRODUCTION_SSH_PRIVATE_KEY`
+
 ## Diferenças entre arquivos de ambiente
 
 - `.env.example`: template seguro para desenvolvimento e revisão.

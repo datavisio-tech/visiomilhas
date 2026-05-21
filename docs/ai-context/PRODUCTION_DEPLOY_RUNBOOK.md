@@ -37,9 +37,10 @@ Os nomes abaixo devem existir no GitHub Environment `production`. Os valores nã
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
-- `SSH_HOST`
-- `SSH_USER`
-- `SSH_PRIVATE_KEY`
+- `PRODUCTION_SSH_HOST`
+- `PRODUCTION_SSH_PORT`
+- `PRODUCTION_SSH_USER`
+- `PRODUCTION_SSH_PRIVATE_KEY`
 
 ## Como o workflow deve validar as secrets
 
@@ -47,6 +48,17 @@ Os nomes abaixo devem existir no GitHub Environment `production`. Os valores nã
 - O job deve falhar cedo se qualquer secret obrigatória estiver ausente.
 - A validação deve checar apenas presença e não imprimir valores.
 - A validação deve manter `USE_FIFO_MOVEMENTS_ENGINE=0` no primeiro deploy.
+
+## Como o workflow deve operar o deploy
+
+- Disparo manual via `workflow_dispatch`.
+- Sincronizar o repositório para `/opt/datavisio/visiomilhas` usando rsync.
+- Gerar `.env.production` no servidor e aplicar `chmod 600`.
+- Construir a imagem no servidor com tag `GITHUB_SHA`.
+- Executar `docker stack deploy -c stack.visiomilhas.yml visiomilhas`.
+- Validar status do stack, tasks e logs do service.
+- Executar smoke test via `curl` no endpoint principal.
+- Nunca executar migrations ou seeds dentro do workflow.
 
 ## Como o workflow deve gerar .env.production no servidor
 

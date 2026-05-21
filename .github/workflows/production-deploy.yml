@@ -1,0 +1,222 @@
+name: Production Deploy - VisioMilhas
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to production Swarm
+    runs-on: ubuntu-latest
+    environment: production
+
+    env:
+      REMOTE_DIR: /opt/datavisio/visiomilhas
+      IMAGE_NAME: datavisio/visiomilhas
+      STACK_NAME: visiomilhas
+      SERVICE_NAME: visiomilhas_visiomilhas_app
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            PRODUCTION_SSH_HOST
+            PRODUCTION_SSH_PORT
+            PRODUCTION_SSH_USER
+            PRODUCTION_SSH_PRIVATE_KEY
+            APP_NAME
+            APP_URL
+            NEXT_PUBLIC_APP_URL
+            NODE_ENV
+            USE_FIFO_MOVEMENTS_ENGINE
+            POSTGRES_HOST
+            POSTGRES_PORT
+            POSTGRES_USER
+            POSTGRES_PASSWORD
+            POSTGRES_DB
+            SAAS_DB
+            APP_DB
+            DATABASE_URL
+            ADM_DATABASE_URL
+            APP_DATABASE_URL
+            MONGODB_SERVER_IP
+            MONGODB_USER
+            MONGODB_USER_PASSWORD
+            MONGODB_DATABASE
+            MONGODB_URI
+          )
+
+          for name in "${required[@]}"; do
+            if [ -z "${!name:-}" ]; then
+              echo "Missing required secret/env: ${name}"
+              exit 1
+            fi
+          done
+
+          echo "Required production secrets are present."
+        env:
+          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+          PRODUCTION_SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
+          PRODUCTION_SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+          PRODUCTION_SSH_PRIVATE_KEY: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          APP_NAME: ${{ secrets.APP_NAME }}
+          APP_URL: ${{ secrets.APP_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+          NODE_ENV: ${{ secrets.NODE_ENV }}
+          USE_FIFO_MOVEMENTS_ENGINE: ${{ secrets.USE_FIFO_MOVEMENTS_ENGINE }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          SAAS_DB: ${{ secrets.SAAS_DB }}
+          APP_DB: ${{ secrets.APP_DB }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ADM_DATABASE_URL: ${{ secrets.ADM_DATABASE_URL }}
+          APP_DATABASE_URL: ${{ secrets.APP_DATABASE_URL }}
+          MONGODB_SERVER_IP: ${{ secrets.MONGODB_SERVER_IP }}
+          MONGODB_USER: ${{ secrets.MONGODB_USER }}
+          MONGODB_USER_PASSWORD: ${{ secrets.MONGODB_USER_PASSWORD }}
+          MONGODB_DATABASE: ${{ secrets.MONGODB_DATABASE }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+
+      - name: Configure SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${PRODUCTION_SSH_PRIVATE_KEY}" > ~/.ssh/visiomilhas_deploy_key
+          chmod 600 ~/.ssh/visiomilhas_deploy_key
+          ssh-keyscan -p "${PRODUCTION_SSH_PORT}" "${PRODUCTION_SSH_HOST}" >> ~/.ssh/known_hosts
+        env:
+          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+          PRODUCTION_SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
+          PRODUCTION_SSH_PRIVATE_KEY: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+
+      - name: Ensure remote directory exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${PRODUCTION_SSH_PORT}" "${PRODUCTION_SSH_USER}@${PRODUCTION_SSH_HOST}" "mkdir -p '${REMOTE_DIR}' && test -w '${REMOTE_DIR}'"
+        env:
+          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+          PRODUCTION_SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
+          PRODUCTION_SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+
+      - name: Sync source to server
+        shell: bash
+        run: |
+          set -euo pipefail
+          rsync -az --delete \
+            --exclude '.git' \
+            --exclude 'node_modules' \
+            --exclude '.next' \
+            --exclude '.env' \
+            --exclude '.env.*' \
+            --exclude '.claude' \
+            --exclude 'coverage' \
+            --exclude 'logs' \
+            --exclude '*.log' \
+            --exclude '*.tmp' \
+            --exclude '*.cache' \
+            --exclude '*.sqlite' \
+            --exclude '*.sqlite3' \
+            --exclude '*.dump' \
+            --exclude '*.bak' \
+            --exclude '*.backup' \
+            --exclude '*.zip' \
+            --exclude '*.tar' \
+            --exclude '*.tgz' \
+            --exclude '*.gz' \
+            -e "ssh -i ~/.ssh/visiomilhas_deploy_key -p ${PRODUCTION_SSH_PORT}" \
+            ./ "${PRODUCTION_SSH_USER}@${PRODUCTION_SSH_HOST}:${REMOTE_DIR}/"
+        env:
+          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+          PRODUCTION_SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
+          PRODUCTION_SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+
+      - name: Render production env on server
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${PRODUCTION_SSH_PORT}" "${PRODUCTION_SSH_USER}@${PRODUCTION_SSH_HOST}" "cd '${REMOTE_DIR}' && umask 177 && cat > .env.production <<'EOF'
+APP_NAME=${APP_NAME}
+APP_URL=${APP_URL}
+NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+NODE_ENV=${NODE_ENV}
+USE_FIFO_MOVEMENTS_ENGINE=${USE_FIFO_MOVEMENTS_ENGINE}
+POSTGRES_HOST=${POSTGRES_HOST}
+POSTGRES_PORT=${POSTGRES_PORT}
+POSTGRES_USER=${POSTGRES_USER}
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+POSTGRES_DB=${POSTGRES_DB}
+SAAS_DB=${SAAS_DB}
+APP_DB=${APP_DB}
+DATABASE_URL=${DATABASE_URL}
+ADM_DATABASE_URL=${ADM_DATABASE_URL}
+APP_DATABASE_URL=${APP_DATABASE_URL}
+MONGODB_SERVER_IP=${MONGODB_SERVER_IP}
+MONGODB_USER=${MONGODB_USER}
+MONGODB_USER_PASSWORD=${MONGODB_USER_PASSWORD}
+MONGODB_DATABASE=${MONGODB_DATABASE}
+MONGODB_URI=${MONGODB_URI}
+EOF
+chmod 600 .env.production
+
+test -s .env.production
+"
+        env:
+          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+          PRODUCTION_SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
+          PRODUCTION_SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+          APP_NAME: ${{ secrets.APP_NAME }}
+          APP_URL: ${{ secrets.APP_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+          NODE_ENV: ${{ secrets.NODE_ENV }}
+          USE_FIFO_MOVEMENTS_ENGINE: ${{ secrets.USE_FIFO_MOVEMENTS_ENGINE }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          SAAS_DB: ${{ secrets.SAAS_DB }}
+          APP_DB: ${{ secrets.APP_DB }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ADM_DATABASE_URL: ${{ secrets.ADM_DATABASE_URL }}
+          APP_DATABASE_URL: ${{ secrets.APP_DATABASE_URL }}
+          MONGODB_SERVER_IP: ${{ secrets.MONGODB_SERVER_IP }}
+          MONGODB_USER: ${{ secrets.MONGODB_USER }}
+          MONGODB_USER_PASSWORD: ${{ secrets.MONGODB_USER_PASSWORD }}
+          MONGODB_DATABASE: ${{ secrets.MONGODB_DATABASE }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+
+      - name: Build image and deploy stack
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${PRODUCTION_SSH_PORT}" "${PRODUCTION_SSH_USER}@${PRODUCTION_SSH_HOST}" "cd '${REMOTE_DIR}' && docker build -t '${IMAGE_NAME}:${GITHUB_SHA}' . && VISIOMILHAS_IMAGE_TAG='${GITHUB_SHA}' docker stack deploy -c stack.visiomilhas.yml '${STACK_NAME}'"
+        env:
+          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+          PRODUCTION_SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
+          PRODUCTION_SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+
+      - name: Validate deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${PRODUCTION_SSH_PORT}" "${PRODUCTION_SSH_USER}@${PRODUCTION_SSH_HOST}" "docker stack services '${STACK_NAME}' && docker service ps '${SERVICE_NAME}' --no-trunc && docker service logs '${SERVICE_NAME}' --tail 80"
+          curl -fsS --retry 5 --retry-delay 5 "${APP_URL}/" > /dev/null
+          echo "Production smoke test passed for ${IMAGE_NAME}:${GITHUB_SHA}."
+        env:
+          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+          PRODUCTION_SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
+          PRODUCTION_SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+          APP_URL: ${{ secrets.APP_URL }}

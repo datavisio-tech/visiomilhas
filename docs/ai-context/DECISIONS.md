@@ -164,4 +164,11 @@ Decisões recentes (1.3.21):
 - O `certresolver` do Traefik identificado na auditoria é `le`.
 - O primeiro deploy pode construir a imagem no servidor antes do `docker stack deploy`, sem registry obrigatório nesta etapa.
 
+### 2026-05-21 — workflow manual de deploy 1.3.32
+
+- O deploy de producao sera acionado manualmente via `workflow_dispatch`.
+- O workflow sincroniza o repositorio para `/opt/datavisio/visiomilhas` e gera `.env.production` no host.
+- A imagem e construida no servidor com tag `GITHUB_SHA` antes do `docker stack deploy`.
+- O workflow nao executa migrations ou seeds.
+
 Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `security-review`, `test`.

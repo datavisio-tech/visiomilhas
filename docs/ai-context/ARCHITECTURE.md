@@ -52,6 +52,7 @@ Deploy:
 - O workflow de produção deve rodar em `environment: production` e gerar `.env.production` no host remoto.
 - Auditoria 1.3.30 confirmou Swarm ativo; a estratégia recomendada passa a ser `docker stack deploy` com a rede `traefik_public`.
 - A etapa 1.3.31 adiciona Dockerfile, `.dockerignore`, `stack.visiomilhas.yml` e healthcheck para suportar o caminho Swarm.
+- A etapa 1.3.32 cria o workflow manual de deploy que sincroniza o repo via rsync, faz build no servidor e aplica `docker stack deploy`.
 
 Observações operacionais:
 
