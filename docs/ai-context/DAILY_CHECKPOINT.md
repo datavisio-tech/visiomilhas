@@ -1,3 +1,19 @@
+# CHECKPOINT - 1.3.31 — artefatos Docker Swarm de produção
+
+Data: 2026-05-21
+
+- Branch atual: `1.3.31-production-swarm-artifacts`.
+- Status Git inicial desta etapa: `M .env.example`, `?? .claude/`.
+- Objetivo: preparar Dockerfile, `.dockerignore`, `stack.visiomilhas.yml` e healthcheck para Swarm.
+- `next.config.mjs` passou a usar `output: "standalone"`.
+- `scripts/healthcheck.js` verifica `http://127.0.0.1:3000/` sem expor segredos.
+- `stack.visiomilhas.yml` usa `traefik_public`, não publica `3000` no host e reutiliza o `certresolver` `le` confirmado na auditoria.
+- Nenhum deploy foi executado.
+
+Próxima etapa recomendada:
+
+1. Rodar validações locais e então preparar o workflow de deploy 1.3.32.
+
 # CHECKPOINT - 1.3.30.1 — padronização do .env.example e docs operacionais
 
 Data: 2026-05-21

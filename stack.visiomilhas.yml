@@ -1,0 +1,48 @@
+version: "3.8"
+
+x-visiomilhas-common: &visiomilhas-common
+  image: datavisio/visiomilhas:${VISIOMILHAS_IMAGE_TAG:-latest}
+  env_file:
+    - .env.production
+  networks:
+    - traefik_public
+  deploy:
+    replicas: 1
+    restart_policy:
+      condition: on-failure
+      delay: 5s
+      max_attempts: 3
+      window: 30s
+    update_config:
+      parallelism: 1
+      delay: 10s
+      order: start-first
+      failure_action: rollback
+    rollback_config:
+      parallelism: 1
+      delay: 10s
+      order: stop-first
+    resources:
+      limits:
+        cpus: "0.75"
+        memory: 512M
+      reservations:
+        cpus: "0.25"
+        memory: 256M
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "traefik_public"
+      traefik.http.routers.visiomilhas.rule: "Host(`visiomilhas.visiochat.cloud`)"
+      traefik.http.routers.visiomilhas.entrypoints: "websecure"
+      traefik.http.routers.visiomilhas.tls: "true"
+      traefik.http.routers.visiomilhas.tls.certresolver: "le"
+      traefik.http.services.visiomilhas.loadbalancer.server.port: "3000"
+
+services:
+  visiomilhas_app:
+    <<: *visiomilhas-common
+    command: ["node", "server.js"]
+
+networks:
+  traefik_public:
+    external: true

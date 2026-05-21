@@ -39,7 +39,8 @@
     "db:migrate:test:base": "tsx scripts/apply-test-base-migrations.ts",
     "db:migrate:test:ledger": "tsx scripts/apply-test-ledger-migration.ts",
     "db:validate:test:base": "tsx scripts/validate-test-base-schema.ts",
-    "db:validate:test:ledger": "tsx scripts/validate-test-ledger-migration.ts"
+    "db:validate:test:ledger": "tsx scripts/validate-test-ledger-migration.ts",
+    "healthcheck": "node scripts/healthcheck.js"
   },
   "dependencies": {
     "lucide-react": "^1.16.0",

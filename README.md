@@ -95,6 +95,7 @@ Referência de ambiente e deploy:
 - Veja `docs/ai-context/ENVIRONMENT.md` para a convenção de variáveis e placeholders.
 - Veja `docs/ai-context/PRODUCTION_DEPLOY_RUNBOOK.md` para o fluxo de `.env.production` e deploy remoto.
 - A produção inicial deve manter `USE_FIFO_MOVEMENTS_ENGINE=0` até validação explícita.
+- Os artefatos de produção Swarm estão em `Dockerfile`, `.dockerignore` e `stack.visiomilhas.yml`.
 
 Notas da versão 1.3.12 (preparação do schema para ledger/FIFO):
 

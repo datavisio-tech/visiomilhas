@@ -132,3 +132,14 @@ Executar apenas leitura. Não alterar arquivos, serviços, containers ou volumes
 - `MONGODB_USER`
 - `MONGODB_USER_PASSWORD`
 - `MONGODB_DATABASE`
+
+## Artefatos Swarm 1.3.31
+
+- O Dockerfile desta etapa será multi-stage, non-root e baseado em Node 24.
+- O `stack.visiomilhas.yml` usa a rede externa `traefik_public` e não publica `3000` no host.
+- O healthcheck do container usa `scripts/healthcheck.js` e consulta `http://127.0.0.1:3000/`.
+- O certresolver do Traefik foi confirmado na auditoria como `le` e deve ser reutilizado.
+
+## Comando futuro esperado
+
+- `docker stack deploy -c stack.visiomilhas.yml visiomilhas`

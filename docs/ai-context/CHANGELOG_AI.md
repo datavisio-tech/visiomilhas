@@ -98,6 +98,25 @@ Próxima etapa recomendada:
 
 1. Criar os artefatos Docker/Swarm de produção e o stack `stack.visiomilhas.yml`.
 
+## 2026-05-21 — 1.3.31 — artefatos Docker Swarm de produção
+
+Objetivo:
+
+- Preparar o aplicativo para deploy em Swarm com Traefik existente, sem expor a porta 3000 no host.
+
+Resultado esperado desta etapa:
+
+- `next.config.mjs` ajustado para `output: "standalone"`.
+- Dockerfile multi-stage não-root criado para Next.js 14.
+- `.dockerignore` seguro para build.
+- `scripts/healthcheck.js` validando `http://127.0.0.1:3000/`.
+- `stack.visiomilhas.yml` compatível com Swarm, rede `traefik_public` e labels Traefik em `deploy.labels`.
+
+Pendências:
+
+- Confirmar que o build local fecha com o novo Dockerfile e standalone output.
+- Definir a etapa seguinte de workflow de deploy e estratégia de build/tag da imagem.
+
 ## 2026-05-21 — 1.3.27.1 — diagnóstico do runtime da compra FIFO
 
 Objetivo:

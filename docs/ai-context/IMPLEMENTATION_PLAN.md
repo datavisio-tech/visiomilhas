@@ -170,6 +170,7 @@ Objetivo:
 
 - Definir os artefatos Docker necessários para produção com base na auditoria.
 - Criar Dockerfile e `stack.visiomilhas.yml` compatíveis com Swarm e Traefik existente.
+- Criar `.dockerignore` e healthcheck local do container.
 
 ## 1.3.32 — workflow de deploy
 
@@ -178,6 +179,16 @@ Objetivo:
 - Criar o workflow de GitHub Actions para deploy remoto usando `environment: production`.
 - Gerar `.env.production` no servidor e aplicar permissões restritas.
 - Validar healthcheck e rollback do primeiro deploy.
+
+## 1.3.31.1 — produção Swarm preparada
+
+Objetivo:
+
+- Consolidar os artefatos de produção com Next standalone, stack Swarm e labels Traefik corretas.
+
+Próxima entrega:
+
+- Seguir com 1.3.32: workflow de deploy remoto.
 
 ## 1.3.33 — primeiro deploy controlado
 

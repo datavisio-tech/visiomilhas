@@ -117,7 +117,10 @@ O agente deve sempre responder com evidências mínimas:
 - `USE_FIFO_MOVEMENTS_ENGINE` deve permanecer `0` na produção inicial.
 - Antes do deploy final, auditar o Traefik existente, o modo Docker/Swarm e o diretório remoto.
 - A auditoria 1.3.30 confirmou Swarm ativo, Traefik como serviço e a rede `traefik_public`.
+- A produção 1.3.31 usa `Dockerfile`, `.dockerignore` e `stack.visiomilhas.yml` com `output: standalone`.
+- Não usar docker compose standalone para produção.
 - Não criar um novo Traefik; reutilizar a infraestrutura existente após auditoria.
+- Não expor a porta 3000 no host; acesso externo deve ocorrer apenas via Traefik.
 
 Este padrão existe para reduzir prompts longos no chat e manter continuidade operacional do projeto.
 

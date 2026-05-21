@@ -28,6 +28,14 @@
 - Próxima etapa técnica: criar `stack.visiomilhas.yml`, Dockerfile e workflow de deploy.
 - Validar healthcheck e rollback na mesma trilha de produção.
 
+## 1.3.31 — artefatos Swarm em andamento
+
+- `certresolver` do Traefik confirmado como `le` e será reutilizado.
+- Decidir a estratégia de imagem para o primeiro deploy: build no servidor sem registry obrigatório nesta etapa.
+- Validar que o stack não publica `3000` diretamente no host.
+- Definir rollback operacional do stack `visiomilhas`.
+- Criar workflow de deploy apenas na próxima etapa.
+
 Concluído recentemente:
 
 - Diagnóstico 1.3.27.1 do runtime local: usa `APP_DATABASE_URL`, aponta para `visiomilhas_app` e não possui `mile_point_lots`.

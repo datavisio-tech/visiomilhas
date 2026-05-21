@@ -157,4 +157,11 @@ Decisões recentes (1.3.21):
 - `.env.production` será gerado pelo workflow de deploy a partir das secrets do GitHub Environment `production`.
 - O domínio público real fica para documentação e secrets, nunca como valor real em `.env.example`.
 
+### 2026-05-21 — produção Swarm 1.3.31
+
+- A produção do VisioMilhas usará Docker Swarm e o Traefik existente via rede `traefik_public`.
+- O acesso externo não deve expor a porta 3000 no host.
+- O `certresolver` do Traefik identificado na auditoria é `le`.
+- O primeiro deploy pode construir a imagem no servidor antes do `docker stack deploy`, sem registry obrigatório nesta etapa.
+
 Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `security-review`, `test`.
