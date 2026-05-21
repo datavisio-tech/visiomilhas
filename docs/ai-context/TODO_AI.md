@@ -2,6 +2,15 @@
 
 Concluído recentemente:
 
+- QA 1.3.27 retomado em staging: preflight, base, ledger e validador read-only sem IDs passaram, mas sem compra detectável.
+
+Pendência imediata:
+
+- Aguardar compra manual pequena em staging com a flag ativa e receber `accountId`/`purchaseId`/`entryId` para rodar a validação read-only filtrada.
+- Solicitar rollback da flag para `USE_FIFO_MOVEMENTS_ENGINE=0` após o QA.
+
+Concluído recentemente:
+
 - Validar runtime da página de compras 1.3.26.3: OK, sem reproduzir `Cannot redefine property: $$id`; `USE_FIFO_MOVEMENTS_ENGINE` permaneceu OFF.
 
 Prioridades imediatas:

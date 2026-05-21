@@ -1,5 +1,36 @@
 # STAGING QA — Compra FIFO (1.3.26)
 
+## 1.3.27 — QA controlado em staging após ativação manual da flag
+
+Objetivo
+
+- Continuar o QA controlado da compra FIFO em staging agora que o operador informou ativação manual da flag.
+
+Status atual
+
+- Branch: `1.3.27-qa-compra-fifo-staging`.
+- Preflight staging: OK, `current_database(): staging_db`.
+- Schema base staging: OK.
+- Ledger/FIFO staging: OK.
+- Validador read-only sem IDs: executado, sem compra recente detectável.
+- `mile_entries_count`: `0`.
+- `mile_point_lots_count`: `0`.
+- `program_accounts_count`: `0`.
+
+Próxima ação do operador
+
+- Fazer uma compra pequena em staging com a flag ativa.
+- Anotar horário aproximado, conta/program account, pontos, custo, resultado visual e eventuais IDs (`accountId`, `purchaseId`, `entryId`).
+- Informar esses dados para rodar o validador read-only com parâmetros.
+- Depois, reverter a flag para `USE_FIFO_MOVEMENTS_ENGINE=0` em staging.
+
+Validações executadas nesta retomada
+
+- `npm run db:preflight:staging` — OK.
+- `npm run db:validate:staging:base` — OK.
+- `npm run db:validate:staging:ledger` — OK.
+- `npm run db:validate:staging:purchase-fifo` — rodou sem IDs e não encontrou compra/lote recente.
+
 ## 1.3.26.3 — Validação de runtime da página de compras
 
 Objetivo

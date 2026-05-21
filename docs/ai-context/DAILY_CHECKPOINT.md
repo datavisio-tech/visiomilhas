@@ -1,3 +1,21 @@
+# CHECKPOINT - 1.3.27 — QA controlado da compra FIFO em staging
+
+Data: 2026-05-21
+
+- Branch atual: `1.3.27-qa-compra-fifo-staging`.
+- Status Git inicial desta retomada: `?? .claude/`.
+- Preflight staging: OK, com `current_database(): staging_db` e host/usuário mascarados.
+- Schema base staging: OK.
+- Ledger/FIFO staging: OK.
+- Validador read-only sem IDs: executado e sem compra/lote recente detectável; contadores retornaram `mile_entries_count: 0`, `mile_point_lots_count: 0`, `program_accounts_count: 0`.
+- Compra manual ainda é necessária para continuar a validação com IDs.
+- A flag foi informada como ativada manualmente pelo operador; o agente não alterou `.env`.
+- Próximo passo: aguardar a compra de QA em staging e os identificadores para rodar o validador read-only com filtros.
+
+Próxima etapa recomendada:
+
+1. Fazer a compra pequena em staging com a flag ativa e informar os IDs gerados.
+
 # CHECKPOINT - 1.3.26.3 — validação de runtime da página de compras
 
 Data: 2026-05-21

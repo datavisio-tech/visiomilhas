@@ -1,5 +1,24 @@
 # CHANGELOG_AI
 
+## 2026-05-21 — 1.3.27 — QA controlado da compra FIFO em staging (retomada)
+
+Objetivo:
+
+- Registrar a retomada do QA após a ativação manual da flag em staging.
+
+Estado validado nesta retomada:
+
+- Branch: `1.3.27-qa-compra-fifo-staging`.
+- Preflight staging: OK (`staging_db`).
+- Base staging: OK.
+- Ledger/FIFO staging: OK.
+- Validador read-only sem IDs: executado, mas sem compra recente detectável.
+
+Pendência:
+
+- A compra manual em staging ainda precisa ser executada ou informada com IDs suficientes.
+- Após a validação, a flag deve voltar para `USE_FIFO_MOVEMENTS_ENGINE=0` em staging.
+
 ## 2026-05-21 — 1.3.26.4 — regularização documental antes do QA staging
 
 Objetivo:
