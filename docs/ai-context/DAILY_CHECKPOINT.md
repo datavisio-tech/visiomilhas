@@ -89,49 +89,26 @@ Próxima etapa recomendada:
 
 Data: 2026-05-20
 
-- Branch atual: `1.3.26-qa-compra-fifo-staging`.
-- Objetivo: preparar a etapa 1.3.26 com validação read-only de staging antes do QA manual de compra FIFO.
 
 Ações executadas nesta rodada:
 
-- Confirmado o estado do branch local e a referência `origin/main`.
-- Registrada documentação operacional da etapa 1.3.26 em `CHANGELOG_AI.md` e `TODO_AI.md`.
-- Executado `npm run db:preflight:staging` — OK.
-- Executado `npm run db:validate:staging:base` — OK.
-- Executado `npm run db:validate:staging:ledger` — OK.
 
 Resumo sanitizado:
 
-- `current_database(): staging_db`
-- `program_accounts`, `mile_entries`, `mile_transfers`: FOUND
-- `mile_point_lots` e índices principais: FOUND
 
 Comandos perigosos NÃO executados:
 
-- `npm run db:seed`
-- qualquer operação em produção
-- qualquer operação com `DATABASE_URL`
-- qualquer operação com `TEST_DATABASE_URL` em staging
 
 Pendências:
 
-- Validar `npm run test`, `npm run typecheck`, `npm run lint` e `npm run build` localmente.
-- Executar o checklist manual de QA da compra FIFO em staging somente com `USE_FIFO_MOVEMENTS_ENGINE` habilitado no ambiente correto.
 
 Próxima etapa recomendada:
 
 1. Rodar as validações locais e, se passarem, revisar o checklist manual antes de autorizar a ativação da flag em staging.
 
----
 
 # CHECKPOINT - 1.3.26.1 preparação do QA manual FIFO
 
-Data: 2026-05-20
-
-- Branch atual: `1.3.26-qa-compra-fifo-staging`.
-- Objetivo: preparar o QA manual da compra FIFO em staging sem ativar a flag automaticamente.
-
-Ações executadas nesta rodada:
 
 - Checklist de QA expandido com pré-condições, ativação controlada da flag, roteiro de compra, validação read-only e rollback.
 - Script `scripts/validate-staging-purchase-fifo.ts` revisado para exigir `STAGING_DATABASE_URL`, validar `current_database() = staging_db` e aceitar parâmetros seguros opcionais.

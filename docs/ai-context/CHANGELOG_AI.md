@@ -222,33 +222,43 @@ Nota: nenhuma migration foi aplicada; alterações são documentais e de prepara
 
 Objetivo:
 
-- Consolidar a documentação operacional da etapa 1.3.26 e validar a base de staging antes do QA manual de compra FIFO.
 
 Ações executadas nesta rodada:
 
-- Confirmado o branch de trabalho `1.3.26-qa-compra-fifo-staging`.
-- Sincronizada a referência remota `origin/main` e conferido que `main` está alinhado ao merge da PR #1.
-- Executado `npm run db:preflight:staging` com sucesso.
-- Executado `npm run db:validate:staging:base` com sucesso.
-- Executado `npm run db:validate:staging:ledger` com sucesso.
 
 Resultado resumido:
 
-- `current_database(): staging_db`
-- Schema base de staging: OK
-- Schema ledger de staging: OK
 
 Pendências:
 
-- Rodar as validações locais `npm run test`, `npm run typecheck`, `npm run lint` e `npm run build`.
-- Executar o checklist manual de QA de compra FIFO em staging antes de considerar qualquer ativação da flag.
 
 Notas de segurança:
 
-- Nenhuma seed foi executada.
-- Nenhum dado de produção foi tocado.
-- Nenhuma URL completa foi exposta nos logs desta etapa.
 
+
+## 2026-05-20 — Uso controlado de skills locais (decisão operacional)
+
+Objetivo:
+
+- Definir regras de uso para as skills locais instaladas em `.claude/skills`, garantindo que sejam ferramentas de apoio e não autoridade operacional.
+
+Ações:
+
+- Documentado o escopo e limites das skills locais no agente residente: `.github/agents/visiomilhas.agent.md` (seção `Uso controlado de skills locais`).
+- Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `security-review`, `test`.
+
+Decisão:
+
+- As skills locais podem ser consultadas, mas não podem autorizar push/PR/merge/deploy/seed/migration/alterações em produção sem autorização explícita do operador.
+- Em caso de conflito entre a sugestão da skill e as regras do agente ou docs operacionais, o agente registra o conflito e pede confirmação humana.
+
+Riscos mitigados:
+
+- Evita automações perigosas que possam alterar DBs, expor secrets ou empurrar mudanças sem revisão.
+
+Próxima etapa:
+
+- Registrar esta decisão em `docs/ai-context/DECISIONS.md`, `docs/ai-context/DAILY_CHECKPOINT.md` e `docs/ai-context/TODO_AI.md`.
 ## 2026-05-20 — 1.3.26.1 — preparação do QA manual da compra FIFO em staging
 
 Objetivo:

@@ -180,6 +180,13 @@ Status 1.3.16 (implementação do repo):
 - `lib/repositories/movements.drizzle-repo.ts` implementado como adapter Drizzle.
 - Próximo: preparar testes de integração em DB de desenvolvimento isolado e documento de rollback/aplicação de migration.
 
+2026-05-20 — Uso controlado de skills locais (decisão operacional)
+
+- Registrar as skills locais instaladas em `.claude/skills` e seu escopo de uso no agente residente.
+- Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `security-review`, `test`.
+- Ação: atualizar `.github/agents/visiomilhas.agent.md` com regras e limites (feito localmente).
+- Validação: rodar `npm run lint` e `npm run typecheck` após alterações documentais.
+
 Nota (2026-05-18): adicionado esqueleto de testes de integração em `tests/integration/movements.drizzle-repo.test.ts`.
 Estes testes são placeholders e dependem de variáveis de ambiente (`APP_DATABASE_URL` ou `DATABASE_URL`) apontando para um banco de desenvolvimento isolado. Não execute `npm run test:integration` contra bancos de produção.
 

@@ -40,6 +40,10 @@ npm run db:check-env
 npm run db:check-connections
 npm run db:seed (exige autorização explícita)
 npm run db:validate:staging:purchase-fifo (read-only; usar após QA manual em staging)
+
+Nota sobre skills locais:
+
+- O repositório pode conter skills locais em `.claude/skills` usadas para auxílio (code-review, frontend-patterns, security-review, test, saas-multi-tenant). Essas skills são ferramentas de apoio: regras operacionais e decisões finais residem no agente residente (`.github/agents/visiomilhas.agent.md`) e na documentação em `docs/ai-context`.
 ```
 
 Status das validações (local):

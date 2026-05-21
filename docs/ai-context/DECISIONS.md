@@ -124,3 +124,11 @@ Decisões recentes (1.3.21):
 - A preparação do QA manual da compra FIFO deve ser documentada primeiro e executada com ativação explícita da flag apenas em staging.
 - O validador read-only deve aceitar parâmetros seguros para localizar a compra e a conta, sem fazer writes.
 - Em caso de falha no QA, o rollback operacional é desligar `USE_FIFO_MOVEMENTS_ENGINE` em staging e recarregar a aplicação, sem tocar em produção.
+
+### 2026-05-20 — Uso controlado de skills locais
+
+- Skills locais em `.claude/skills` são consideradas ferramentas de apoio; o agente residente é a autoridade final para decisões operacionais.
+- Skills podem ser consultadas para recomendações, auditorias de código e sugestões, mas NÃO podem autorizar ações operacionais (push, PR, merge, deploy, seed, migration) sem aprovação humana explícita.
+- Em caso de conflito entre a recomendação de uma skill e a documentação/decisões do projeto, o agente deve registrar o conflito, documentar o risco e solicitar confirmação do operador.
+
+Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `security-review`, `test`.

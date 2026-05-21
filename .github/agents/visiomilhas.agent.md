@@ -168,3 +168,151 @@ O agente não deve assumir que uma etapa foi concluída sem verificar commits, a
   Validação executada, se houver.
   Status Git final.
   Próxima etapa recomendada.
+
+## Uso controlado de skills locais
+
+As skills locais presentes em `.claude/skills` foram adicionadas ao repositório como ferramentas de apoio. Este agente define regras explícitas para seu uso, garantindo que o agente residente e a documentação operacional permaneçam a autoridade final.
+
+### Prioridade das fontes
+
+- As skills locais em `.claude/skills` podem ser usadas como apoio especializado, mas nunca substituem, por ordem de prioridade:
+  1. as instruções deste agente residente (`.github/agents/visiomilhas.agent.md`);
+  2. a documentação operacional em `docs/ai-context`;
+  3. as decisões registradas em `docs/ai-context/DECISIONS.md`;
+  4. as regras de segurança do projeto;
+  5. as autorizações explícitas do operador (humano).
+
+Se uma skill sugerir algo conflitante com o agente ou com os docs operacionais, o agente deve registrar o conflito, explicar o risco e pedir confirmação antes de agir.
+
+### Skills disponíveis e uso recomendado
+
+#### `code-review`
+
+Usar em:
+- revisão de diffs antes de commit/PR;
+- revisão de Server Actions;
+- revisão de scripts de banco;
+- revisão de migrations;
+- revisão de feature flags;
+- revisão de CI/CD;
+- revisão de mudanças sensíveis em autenticação, billing ou multi-tenancy.
+
+Limites:
+- não fazer push;
+- não abrir PR;
+- não fazer merge;
+- não executar deploy;
+- não alterar código automaticamente sem escopo definido;
+- deve listar riscos, impacto, arquivos alterados e testes recomendados.
+
+#### `frontend-patterns`
+
+Usar apenas para:
+- React/Next.js;
+- componentes;
+- formulários;
+- Tailwind;
+- shadcn/ui;
+- acessibilidade;
+- responsividade;
+- estados de loading/erro;
+- performance visual.
+
+Não usar para decidir:
+- banco;
+- migrations;
+- Server Actions;
+- feature flags;
+- regras FIFO;
+- billing;
+- autenticação;
+- deploy;
+- arquitetura multi-tenant.
+
+#### `saas-multi-tenant`
+
+Usar para:
+- organizações/workspaces;
+- tenants;
+- papéis e permissões;
+- isolamento de dados;
+- onboarding;
+- billing SaaS;
+- auditoria;
+- separação entre base administrativa e base específica do SaaS.
+
+Regras específicas DataVisio:
+- dados administrativos reutilizáveis pertencem à base `controle_adm_saas_datavisio`;
+- dados de negócio do VisioMilhas pertencem à base específica da aplicação;
+- qualquer nova tabela/coleção deve ser classificada entre contexto administrativo compartilhado ou contexto específico do SaaS;
+- nunca assumir single-tenant.
+
+#### `security-review`
+
+Usar em:
+- Server Actions;
+- autenticação/autorização;
+- variáveis `.env`;
+- GitHub Secrets;
+- scripts de banco;
+- CI/CD;
+- staging/produção;
+- logs;
+- multi-tenancy;
+- Stripe/billing;
+- migrations;
+- validação Zod;
+- proteção contra vazamento de dados.
+
+Limites:
+- pode recomendar correções;
+- não deve executar ações operacionais sensíveis sem autorização;
+- deve sempre preservar mascaramento de secrets e URLs.
+
+#### `test`
+
+Usar para:
+- testes unitários;
+- testes de integração;
+- Vitest;
+- mocks;
+- rollback;
+- CI;
+- cobertura de Server Actions;
+- cenários de regressão;
+- validação de feature flags.
+
+Regras:
+- testes de integração devem usar `TEST_DATABASE_URL`;
+- validações staging read-only devem usar `STAGING_DATABASE_URL`;
+- nunca usar `DATABASE_URL` por conveniência;
+- não executar seeds sem autorização;
+- não tocar produção.
+
+### Quando considerar uma skill
+
+O agente deve considerar skills locais quando a tarefa envolver diretamente seu domínio:
+- mudanças de UI/frontend → considerar `frontend-patterns`;
+- revisão antes de PR/commit sensível → considerar `code-review`;
+- tenants, roles, billing, workspaces → considerar `saas-multi-tenant`;
+- secrets, auth, banco, CI, Server Actions, produção/staging → considerar `security-review`;
+- testes, CI, rollback, mocks, integração → considerar `test`.
+
+Mesmo quando uma skill for considerada, o agente deve continuar seguindo o escopo do prompt atual e as regras deste agente.
+
+### Antes de adicionar novas skills
+
+Antes de recomendar ou usar novas skills, auditar:
+- `SKILL.md`;
+- scripts incluídos;
+- permissões esperadas;
+- risco de rede/deploy;
+- risco de acesso a secrets;
+- risco de alteração destrutiva;
+- compatibilidade com Next.js, TypeScript, Drizzle, PostgreSQL, MongoDB e GitHub Actions.
+
+Não instalar nem ativar skills que façam deploy automático, push automático, merge automático, manipulação destrutiva de banco ou leitura/impressão de secrets sem revisão explícita.
+
+---
+
+As demais regras operacionais do agente permanecem válidas. Sempre registre um checkpoint em `docs/ai-context/DAILY_CHECKPOINT.md` ou `CHANGELOG_AI.md` ao executar ações relevantes.
