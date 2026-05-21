@@ -1,5 +1,18 @@
 # CHANGELOG_AI
 
+## 2026-05-21 — 1.3.26.4 — regularização documental antes do QA staging
+
+Objetivo:
+
+- Regularizar o agente residente e registrar o estado operacional antes de retomar o QA staging.
+
+Notas:
+
+- O runtime da página de compras já foi validado na etapa anterior sem reproduzir `Cannot redefine property: $$id`.
+- `USE_FIFO_MOVEMENTS_ENGINE` segue OFF nesta etapa.
+- `.claude/` continua não rastreado e fora de commit.
+- O QA staging permanece pendente de autorização explícita.
+
 ## 2026-05-21 — 1.3.26.3 — validação de runtime da página de compras
 
 Objetivo:

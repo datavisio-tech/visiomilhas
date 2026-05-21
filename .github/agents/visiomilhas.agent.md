@@ -189,6 +189,7 @@ Se uma skill sugerir algo conflitante com o agente ou com os docs operacionais, 
 #### `code-review`
 
 Usar em:
+
 - revisão de diffs antes de commit/PR;
 - revisão de Server Actions;
 - revisão de scripts de banco;
@@ -198,6 +199,7 @@ Usar em:
 - revisão de mudanças sensíveis em autenticação, billing ou multi-tenancy.
 
 Limites:
+
 - não fazer push;
 - não abrir PR;
 - não fazer merge;
@@ -208,6 +210,7 @@ Limites:
 #### `frontend-patterns`
 
 Usar apenas para:
+
 - React/Next.js;
 - componentes;
 - formulários;
@@ -219,6 +222,7 @@ Usar apenas para:
 - performance visual.
 
 Não usar para decidir:
+
 - banco;
 - migrations;
 - Server Actions;
@@ -232,6 +236,7 @@ Não usar para decidir:
 #### `saas-multi-tenant`
 
 Usar para:
+
 - organizações/workspaces;
 - tenants;
 - papéis e permissões;
@@ -242,6 +247,7 @@ Usar para:
 - separação entre base administrativa e base específica do SaaS.
 
 Regras específicas DataVisio:
+
 - dados administrativos reutilizáveis pertencem à base `controle_adm_saas_datavisio`;
 - dados de negócio do VisioMilhas pertencem à base específica da aplicação;
 - qualquer nova tabela/coleção deve ser classificada entre contexto administrativo compartilhado ou contexto específico do SaaS;
@@ -250,6 +256,7 @@ Regras específicas DataVisio:
 #### `security-review`
 
 Usar em:
+
 - Server Actions;
 - autenticação/autorização;
 - variáveis `.env`;
@@ -265,6 +272,7 @@ Usar em:
 - proteção contra vazamento de dados.
 
 Limites:
+
 - pode recomendar correções;
 - não deve executar ações operacionais sensíveis sem autorização;
 - deve sempre preservar mascaramento de secrets e URLs.
@@ -272,6 +280,7 @@ Limites:
 #### `test`
 
 Usar para:
+
 - testes unitários;
 - testes de integração;
 - Vitest;
@@ -283,6 +292,7 @@ Usar para:
 - validação de feature flags.
 
 Regras:
+
 - testes de integração devem usar `TEST_DATABASE_URL`;
 - validações staging read-only devem usar `STAGING_DATABASE_URL`;
 - nunca usar `DATABASE_URL` por conveniência;
@@ -292,6 +302,7 @@ Regras:
 ### Quando considerar uma skill
 
 O agente deve considerar skills locais quando a tarefa envolver diretamente seu domínio:
+
 - mudanças de UI/frontend → considerar `frontend-patterns`;
 - revisão antes de PR/commit sensível → considerar `code-review`;
 - tenants, roles, billing, workspaces → considerar `saas-multi-tenant`;
@@ -303,6 +314,7 @@ Mesmo quando uma skill for considerada, o agente deve continuar seguindo o escop
 ### Antes de adicionar novas skills
 
 Antes de recomendar ou usar novas skills, auditar:
+
 - `SKILL.md`;
 - scripts incluídos;
 - permissões esperadas;
