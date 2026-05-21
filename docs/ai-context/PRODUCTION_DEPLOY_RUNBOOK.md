@@ -52,7 +52,7 @@ Os nomes abaixo devem existir no GitHub Environment `production`. Os valores nã
 
 - Conectar via SSH com `gitdatavisiodeploy`.
 - Entrar no diretório `/opt/datavisio/visiomilhas`.
-- Gerar `.env.production` a partir das Environment Secrets do workflow.
+- Gerar `.env.production` a partir das Environment Secrets do workflow usando as chaves documentadas em `.env.example` e `docs/ai-context/ENVIRONMENT.md`.
 - Aplicar `chmod 600 .env.production` imediatamente após a geração.
 - Nunca commitar `.env.production`.
 - Não usar fallback silencioso para `DATABASE_URL`.
@@ -109,3 +109,26 @@ Executar apenas leitura. Não alterar arquivos, serviços, containers ou volumes
 2. Definir o nome do stack do VisioMilhas e a política de healthcheck.
 3. Criar o workflow de deploy em GitHub Actions com `environment: production`.
 4. Executar o primeiro deploy controlado somente após revisão dos artefatos.
+
+## Variáveis que o workflow deve materializar
+
+- `APP_NAME`
+- `APP_URL`
+- `NEXT_PUBLIC_APP_URL`
+- `NODE_ENV`
+- `USE_FIFO_MOVEMENTS_ENGINE`
+- `DATABASE_URL`
+- `ADM_DATABASE_URL`
+- `APP_DATABASE_URL`
+- `MONGODB_URI`
+- `POSTGRES_HOST`
+- `POSTGRES_PORT`
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `POSTGRES_DB`
+- `SAAS_DB`
+- `APP_DB`
+- `MONGODB_SERVER_IP`
+- `MONGODB_USER`
+- `MONGODB_USER_PASSWORD`
+- `MONGODB_DATABASE`

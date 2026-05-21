@@ -20,6 +20,14 @@
 - A estratégia recomendada agora é construir artefatos para `docker stack deploy`.
 - Próximo passo técnico: criar Dockerfile/stack e depois o workflow de deploy.
 
+## 1.3.30.1 — env example e docs padronizados
+
+- `.env.example` precisa ficar apenas com placeholders seguros e sem valores reais.
+- `ENVIRONMENT.md` deve ser a referência de convenção de variáveis de produção.
+- `PRODUCTION_DEPLOY_RUNBOOK.md` deve continuar a fonte operacional para `.env.production` e `chmod 600` remoto.
+- Próxima etapa técnica: criar `stack.visiomilhas.yml`, Dockerfile e workflow de deploy.
+- Validar healthcheck e rollback na mesma trilha de produção.
+
 Concluído recentemente:
 
 - Diagnóstico 1.3.27.1 do runtime local: usa `APP_DATABASE_URL`, aponta para `visiomilhas_app` e não possui `mile_point_lots`.

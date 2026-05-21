@@ -70,6 +70,34 @@ Próxima etapa recomendada:
 
 1. Criar os artefatos Docker de produção compatíveis com Swarm e Traefik.
 
+## 2026-05-21 — 1.3.30.1 — padronização do .env.example e docs operacionais
+
+Objetivo:
+
+- Alinhar `.env.example` com placeholders seguros e documentação operacional com a convenção de produção.
+
+Resultado:
+
+- `.env.example` passou a documentar apenas placeholders seguros e as fórmulas compostas esperadas.
+- `ENVIRONMENT.md` passou a ser a referência de base/composed vars e da diferença entre `.env.example` e `.env.production`.
+- `PRODUCTION_DEPLOY_RUNBOOK.md` passou a explicitar que o workflow materializa `.env.production` no servidor.
+
+Arquivos atualizados nesta etapa:
+
+- `.env.example`
+- `docs/ai-context/ENVIRONMENT.md`
+- `docs/ai-context/PRODUCTION_DEPLOY_RUNBOOK.md`
+- `docs/ai-context/DECISIONS.md`
+- `docs/ai-context/IMPLEMENTATION_PLAN.md`
+- `docs/ai-context/TODO_AI.md`
+- `docs/ai-context/CHANGELOG_AI.md`
+- `docs/ai-context/DAILY_CHECKPOINT.md`
+- `README.md`
+
+Próxima etapa recomendada:
+
+1. Criar os artefatos Docker/Swarm de produção e o stack `stack.visiomilhas.yml`.
+
 ## 2026-05-21 — 1.3.27.1 — diagnóstico do runtime da compra FIFO
 
 Objetivo:

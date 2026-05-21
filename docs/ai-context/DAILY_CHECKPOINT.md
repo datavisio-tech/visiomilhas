@@ -1,3 +1,20 @@
+# CHECKPOINT - 1.3.30.1 — padronização do .env.example e docs operacionais
+
+Data: 2026-05-21
+
+- Branch atual: `1.3.30.1-env-example-production-docs`.
+- Status Git inicial desta etapa: `M .env.example`, `?? .claude/`.
+- Objetivo: padronizar `.env.example` com placeholders seguros e alinhar a documentação operacional.
+- `NODE_ENV=development` ficou explícito no exemplo; produção deve usar `production`.
+- `USE_FIFO_MOVEMENTS_ENGINE=0` permanece como padrão no exemplo.
+- `ENVIRONMENT.md` agora é a referência das variáveis base, compostas e da diferença entre `.env.example` e `.env.production`.
+- `PRODUCTION_DEPLOY_RUNBOOK.md` explicita que `.env.production` será materializado pelo workflow.
+- Nenhuma alteração de runtime, deploy ou servidor foi executada nesta etapa.
+
+Próxima etapa recomendada:
+
+1. Criar os artefatos Docker/Swarm de produção e o stack `stack.visiomilhas.yml`.
+
 # CHECKPOINT - 1.3.30 — auditoria Docker/Traefik/Swarm em produção
 
 Data: 2026-05-21

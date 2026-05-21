@@ -112,9 +112,11 @@ O agente deve sempre responder com evidências mínimas:
 - O workflow final deve usar `environment: production`.
 - O workflow deve gerar `.env.production` no servidor a partir das Environment Secrets.
 - `.env.production` nunca deve ser commitado.
-- `.env.example` deve conter apenas placeholders seguros.
+- `.env.example` deve conter apenas placeholders seguros, com domínio real citado só em documentação e secrets.
+- `ENVIRONMENT.md` e `PRODUCTION_DEPLOY_RUNBOOK.md` são a referência da convenção de env.
 - `USE_FIFO_MOVEMENTS_ENGINE` deve permanecer `0` na produção inicial.
 - Antes do deploy final, auditar o Traefik existente, o modo Docker/Swarm e o diretório remoto.
+- A auditoria 1.3.30 confirmou Swarm ativo, Traefik como serviço e a rede `traefik_public`.
 - Não criar um novo Traefik; reutilizar a infraestrutura existente após auditoria.
 
 Este padrão existe para reduzir prompts longos no chat e manter continuidade operacional do projeto.

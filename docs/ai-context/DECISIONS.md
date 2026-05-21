@@ -151,4 +151,10 @@ Decisões recentes (1.3.21):
 - O Traefik já existe como serviço do stack `traefik`, com rede overlay `traefik_public`.
 - Estratégia recomendada para o VisioMilhas: `docker stack deploy` em Swarm, evitando Compose standalone para o deploy final.
 
+### 2026-05-21 — env example e secrets de produção
+
+- `.env.example` deve usar apenas placeholders seguros e não deve conter valores reais de produção.
+- `.env.production` será gerado pelo workflow de deploy a partir das secrets do GitHub Environment `production`.
+- O domínio público real fica para documentação e secrets, nunca como valor real em `.env.example`.
+
 Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `security-review`, `test`.

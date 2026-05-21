@@ -90,6 +90,12 @@ Observações de segurança:
 - Não versionar `.env`.
 - Não expor `APP_DATABASE_URL` / `ADM_DATABASE_URL` em logs.
 
+Referência de ambiente e deploy:
+
+- Veja `docs/ai-context/ENVIRONMENT.md` para a convenção de variáveis e placeholders.
+- Veja `docs/ai-context/PRODUCTION_DEPLOY_RUNBOOK.md` para o fluxo de `.env.production` e deploy remoto.
+- A produção inicial deve manter `USE_FIFO_MOVEMENTS_ENGINE=0` até validação explícita.
+
 Notas da versão 1.3.12 (preparação do schema para ledger/FIFO):
 
 - Ação 1.3.12: adicionado `mile_point_lots` ao schema Drizzle (arquivo `db/app/schema.ts`) e migration proposta em `db/app/migrations/0001_add_mile_point_lots.sql`.
