@@ -1,7 +1,9 @@
 import dotenv from "dotenv";
+import dotenvExpand from "dotenv-expand";
 import { Client } from "pg";
 
-dotenv.config();
+// Load and expand environment variables so interpolated URLs are resolved
+dotenvExpand(dotenv.config());
 
 const EXPECTED_DATABASE = "staging_db";
 
