@@ -187,6 +187,15 @@ Status 1.3.16 (implementação do repo):
 - Ação: atualizar `.github/agents/visiomilhas.agent.md` com regras e limites (feito localmente).
 - Validação: rodar `npm run lint` e `npm run typecheck` após alterações documentais.
 
+Pendência adicional — diretório `.claude`:
+
+- O diretório `.claude/` existe localmente e contém skills auxiliares (SKILL.md e implementações).
+- Decisão atual: **não commitar `.claude/`**; registrar como pendência para avaliação futura.
+- Ação recomendada antes de versionar `.claude`:
+  1. Revisar cada `SKILL.md` para garantir que não exponha segredos, URLs ou instruções operacionais perigosas.
+  2. Validar permissões de rede/IO esperadas pelas skills.
+  3. Documentar quais skills, se any, serão versionadas e quais permanecerão locais.
+
 Nota (2026-05-18): adicionado esqueleto de testes de integração em `tests/integration/movements.drizzle-repo.test.ts`.
 Estes testes são placeholders e dependem de variáveis de ambiente (`APP_DATABASE_URL` ou `DATABASE_URL`) apontando para um banco de desenvolvimento isolado. Não execute `npm run test:integration` contra bancos de produção.
 

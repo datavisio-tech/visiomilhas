@@ -89,26 +89,43 @@ Próxima etapa recomendada:
 
 Data: 2026-05-20
 
+## CHECKPOINT - 2026-05-20 — Fechamento seguro do dia (1.3.26.2)
 
+- Branch atual: `1.3.26.2-fix-staging-qa-blockers`.
+- Último commit local: `fc0bb46` — docs: define uso controlado de skills locais no agente (registro operacional).
+- Correções realizadas nesta etapa (1.3.26.2):
+  - `scripts/validate-staging-purchase-fifo.ts`: passou a usar `dotenv-expand` para resolver variáveis interpoladas (`STAGING_DATABASE_URL`).
+  - `app/app/purchases/actions.ts`: separação entre implementação testável e wrapper Server Action (`"use server"` no wrapper) para evitar `Cannot redefine property: $$id`.
+  - Registro e documentação do uso controlado das skills locais em `.github/agents/visiomilhas.agent.md`.
+- Validações executadas: `npm run lint` — OK; `npm run typecheck` — OK; testes/build passaram em etapas anteriores da correção técnica.
+- Pendência operacional: diretório não rastreado `.claude/` detectado (contém skills locais). A decisão operacional é não commitar `.claude` neste momento; registrar como pendência para avaliação posterior.
+
+Recomendações de segurança e próximas ações:
+
+- Manter `USE_FIFO_MOVEMENTS_ENGINE=0` em ambientes não validados até nova autorização.
+- Validar runtime da página de compras localmente antes de ativar a flag em staging.
+- Quando decidir versionar `.claude`, revisar cada `SKILL.md` e o código das skills para conformidade com regras de segurança e privacidade antes de commitar.
+- Não fazer push/PR/deploy/seed/migration sem autorização explícita.
+
+Status final do working tree (sanitizado):
+
+- Arquivos modificados (docs): `.github/agents/visiomilhas.agent.md`, `docs/ai-context/CHANGELOG_AI.md`, `docs/ai-context/DAILY_CHECKPOINT.md`, `docs/ai-context/DECISIONS.md`, `docs/ai-context/TODO_AI.md`, `README.md`.
+- Diretório não rastreado: `.claude/` (não será adicionado).
+
+Registro concluído por: agente residente (local). Próxima retomada recomendada conforme checklist operacional.
 Ações executadas nesta rodada:
-
 
 Resumo sanitizado:
 
-
 Comandos perigosos NÃO executados:
 
-
 Pendências:
-
 
 Próxima etapa recomendada:
 
 1. Rodar as validações locais e, se passarem, revisar o checklist manual antes de autorizar a ativação da flag em staging.
 
-
 # CHECKPOINT - 1.3.26.1 preparação do QA manual FIFO
-
 
 - Checklist de QA expandido com pré-condições, ativação controlada da flag, roteiro de compra, validação read-only e rollback.
 - Script `scripts/validate-staging-purchase-fifo.ts` revisado para exigir `STAGING_DATABASE_URL`, validar `current_database() = staging_db` e aceitar parâmetros seguros opcionais.
