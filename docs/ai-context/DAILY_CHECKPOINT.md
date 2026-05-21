@@ -1,3 +1,21 @@
+# CHECKPOINT - 1.3.30 — auditoria Docker/Traefik/Swarm em produção
+
+Data: 2026-05-21
+
+- Branch atual: `1.3.30-audit-docker-traefik-production`.
+- Status Git inicial desta etapa: apenas `.claude/` não rastreado; nenhum arquivo versionado pendente.
+- `git log` confirmou o commit `6070752` da etapa 1.3.29 no histórico local.
+- Auditoria read-only executada via SSH com `gitdatavisiodeploy`.
+- Swarm: ativo, node local manager, um único manager no cluster.
+- Traefik: serviço do stack `traefik` na rede overlay `traefik_public`.
+- `/opt/datavisio/visiomilhas`: existe, mas está vazio e sem repo Git nesta auditoria.
+- Estratégia recomendada: `docker stack deploy` em Swarm.
+- Nenhuma mudança foi aplicada no servidor remoto.
+
+Próxima etapa recomendada:
+
+1. Criar os artefatos Docker de produção para Swarm e o workflow de deploy.
+
 # CHECKPOINT - 1.3.29 — production env e secrets registrados
 
 Data: 2026-05-21

@@ -94,3 +94,18 @@ Executar apenas leitura. Não alterar arquivos, serviços, containers ou volumes
 - Confirmar estratégia de build da imagem.
 - Confirmar rollback operacional.
 - Confirmar permissão e local do `.env.production` remoto.
+
+## Conclusão da auditoria 1.3.30
+
+- O host está em Docker Swarm ativo com um único manager.
+- O Traefik já existe como serviço do stack `traefik` e publica `80`, `443` e `8082`.
+- A rede pública adequada para o novo stack é `traefik_public` (overlay, attachable).
+- O diretório remoto `/opt/datavisio/visiomilhas` existe, mas está vazio nesta auditoria e ainda não contém repositório Git.
+- Estratégia recomendada: `docker stack deploy` em Swarm, reutilizando o Traefik e a rede existente.
+
+## Próximos passos após a auditoria
+
+1. Criar os artefatos Docker de produção para Swarm.
+2. Definir o nome do stack do VisioMilhas e a política de healthcheck.
+3. Criar o workflow de deploy em GitHub Actions com `environment: production`.
+4. Executar o primeiro deploy controlado somente após revisão dos artefatos.

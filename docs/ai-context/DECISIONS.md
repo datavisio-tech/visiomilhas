@@ -145,4 +145,10 @@ Decisões recentes (1.3.21):
 - O deploy remoto usa o usuário SSH `gitdatavisiodeploy`, o diretório `/opt/datavisio/visiomilhas` e não utiliza root.
 - A produção inicial mantém `USE_FIFO_MOVEMENTS_ENGINE=0`.
 
+### 2026-05-21 — auditoria 1.3.30 e estratégia Swarm
+
+- A auditoria read-only confirmou Docker Swarm ativo no host de produção.
+- O Traefik já existe como serviço do stack `traefik`, com rede overlay `traefik_public`.
+- Estratégia recomendada para o VisioMilhas: `docker stack deploy` em Swarm, evitando Compose standalone para o deploy final.
+
 Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `security-review`, `test`.

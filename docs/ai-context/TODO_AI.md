@@ -12,6 +12,14 @@
 - Manter `USE_FIFO_MOVEMENTS_ENGINE=0` na produção inicial.
 - Não criar `.env.production` real no repositório.
 
+## 1.3.30 — auditoria Docker/Traefik/Swarm concluída
+
+- Swarm está ativo no host de produção e o node atual é manager único.
+- Traefik existe como serviço do stack `traefik` na rede overlay `traefik_public`.
+- O diretório `/opt/datavisio/visiomilhas` existe, mas está vazio e ainda não contém repo Git.
+- A estratégia recomendada agora é construir artefatos para `docker stack deploy`.
+- Próximo passo técnico: criar Dockerfile/stack e depois o workflow de deploy.
+
 Concluído recentemente:
 
 - Diagnóstico 1.3.27.1 do runtime local: usa `APP_DATABASE_URL`, aponta para `visiomilhas_app` e não possui `mile_point_lots`.

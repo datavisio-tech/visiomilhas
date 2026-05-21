@@ -40,6 +40,36 @@ Próxima etapa recomendada:
 
 1. Rodar a auditoria 1.3.30 com comandos read-only no servidor remoto.
 
+## 2026-05-21 — 1.3.30 — auditoria Docker/Traefik/Swarm em produção
+
+Objetivo:
+
+- Auditar read-only a VPS Hostinger de produção e classificar a topologia real de deploy.
+
+Resultado:
+
+- Docker e Docker Compose presentes no host.
+- Docker Swarm ativo com um único manager.
+- Traefik já existe como serviço do stack `traefik` e publica `80`, `443` e `8082`.
+- Rede pública do Traefik: `traefik_public` (overlay, attachable).
+- `/opt/datavisio/visiomilhas` existe, mas está vazio e ainda não contém repositório Git.
+- Estratégia recomendada: `docker stack deploy` em Swarm.
+
+Arquivos atualizados nesta etapa:
+
+- `docs/ai-context/PRODUCTION_INFRA_AUDIT.md`
+- `docs/ai-context/PRODUCTION_DEPLOY_RUNBOOK.md`
+- `docs/ai-context/ARCHITECTURE.md`
+- `docs/ai-context/DECISIONS.md`
+- `docs/ai-context/IMPLEMENTATION_PLAN.md`
+- `docs/ai-context/TODO_AI.md`
+- `docs/ai-context/CHANGELOG_AI.md`
+- `docs/ai-context/DAILY_CHECKPOINT.md`
+
+Próxima etapa recomendada:
+
+1. Criar os artefatos Docker de produção compatíveis com Swarm e Traefik.
+
 ## 2026-05-21 — 1.3.27.1 — diagnóstico do runtime da compra FIFO
 
 Objetivo:

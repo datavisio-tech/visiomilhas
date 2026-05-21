@@ -169,12 +169,14 @@ Checklist da etapa:
 Objetivo:
 
 - Definir os artefatos Docker necessários para produção com base na auditoria.
+- Criar Dockerfile e definição de stack/compose compatíveis com Swarm e Traefik existente.
 
 ## 1.3.32 — workflow de deploy
 
 Objetivo:
 
 - Criar o workflow de GitHub Actions para deploy remoto usando `environment: production`.
+- Gerar `.env.production` no servidor e aplicar permissões restritas.
 
 ## 1.3.33 — primeiro deploy controlado
 

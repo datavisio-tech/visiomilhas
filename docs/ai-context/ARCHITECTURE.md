@@ -50,6 +50,7 @@ Deploy:
 - Reutilizar o Traefik existente após auditoria; não criar novo proxy reverso.
 - O deploy final deve usar o usuário SSH `gitdatavisiodeploy` e publicar em `/opt/datavisio/visiomilhas`.
 - O workflow de produção deve rodar em `environment: production` e gerar `.env.production` no host remoto.
+- Auditoria 1.3.30 confirmou Swarm ativo; a estratégia recomendada passa a ser `docker stack deploy` com a rede `traefik_public`.
 
 Observações operacionais:
 
