@@ -1,5 +1,30 @@
 # STAGING QA — Compra FIFO (1.3.26)
 
+## 1.3.27.1 — diagnóstico do runtime local da compra FIFO
+
+Objetivo
+
+- Provar qual banco o runtime local da compra usa antes de insistir em correções funcionais.
+
+Resultado
+
+- Runtime local usa `APP_DATABASE_URL`.
+- `current_database()`: `visiomilhas_app`.
+- `program_accounts`: FOUND.
+- `mile_entries`: FOUND.
+- `mile_point_lots`: MISSING.
+
+Comparação com staging
+
+- Staging validado permanece em `staging_db`.
+- `mile_point_lots` em staging: FOUND.
+
+Conclusão operacional
+
+- O localhost não representa o mesmo banco/schema do staging validado.
+- Não usar localhost para concluir o QA staging.
+- A compra real deve continuar no app staging.
+
 ## 1.3.27 — QA controlado em staging após ativação manual da flag
 
 Objetivo

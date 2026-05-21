@@ -125,6 +125,12 @@ Decisões recentes (1.3.21):
 - O validador read-only deve aceitar parâmetros seguros para localizar a compra e a conta, sem fazer writes.
 - Em caso de falha no QA, o rollback operacional é desligar `USE_FIFO_MOVEMENTS_ENGINE` em staging e recarregar a aplicação, sem tocar em produção.
 
+### 2026-05-21 — diagnóstico de runtime da compra FIFO
+
+- O runtime local da compra usa `APP_DATABASE_URL` e, nesta máquina, aponta para `visiomilhas_app`.
+- Se `mile_point_lots` estiver ausente no runtime local, a falha deve ser tratada como desalinhamento de ambiente/schema, não como correção funcional de compra.
+- Para concluir QA staging, preferir o app staging real já validado, em vez de localhost.
+
 ### 2026-05-20 — Uso controlado de skills locais
 
 - Skills locais em `.claude/skills` são consideradas ferramentas de apoio; o agente residente é a autoridade final para decisões operacionais.

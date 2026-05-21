@@ -2,6 +2,19 @@
 
 Concluído recentemente:
 
+- Diagnóstico 1.3.27.1 do runtime local: usa `APP_DATABASE_URL`, aponta para `visiomilhas_app` e não possui `mile_point_lots`.
+
+Pendência imediata:
+
+- Não usar localhost para concluir o QA staging.
+- Executar a compra manual no app staging real, onde `mile_point_lots` já foi validado.
+
+Observação:
+
+- A alteração funcional pendente do loop anterior foi revertida antes do commit.
+
+Concluído recentemente:
+
 - QA 1.3.27 retomado em staging: preflight, base, ledger e validador read-only sem IDs passaram, mas sem compra detectável.
 
 Pendência imediata:

@@ -35,6 +35,7 @@
     "db:validate:staging:base": "tsx scripts/validate-staging-base-schema.ts",
     "db:validate:staging:ledger": "tsx scripts/validate-staging-ledger-migration.ts",
     "db:validate:staging:purchase-fifo": "tsx scripts/validate-staging-purchase-fifo.ts",
+    "db:diagnose:runtime": "tsx scripts/diagnose-runtime-db.ts",
     "db:migrate:test:base": "tsx scripts/apply-test-base-migrations.ts",
     "db:migrate:test:ledger": "tsx scripts/apply-test-ledger-migration.ts",
     "db:validate:test:base": "tsx scripts/validate-test-base-schema.ts",

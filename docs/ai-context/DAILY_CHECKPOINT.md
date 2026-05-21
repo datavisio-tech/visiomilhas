@@ -1,3 +1,23 @@
+# CHECKPOINT - 1.3.27.1 — diagnóstico do runtime da compra FIFO
+
+Data: 2026-05-21
+
+- Branch atual: `1.3.27-qa-compra-fifo-staging`.
+- Status Git inicial desta etapa: `M lib/repositories/movements.drizzle-repo.ts`, `?? .claude/`.
+- Runtime local diagnosticado com `npm run db:diagnose:runtime`.
+- Runtime local usa `APP_DATABASE_URL`.
+- `current_database()` no runtime local: `visiomilhas_app`.
+- `program_accounts`: FOUND.
+- `mile_entries`: FOUND.
+- `mile_point_lots`: MISSING.
+- Staging segue validado: `staging_db` com `mile_point_lots` FOUND.
+- Conclusão: erro é de ambiente/schema do runtime local, não de staging.
+- Próximo passo: não concluir QA em localhost; usar o app staging real para a compra manual.
+
+Próxima etapa recomendada:
+
+1. Levar a compra manual para o app staging real e não para localhost.
+
 # CHECKPOINT - 1.3.27 — QA controlado da compra FIFO em staging
 
 Data: 2026-05-21

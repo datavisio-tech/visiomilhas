@@ -1,5 +1,30 @@
 # CHANGELOG_AI
 
+## 2026-05-21 — 1.3.27.1 — diagnóstico do runtime da compra FIFO
+
+Objetivo:
+
+- Provar qual banco o runtime local da compra usa e comparar com o staging validado.
+
+Resultado do diagnóstico read-only:
+
+- Runtime local usa `APP_DATABASE_URL`.
+- `current_database()` no runtime local: `visiomilhas_app`.
+- `program_accounts`: FOUND.
+- `mile_entries`: FOUND.
+- `mile_point_lots`: MISSING.
+
+Comparação com staging:
+
+- Staging validado: `staging_db`.
+- Staging possui `mile_point_lots`: sim.
+
+Conclusão:
+
+- O erro do localhost é de ambiente/schema, não de correção funcional.
+- O runtime local aponta para um banco diferente do staging validado e esse banco não possui `mile_point_lots`.
+- Não usar localhost para concluir o QA staging.
+
 ## 2026-05-21 — 1.3.27 — QA controlado da compra FIFO em staging (retomada)
 
 Objetivo:
