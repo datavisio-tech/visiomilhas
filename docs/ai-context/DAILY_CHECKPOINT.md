@@ -1,3 +1,21 @@
+# CHECKPOINT - 1.3.26.3 — validação de runtime da página de compras
+
+Data: 2026-05-21
+
+- Objetivo: validar o runtime da página de compras antes de retomar o QA FIFO em staging.
+- Branch atual: `1.3.26.2-fix-staging-qa-blockers`.
+- Resultado: página `/app/purchases` abriu normalmente em `next dev`, sem reproduzir `Cannot redefine property: $$id`.
+- Validações executadas: `npm run test` OK; `npm run typecheck` OK; `npm run lint` OK; `npm run build` OK.
+- Runtime validado via navegador local em `http://localhost:3000/app/purchases`.
+- Flag FIFO permaneceu OFF durante toda a validação.
+- Nenhuma compra de teste foi executada.
+- `.claude/` continua não rastreado e não foi incluído em nenhum commit.
+- Pendência: manter QA staging pausado até nova autorização para reativar `USE_FIFO_MOVEMENTS_ENGINE`.
+
+Próxima etapa recomendada:
+
+1. Retomar o roteiro de QA em staging apenas após autorização explícita para reativar a flag FIFO.
+
 ---
 
 ## CHECKPOINT - 1.3.25.2 (CI de integração MovementsRepo)
@@ -41,6 +59,7 @@ Registre aqui a data/hora e o resultado (operador):
 - Passos que passaram:
 - Passo que falhou (se houver):
 - Mensagem sanitizada de erro (se houver):
+
 # CHECKPOINT - Encerramento do dia — 1.3.21
 
 Data: 2026-05-18

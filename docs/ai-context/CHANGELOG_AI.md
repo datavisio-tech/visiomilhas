@@ -1,5 +1,41 @@
 # CHANGELOG_AI
 
+## 2026-05-21 — 1.3.26.3 — validação de runtime da página de compras
+
+Objetivo:
+
+- Validar o runtime da página de compras antes de retomar o QA FIFO em staging.
+
+Arquivos criados/alterados nesta etapa:
+
+- `docs/ai-context/DAILY_CHECKPOINT.md`
+- `docs/ai-context/TODO_AI.md`
+- `docs/ai-context/CHANGELOG_AI.md`
+- `docs/ai-context/STAGING_QA_FIFO_PURCHASE.md`
+
+Decisões tomadas:
+
+- Não ativar `USE_FIFO_MOVEMENTS_ENGINE`.
+- Não executar compra de teste.
+- Não tocar em UI, schema, migrations, seeds ou banco real nesta etapa.
+
+Riscos:
+
+- A validação foi somente de runtime local; QA staging segue pendente de autorização para reativar a flag.
+
+Pendências:
+
+- Retomar o roteiro de QA em staging apenas após nova autorização.
+- Manter `.claude/` fora de commit.
+
+Validações executadas:
+
+- `npm run test` — OK.
+- `npm run typecheck` — OK.
+- `npm run lint` — OK.
+- `npm run build` — OK.
+- Runtime local da página `/app/purchases` — OK.
+
 ## 2026-05-16 — MVP1 - Bootstrap inicial
 
 Objetivo:
@@ -222,19 +258,13 @@ Nota: nenhuma migration foi aplicada; alterações são documentais e de prepara
 
 Objetivo:
 
-
 Ações executadas nesta rodada:
-
 
 Resultado resumido:
 
-
 Pendências:
 
-
 Notas de segurança:
-
-
 
 ## 2026-05-20 — Uso controlado de skills locais (decisão operacional)
 
@@ -259,6 +289,7 @@ Riscos mitigados:
 Próxima etapa:
 
 - Registrar esta decisão em `docs/ai-context/DECISIONS.md`, `docs/ai-context/DAILY_CHECKPOINT.md` e `docs/ai-context/TODO_AI.md`.
+
 ## 2026-05-20 — 1.3.26.1 — preparação do QA manual da compra FIFO em staging
 
 Objetivo:

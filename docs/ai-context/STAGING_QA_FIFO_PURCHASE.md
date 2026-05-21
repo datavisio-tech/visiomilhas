@@ -1,5 +1,30 @@
 # STAGING QA — Compra FIFO (1.3.26)
 
+## 1.3.26.3 — Validação de runtime da página de compras
+
+Objetivo
+
+- Validar o runtime da página de compras antes de reativar o QA FIFO em staging.
+
+Resultado local
+
+- A rota `/app/purchases` abriu normalmente em dev local.
+- O erro `Cannot redefine property: $$id` não apareceu na abertura da página.
+- Nenhuma compra de teste foi executada.
+- `USE_FIFO_MOVEMENTS_ENGINE` permaneceu OFF.
+- `.claude/` continua não rastreado e fora de commit.
+
+Validações executadas
+
+- `npm run test` — OK.
+- `npm run typecheck` — OK.
+- `npm run lint` — OK.
+- `npm run build` — OK.
+
+Próxima etapa
+
+- Aguardar autorização explícita para retomar o roteiro de QA em staging com a flag FIFO reativada.
+
 ## 1.3.26.1 — Preparação do QA manual
 
 Objetivo

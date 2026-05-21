@@ -1,5 +1,9 @@
 # TODO_AI - Pendências e próximas ações
 
+Concluído recentemente:
+
+- Validar runtime da página de compras 1.3.26.3: OK, sem reproduzir `Cannot redefine property: $$id`; `USE_FIFO_MOVEMENTS_ENGINE` permaneceu OFF.
+
 Prioridades imediatas:
 
 1. Scaffold do projeto Next.js + TypeScript + Tailwind + shadcn/ui
@@ -27,6 +31,7 @@ Notas operacionais:
 Concluído recentemente:
 
 - Implementar camada de domínio e validações Zod (lib/domain, lib/validations).
+- Validar runtime da página de compras antes de retomar QA FIFO em staging (1.3.26.3).
 
 Próximos itens prioritários:
 
