@@ -1,5 +1,28 @@
 # CHANGELOG_AI
 
+## 2026-05-22 — 1.3.34.1 — trava textual no dispatch manual de produção
+
+Objetivo:
+
+- Corrigir o workflow manual de produção para exigir confirmação textual antes de qualquer etapa de SSH, sync ou deploy.
+
+Resultado da correção:
+
+- `workflow_dispatch` passou a expor inputs explícitos.
+- O workflow agora exige `confirm_production_deploy=DEPLOY` logo após o checkout.
+- O fluxo continua manual e não ganha gatilho automático.
+- A imagem continua rastreável com a estratégia atual de tag.
+- Nenhum deploy foi executado nesta etapa.
+
+Diagnóstico registrado:
+
+- O acionamento manual observado com `gh workflow run production-deploy.yml --ref main` retornou `HTTP 422: Workflow does not have 'workflow_dispatch' trigger` no contexto operacional.
+- A trava textual foi adicionada para impedir execução acidental do primeiro deploy enquanto o dispatch manual não estiver consolidado no GitHub.
+
+Próxima etapa recomendada:
+
+1. Abrir PR para `main`, aguardar merge e só então considerar a execução manual controlada com `confirm_production_deploy=DEPLOY`.
+
 ## 2026-05-22 — 1.3.32.1 — limpeza de artefatos externos locais
 
 Objetivo:

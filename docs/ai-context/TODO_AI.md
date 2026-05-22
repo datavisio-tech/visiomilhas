@@ -1,5 +1,17 @@
 # TODO_AI - Pendências e próximas ações
 
+## 1.3.34.1 — trava textual do dispatch manual
+
+- Confirmar que `confirm_production_deploy=DEPLOY` é obrigatório antes de qualquer SSH/deploy.
+- Manter `workflow_dispatch` como único gatilho do workflow de produção.
+- Não executar `gh workflow run` nesta etapa.
+- Não tocar em secrets, servidor, migrations ou seeds.
+- Aguardar PR/merge antes de qualquer execução manual.
+
+Concluído nesta etapa:
+
+- O workflow de produção recebeu inputs explícitos e trava textual.
+
 ## 1.3.32.1 — limpeza de artefatos externos locais
 
 - Manter `backend-livraria-node/` e `projetos/` fora do workspace do VisioMilhas.
