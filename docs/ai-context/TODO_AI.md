@@ -1,5 +1,18 @@
 # TODO_AI - Pendências e próximas ações
 
+## 1.3.34.3 — reindex do workflow manual por novo filename
+
+- Confirmar que `production-deploy-manual.yml` é o novo arquivo fonte do workflow de produção.
+- Manter `workflow_dispatch` como único gatilho.
+- Manter `confirm_production_deploy=DEPLOY` obrigatório.
+- Não executar `gh workflow run` nesta etapa.
+- Não alterar secrets, servidor, migrations ou seeds.
+- Aguardar PR/merge antes de qualquer execução manual.
+
+Concluído nesta etapa:
+
+- O workflow foi renomeado para forçar reindexação pelo GitHub Actions.
+
 ## 1.3.34.1 — trava textual do dispatch manual
 
 - Confirmar que `confirm_production_deploy=DEPLOY` é obrigatório antes de qualquer SSH/deploy.

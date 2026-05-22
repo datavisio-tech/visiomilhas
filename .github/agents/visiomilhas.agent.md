@@ -45,6 +45,13 @@ allowTools:
 
 # Visão Geral
 
+## Reindex do workflow de produção
+
+- O workflow manual de produção deve ser mantido em arquivo separado com filename novo quando houver inconsistência de indexação no GitHub Actions.
+- O fluxo permanece manual via `workflow_dispatch` e exige confirmação textual `DEPLOY` antes de qualquer etapa sensível.
+- Não reintroduzir gatilhos automáticos por `push` ou `pull_request` para o deploy de produção.
+- O deploy continua sujeito à execução explícita posterior, nunca nesta etapa de documentação/reindex.
+
 Este agente foi desenhado para ser escolhido quando a tarefa envolve trabalhar diretamente no repositório `visiomilhas` — alterações de código, testes, refatorações e correções.
 
 # Quando escolher este agente

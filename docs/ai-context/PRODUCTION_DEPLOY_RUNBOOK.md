@@ -10,6 +10,14 @@
 - Domínio público: `https://visiomilhas.visiochat.cloud`.
 - Produção inicial: `USE_FIFO_MOVEMENTS_ENGINE=0`.
 
+## Reindex 1.3.34.3 — novo filename do workflow
+
+- O workflow de produção foi renomeado para `production-deploy-manual.yml`.
+- O nome amigável agora é `Production Deploy Manual - VisioMilhas`.
+- O gatilho permanece manual via `workflow_dispatch` com confirmação textual `DEPLOY`.
+- A mudança foi feita para reduzir ambiguidade e forçar nova indexação no GitHub Actions após o 422 persistente.
+- O deploy não foi executado.
+
 ## Correção 1.3.34.1 — confirmação textual do dispatch
 
 - O workflow de produção passou a exigir `confirm_production_deploy=DEPLOY` como confirmação textual.

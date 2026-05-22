@@ -1,3 +1,26 @@
+# CHECKPOINT - 1.3.34.3 — reindex do workflow por novo filename
+
+Data: 2026-05-22
+
+- Branch atual: `1.3.34.3-reindex-production-deploy-workflow`.
+- Objetivo: forçar nova indexação do workflow manual de produção no GitHub Actions com novo filename.
+- Ações tomadas: renomeado `production-deploy.yml` para `production-deploy-manual.yml` e atualizado o nome amigável do workflow para `Production Deploy Manual - VisioMilhas`.
+- O gatilho permanece manual via `workflow_dispatch` com confirmação textual `DEPLOY`.
+- Não houve deploy, workflow manual, migration ou seed.
+- Nenhum comando remoto foi executado nesta etapa.
+
+Diagnóstico registrado:
+
+- O workflow anterior continuou retornando `HTTP 422` mesmo com `workflow_dispatch` confirmado no YAML, então a reindexação foi tratada via novo filename.
+
+Pendências:
+
+- A mudança precisa ser publicada em PR/merge antes de qualquer nova tentativa de dispatch manual.
+
+Próxima etapa recomendada:
+
+1. Abrir PR para `main` e só então reavaliar o dispatch manual único com `confirm_production_deploy=DEPLOY`.
+
 # CHECKPOINT - 1.3.34.1 — trava textual do dispatch manual
 
 Data: 2026-05-22

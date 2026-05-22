@@ -1,3 +1,10 @@
+## 1.3.34.3 — reindex do workflow manual por novo filename
+
+- O workflow manual de produção foi renomeado para `production-deploy-manual.yml`.
+- O nome amigável passou a ser `Production Deploy Manual - VisioMilhas`.
+- A motivação foi forçar nova indexação no GitHub Actions após o 422 persistente com o filename anterior.
+- Próximo passo: publicar em PR/merge e reavaliar o dispatch manual somente depois disso.
+
 ## 1.3.34.1 — proteção textual do workflow de produção
 
 - O workflow manual de produção recebeu inputs explícitos em `workflow_dispatch`.
