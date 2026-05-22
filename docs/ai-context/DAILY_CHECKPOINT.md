@@ -1,3 +1,30 @@
+# CHECKPOINT - 1.3.32 — revisão do workflow de deploy production
+
+Data: 2026-05-22
+
+- Branch atual: `1.3.32-production-deploy-workflow`.
+- Status Git inicial desta etapa: `M .github/agents/visiomilhas.agent.md`, `M .github/workflows/production-deploy.yml`, `M README.md`, `M docs/ai-context/CHANGELOG_AI.md`, `M docs/ai-context/ENVIRONMENT.md`, `M docs/ai-context/PRODUCTION_DEPLOY_RUNBOOK.md`, `M docs/ai-context/TODO_AI.md`, `?? .claude/`, `?? backend-livraria-node/`, `?? projetos/`.
+- Objetivo: revisar o workflow manual de deploy production, completar documentação operacional e validar localmente sem deploy.
+- O workflow ficou manual via `workflow_dispatch`, com `environment: production` e `contents: read`.
+- A geração de `.env.production` foi movida para o runner e enviada como arquivo temporário ao servidor.
+- A validação de secrets passou a incluir autenticação e Stripe.
+- O step de validação final passou a usar apenas `docker stack services` e `docker service ps`, sem logs do serviço.
+- `npm run lint` passou.
+- `npm run typecheck` falhou por erros pré-existentes em `projetos/FoodComerce/`, fora do escopo desta etapa.
+- `npm run build` falhou pelo mesmo motivo pré-existente em `projetos/FoodComerce/`.
+- `git diff --check` passou.
+- Nenhum deploy foi executado.
+- Nenhum push, PR, migration ou seed foi executado.
+
+Pendências:
+
+- O workspace ainda contém ruído não rastreado em `.claude/`, `backend-livraria-node/` e `projetos/`.
+- `typecheck` e `build` continuam bloqueados por arquivos externos ao app principal.
+
+Próxima etapa recomendada:
+
+1. Revisar se o ruído dos subprojetos deve ser excluído do typecheck/build ou tratado separadamente antes de uma rodada de validação completa.
+
 # CHECKPOINT - 1.3.31 — artefatos Docker Swarm de produção
 
 Data: 2026-05-21

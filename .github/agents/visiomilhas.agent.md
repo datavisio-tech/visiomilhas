@@ -110,11 +110,14 @@ O agente deve sempre responder com evidências mínimas:
 - O GitHub Environment `production` já foi criado pelo operador.
 - As secrets de production já foram cadastradas pelo operador no Environment `production`.
 - O workflow final deve usar `environment: production`.
-- O workflow deve gerar `.env.production` no servidor a partir das Environment Secrets.
+- O workflow deve ser acionado manualmente via `workflow_dispatch`.
+- O workflow deve gerar `.env.production` no runner, transferir o arquivo temporário para o servidor e então movê-lo para `.env.production` com `chmod 600`.
 - `.env.production` nunca deve ser commitado.
 - `.env.example` deve conter apenas placeholders seguros, com domínio real citado só em documentação e secrets.
 - `ENVIRONMENT.md` e `PRODUCTION_DEPLOY_RUNBOOK.md` são a referência da convenção de env.
 - `USE_FIFO_MOVEMENTS_ENGINE` deve permanecer `0` na produção inicial.
+- Não executar migrations nem seeds no deploy inicial.
+- Fazer build no servidor sem depender de registry nesta fase.
 - Antes do deploy final, auditar o Traefik existente, o modo Docker/Swarm e o diretório remoto.
 - A auditoria 1.3.30 confirmou Swarm ativo, Traefik como serviço e a rede `traefik_public`.
 - A produção 1.3.31 usa `Dockerfile`, `.dockerignore` e `stack.visiomilhas.yml` com `output: standalone`.

@@ -1,5 +1,41 @@
 # CHANGELOG_AI
 
+## 2026-05-22 — 1.3.32 — revisão técnica do workflow de deploy production
+
+Objetivo:
+
+- Revisar tecnicamente o workflow manual de deploy production antes do PR.
+- Completar a documentação operacional relacionada ao deploy remoto em Swarm.
+
+Resultado desta revisão local:
+
+- O workflow segue manual via `workflow_dispatch` e usa `environment: production`.
+- A geração de `.env.production` foi ajustada para ocorrer no runner, com transferência como arquivo temporário e `chmod 600` no servidor.
+- A validação de secrets foi ampliada para incluir autenticação e Stripe.
+- A validação final do deploy ficou restrita a `docker stack services` e `docker service ps`, sem coletar logs do serviço.
+- `npm run lint` passou.
+- `npm run typecheck` e `npm run build` continuam bloqueados por erros pré-existentes em `projetos/FoodComerce/`, fora do escopo desta revisão.
+- `git diff --check` passou sem erros.
+- Não houve deploy, push ou PR.
+
+Arquivos atualizados nesta etapa:
+
+- `.github/workflows/production-deploy.yml`
+- `.github/agents/visiomilhas.agent.md`
+- `docs/ai-context/ENVIRONMENT.md`
+- `docs/ai-context/PRODUCTION_DEPLOY_RUNBOOK.md`
+- `docs/ai-context/TODO_AI.md`
+- `README.md`
+
+Riscos endereçados:
+
+- Evitar impressão de secrets durante a criação do `.env.production`.
+- Evitar exposição desnecessária de logs de serviço em produção.
+
+Próxima etapa recomendada:
+
+1. Rodar as validações locais e registrar o checkpoint final da etapa.
+
 ## 2026-05-21 — 1.3.29 — production env e secrets registrados
 
 Objetivo:

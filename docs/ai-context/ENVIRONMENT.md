@@ -62,7 +62,7 @@
 - O Environment `production` já foi criado pelo operador.
 - As secrets de production já estão cadastradas no Environment `production`.
 - O workflow de produção deve validar presença de secrets sem imprimir valores.
-- O workflow de deploy deve gerar `.env.production` no servidor e nunca commitar esse arquivo.
+- O workflow de deploy deve gerar `.env.production` no runner, transferir como arquivo temporário e nunca commitar esse arquivo.
 - `.env.production` remoto deve receber `chmod 600` após ser gerado.
 
 ## Secrets obrigatorias no Environment production

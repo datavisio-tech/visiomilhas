@@ -1,5 +1,19 @@
 # TODO_AI - Pendências e próximas ações
 
+## 1.3.32 — revisão do workflow de deploy production
+
+- Revisar o workflow `workflow_dispatch` antes do PR.
+- Confirmar que todas as secrets de production estão configuradas corretamente.
+- Confirmar permissão de escrita em `/opt/datavisio/visiomilhas` para `gitdatavisiodeploy`.
+- Executar o workflow manual somente após PR/merge autorizado.
+- Validar o primeiro deploy controlado antes de liberar o rollout.
+- Planejar o rollback operacional do primeiro deploy.
+
+Pendências específicas:
+
+- `USE_FIFO_MOVEMENTS_ENGINE` permanece `0` na produção inicial.
+- `.claude/` continua fora de commit.
+
 ## 1.3.29 — production env/secrets registrados
 
 - Auditar servidor via SSH antes de qualquer deploy.

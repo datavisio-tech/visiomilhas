@@ -36,6 +36,12 @@ jobs:
             NEXT_PUBLIC_APP_URL
             NODE_ENV
             USE_FIFO_MOVEMENTS_ENGINE
+            AUTH_SECRET
+            GOOGLE_CLIENT_ID
+            GOOGLE_CLIENT_SECRET
+            NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+            STRIPE_SECRET_KEY
+            STRIPE_WEBHOOK_SECRET
             POSTGRES_HOST
             POSTGRES_PORT
             POSTGRES_USER
@@ -71,6 +77,12 @@ jobs:
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
           NODE_ENV: ${{ secrets.NODE_ENV }}
           USE_FIFO_MOVEMENTS_ENGINE: ${{ secrets.USE_FIFO_MOVEMENTS_ENGINE }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
           POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
@@ -122,6 +134,8 @@ jobs:
             --exclude '.env' \
             --exclude '.env.*' \
             --exclude '.claude' \
+            --exclude 'dumps' \
+            --exclude 'backups' \
             --exclude 'coverage' \
             --exclude 'logs' \
             --exclude '*.log' \
@@ -147,12 +161,21 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${PRODUCTION_SSH_PORT}" "${PRODUCTION_SSH_USER}@${PRODUCTION_SSH_HOST}" "cd '${REMOTE_DIR}' && umask 177 && cat > .env.production <<'EOF'
+          env_file="$(mktemp)"
+          trap 'rm -f "${env_file}"' EXIT
+
+          cat > "${env_file}" <<EOF
 APP_NAME=${APP_NAME}
 APP_URL=${APP_URL}
 NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
 NODE_ENV=${NODE_ENV}
 USE_FIFO_MOVEMENTS_ENGINE=${USE_FIFO_MOVEMENTS_ENGINE}
+AUTH_SECRET=${AUTH_SECRET}
+GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
 POSTGRES_HOST=${POSTGRES_HOST}
 POSTGRES_PORT=${POSTGRES_PORT}
 POSTGRES_USER=${POSTGRES_USER}
@@ -169,10 +192,10 @@ MONGODB_USER_PASSWORD=${MONGODB_USER_PASSWORD}
 MONGODB_DATABASE=${MONGODB_DATABASE}
 MONGODB_URI=${MONGODB_URI}
 EOF
-chmod 600 .env.production
 
-test -s .env.production
-"
+          chmod 600 "${env_file}"
+          scp -i ~/.ssh/visiomilhas_deploy_key -P "${PRODUCTION_SSH_PORT}" "${env_file}" "${PRODUCTION_SSH_USER}@${PRODUCTION_SSH_HOST}:${REMOTE_DIR}/.env.production.tmp"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${PRODUCTION_SSH_PORT}" "${PRODUCTION_SSH_USER}@${PRODUCTION_SSH_HOST}" "cd '${REMOTE_DIR}' && mv .env.production.tmp .env.production && chmod 600 .env.production && test -s .env.production"
         env:
           PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
           PRODUCTION_SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
@@ -182,6 +205,12 @@ test -s .env.production
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
           NODE_ENV: ${{ secrets.NODE_ENV }}
           USE_FIFO_MOVEMENTS_ENGINE: ${{ secrets.USE_FIFO_MOVEMENTS_ENGINE }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
           POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
@@ -212,7 +241,7 @@ test -s .env.production
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${PRODUCTION_SSH_PORT}" "${PRODUCTION_SSH_USER}@${PRODUCTION_SSH_HOST}" "docker stack services '${STACK_NAME}' && docker service ps '${SERVICE_NAME}' --no-trunc && docker service logs '${SERVICE_NAME}' --tail 80"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${PRODUCTION_SSH_PORT}" "${PRODUCTION_SSH_USER}@${PRODUCTION_SSH_HOST}" "docker stack services '${STACK_NAME}' && docker service ps '${SERVICE_NAME}' --no-trunc"
           curl -fsS --retry 5 --retry-delay 5 "${APP_URL}/" > /dev/null
           echo "Production smoke test passed for ${IMAGE_NAME}:${GITHUB_SHA}."
         env:

@@ -53,10 +53,10 @@ Os nomes abaixo devem existir no GitHub Environment `production`. Os valores nã
 
 - Disparo manual via `workflow_dispatch`.
 - Sincronizar o repositório para `/opt/datavisio/visiomilhas` usando rsync.
-- Gerar `.env.production` no servidor e aplicar `chmod 600`.
+- Gerar `.env.production` no runner, enviar como `.env.production.tmp` via `scp`, mover no servidor para `.env.production` e aplicar `chmod 600`.
 - Construir a imagem no servidor com tag `GITHUB_SHA`.
 - Executar `docker stack deploy -c stack.visiomilhas.yml visiomilhas`.
-- Validar status do stack, tasks e logs do service.
+- Validar status do stack e `docker service ps` do serviço principal.
 - Executar smoke test via `curl` no endpoint principal.
 - Nunca executar migrations ou seeds dentro do workflow.
 
@@ -64,8 +64,8 @@ Os nomes abaixo devem existir no GitHub Environment `production`. Os valores nã
 
 - Conectar via SSH com `gitdatavisiodeploy`.
 - Entrar no diretório `/opt/datavisio/visiomilhas`.
-- Gerar `.env.production` a partir das Environment Secrets do workflow usando as chaves documentadas em `.env.example` e `docs/ai-context/ENVIRONMENT.md`.
-- Aplicar `chmod 600 .env.production` imediatamente após a geração.
+- Gerar `.env.production` no runner a partir das Environment Secrets do workflow usando as chaves documentadas em `.env.example` e `docs/ai-context/ENVIRONMENT.md`.
+- Enviar o arquivo como `.env.production.tmp`, mover no servidor para `.env.production` e aplicar `chmod 600 .env.production` imediatamente após a troca.
 - Nunca commitar `.env.production`.
 - Não usar fallback silencioso para `DATABASE_URL`.
 
@@ -129,6 +129,12 @@ Executar apenas leitura. Não alterar arquivos, serviços, containers ou volumes
 - `NEXT_PUBLIC_APP_URL`
 - `NODE_ENV`
 - `USE_FIFO_MOVEMENTS_ENGINE`
+- `AUTH_SECRET`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
 - `DATABASE_URL`
 - `ADM_DATABASE_URL`
 - `APP_DATABASE_URL`
