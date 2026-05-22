@@ -1,4 +1,4 @@
-name: Production Deploy - VisioMilhas
+name: Production Deploy Manual - VisioMilhas
 
 on:
   workflow_dispatch:

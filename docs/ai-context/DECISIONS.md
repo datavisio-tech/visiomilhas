@@ -1,5 +1,12 @@
 # DECISIONS - VisioMilhas
 
+## 2026-05-22 — reindex do workflow manual de produção
+
+- Decisão: renomear o workflow de produção para `production-deploy-manual.yml` com nome amigável `Production Deploy Manual - VisioMilhas`.
+- Motivo: o GitHub Actions continuou retornando `HTTP 422: Workflow does not have 'workflow_dispatch' trigger` para o filename anterior, apesar do YAML local e do `gh workflow view` mostrarem `workflow_dispatch`.
+- Efeito esperado: forçar nova indexação do workflow manual sem introduzir gatilhos automáticos.
+- Regras preservadas: `workflow_dispatch` manual, `environment: production`, confirmação textual `DEPLOY`, `USE_FIFO_MOVEMENTS_ENGINE=0`, sem migrations e sem seeds.
+
 Principais decisões técnicas para o MVP1:
 
 - Framework: Next.js (App Router) — por integração com Server Components e rotas modernas.

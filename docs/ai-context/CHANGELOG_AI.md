@@ -1,5 +1,27 @@
 # CHANGELOG_AI
 
+## 2026-05-22 — 1.3.34.3 — reindex do workflow manual de produção por novo filename
+
+Objetivo:
+
+- Forçar uma nova indexação do workflow manual de produção no GitHub Actions após a inconsistência 422 observada com o arquivo anterior.
+
+Decisão técnica:
+
+- O workflow foi renomeado de `production-deploy.yml` para `production-deploy-manual.yml`.
+- O nome amigável passou a ser `Production Deploy Manual - VisioMilhas`.
+- O gatilho segue manual via `workflow_dispatch` com confirmação textual `DEPLOY`.
+- Não houve deploy, seed, migration ou execução do workflow.
+
+Motivo do reindex:
+
+- O arquivo anterior mostrava `workflow_dispatch` no YAML consultado, mas o GitHub Actions continuou retornando `HTTP 422: Workflow does not have 'workflow_dispatch' trigger` na execução.
+- A troca de filename reduz ambiguidade e força novo reconhecimento pelo Actions.
+
+Próxima etapa recomendada:
+
+1. Abrir PR para `main`, aguardar merge e só então considerar um novo dispatch manual único com `confirm_production_deploy=DEPLOY`.
+
 ## 2026-05-22 — 1.3.34.1 — trava textual no dispatch manual de produção
 
 Objetivo:
