@@ -15,6 +15,8 @@ Data: 2026-05-22
 - `git diff --check` passou.
 - Nenhum deploy foi executado.
 - Nenhum push, PR, migration ou seed foi executado.
+- Commit criado: `5d0ab31` (`ci: revisa workflow deploy production 1.3.32`).
+- Status Git final: apenas `?? .claude/`, `?? backend-livraria-node/` e `?? projetos/` permanecem não rastreados; nenhum arquivo da revisão ficou pendente.
 
 Pendências:
 
