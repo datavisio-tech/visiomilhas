@@ -137,6 +137,82 @@ Observação:
 
 - Priorizar entregas mínimas por fase com testes e seeds.
 
+## 1.3.29 — production env/secrets registrados
+
+Objetivo:
+
+- Registrar que o GitHub Environment `production` e as secrets já foram criados pelo operador.
+- Preparar a auditoria do ambiente Docker/Traefik/Swarm/Portainer antes do workflow final de deploy.
+
+Entregáveis desta etapa:
+
+- Atualização do agente residente com as decisões de deploy.
+- Atualização de `ENVIRONMENT.md`, `ARCHITECTURE.md`, `PROJECT_CONTEXT.md`, `DECISIONS.md`, `TODO_AI.md`, `CHANGELOG_AI.md` e `DAILY_CHECKPOINT.md`.
+- Criação de runbook de deploy de production com comandos read-only para a próxima auditoria.
+
+## 1.3.30 — auditoria Docker/Traefik/Swarm/Portainer
+
+Objetivo:
+
+- Auditar o servidor remoto, a pilha Docker e o Traefik existente antes de montar o workflow final.
+
+Checklist da etapa:
+
+- Verificar `whoami`, `hostname`, `pwd` e o diretório remoto esperado.
+- Identificar se o ambiente usa Docker Compose standalone ou Docker Swarm.
+- Identificar rede(s) e labels do Traefik existente.
+- Confirmar containers/serviços existentes e o ponto de entrada de produção.
+- Definir estratégia de build da imagem, healthcheck e rollback.
+
+## 1.3.31 — artefatos Docker de produção
+
+Objetivo:
+
+- Definir os artefatos Docker necessários para produção com base na auditoria.
+- Criar Dockerfile e `stack.visiomilhas.yml` compatíveis com Swarm e Traefik existente.
+- Criar `.dockerignore` e healthcheck local do container.
+
+## 1.3.32 — workflow de deploy
+
+Objetivo:
+
+- Criar o workflow de GitHub Actions para deploy remoto usando `environment: production`.
+- Gerar `.env.production` no servidor e aplicar permissões restritas.
+- Validar healthcheck e rollback do primeiro deploy.
+
+## 1.3.31.1 — produção Swarm preparada
+
+Objetivo:
+
+- Consolidar os artefatos de produção com Next standalone, stack Swarm e labels Traefik corretas.
+
+Próxima entrega:
+
+- Seguir com 1.3.32: workflow de deploy remoto.
+
+## 1.3.33 — primeiro deploy controlado
+
+Objetivo:
+
+- Executar o primeiro deploy controlado em produção com rollback documentado.
+
+## 1.3.34 — QA pós-deploy
+
+Objetivo:
+
+- Validar o ambiente pós-deploy com QA funcional e revisão operacional.
+
+## 1.3.30.1 — padronização de env example e docs
+
+Objetivo:
+
+- Padronizar `.env.example` com placeholders seguros.
+- Atualizar a documentação operacional para a fonte de verdade de produção e deploy.
+
+Próximo passo técnico:
+
+- Siga com 1.3.31: artefatos Docker/Swarm de produção.
+
 ## 1.3.22 — Preparar staging e validar migration do ledger/lotes
 
 Objetivo:
@@ -226,3 +302,9 @@ Progresso estimado (MVP1) atualizado:
 - Objetivo: garantir que o operador humano pode configurar o secret `TEST_DATABASE_URL` e executar o workflow `Integration Tests - MovementsRepo` com segurança.
 - Ação: documentação criada/atualizada com passos para adicionar o secret no GitHub e rodar o workflow manual (`workflow_dispatch`). Scripts de preflight/migrate/validate foram inspecionados para confirmar masking e detecção de comandos destrutivos.
 - Próximo: operador adiciona `TEST_DATABASE_URL` como secret e executa o workflow; após sucesso, planejar PR/push e migração para QA em staging (sob autorização).
+
+### 2026-05-20 — 1.3.26.1 (preparação do QA manual FIFO em staging)
+
+- Objetivo: preparar a execução controlada do QA manual da compra FIFO em staging.
+- Entregáveis: checklist de QA expandido, validador read-only parametrizado, comando npm explícito e instruções de ativação/rollback da flag em staging.
+- Regras: não executar compra automaticamente, não alterar produção, não usar `DATABASE_URL`/`TEST_DATABASE_URL` para staging e não ativar `USE_FIFO_MOVEMENTS_ENGINE` sem confirmação do operador.

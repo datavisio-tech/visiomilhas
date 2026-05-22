@@ -1,4 +1,3 @@
-"use server";
 import { createPurchaseSchema } from "../../../lib/validations/purchases";
 import { appPool } from "../../../db/app/client";
 import { admPool } from "../../../db/adm/client";
@@ -154,4 +153,12 @@ export async function createPurchaseAction(
   }
 }
 
-export default createPurchaseAction;
+// Server Action wrapper: keep the implementation testable (named export)
+// and provide a thin server action default export that Next will proxy.
+export default async function createPurchaseActionServer(
+  formData: FormData,
+  deps: Deps = {},
+) {
+  "use server";
+  return createPurchaseAction(formData, deps);
+}

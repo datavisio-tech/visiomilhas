@@ -118,3 +118,57 @@ Decisões recentes (1.3.21):
 
 - Criar workflow manual (`workflow_dispatch`) para executar testes de integração contra `TEST_DATABASE_URL` no GitHub Actions; o job valida a presença do secret `TEST_DATABASE_URL`, aplica/valida migrations de teste e roda `npm run test:integration`.
 - O workflow não deve expor secrets, não executa seeds e mantém `USE_FIFO_MOVEMENTS_ENGINE=0` durante a execução.
+
+### 2026-05-20 — decisão operacional 1.3.26.1
+
+- A preparação do QA manual da compra FIFO deve ser documentada primeiro e executada com ativação explícita da flag apenas em staging.
+- O validador read-only deve aceitar parâmetros seguros para localizar a compra e a conta, sem fazer writes.
+- Em caso de falha no QA, o rollback operacional é desligar `USE_FIFO_MOVEMENTS_ENGINE` em staging e recarregar a aplicação, sem tocar em produção.
+
+### 2026-05-21 — diagnóstico de runtime da compra FIFO
+
+- O runtime local da compra usa `APP_DATABASE_URL` e, nesta máquina, aponta para `visiomilhas_app`.
+- Se `mile_point_lots` estiver ausente no runtime local, a falha deve ser tratada como desalinhamento de ambiente/schema, não como correção funcional de compra.
+- Para concluir QA staging, preferir o app staging real já validado, em vez de localhost.
+
+### 2026-05-20 — Uso controlado de skills locais
+
+- Skills locais em `.claude/skills` são consideradas ferramentas de apoio; o agente residente é a autoridade final para decisões operacionais.
+- Skills podem ser consultadas para recomendações, auditorias de código e sugestões, mas NÃO podem autorizar ações operacionais (push, PR, merge, deploy, seed, migration) sem aprovação humana explícita.
+- Em caso de conflito entre a recomendação de uma skill e a documentação/decisões do projeto, o agente deve registrar o conflito, documentar o risco e solicitar confirmação do operador.
+
+### 2026-05-21 — produção e deploy remoto
+
+- GitHub Actions gera `.env.production` no servidor a partir das Environment Secrets de `production`.
+- O GitHub Environment `production` e suas secrets já foram cadastrados manualmente pelo operador.
+- O deploy final depende de auditoria prévia do Docker, do modo Compose/Swarm, do Portainer e do Traefik existente.
+- O deploy remoto usa o usuário SSH `gitdatavisiodeploy`, o diretório `/opt/datavisio/visiomilhas` e não utiliza root.
+- A produção inicial mantém `USE_FIFO_MOVEMENTS_ENGINE=0`.
+
+### 2026-05-21 — auditoria 1.3.30 e estratégia Swarm
+
+- A auditoria read-only confirmou Docker Swarm ativo no host de produção.
+- O Traefik já existe como serviço do stack `traefik`, com rede overlay `traefik_public`.
+- Estratégia recomendada para o VisioMilhas: `docker stack deploy` em Swarm, evitando Compose standalone para o deploy final.
+
+### 2026-05-21 — env example e secrets de produção
+
+- `.env.example` deve usar apenas placeholders seguros e não deve conter valores reais de produção.
+- `.env.production` será gerado pelo workflow de deploy a partir das secrets do GitHub Environment `production`.
+- O domínio público real fica para documentação e secrets, nunca como valor real em `.env.example`.
+
+### 2026-05-21 — produção Swarm 1.3.31
+
+- A produção do VisioMilhas usará Docker Swarm e o Traefik existente via rede `traefik_public`.
+- O acesso externo não deve expor a porta 3000 no host.
+- O `certresolver` do Traefik identificado na auditoria é `le`.
+- O primeiro deploy pode construir a imagem no servidor antes do `docker stack deploy`, sem registry obrigatório nesta etapa.
+
+### 2026-05-21 — workflow manual de deploy 1.3.32
+
+- O deploy de producao sera acionado manualmente via `workflow_dispatch`.
+- O workflow sincroniza o repositorio para `/opt/datavisio/visiomilhas` e gera `.env.production` no host.
+- A imagem e construida no servidor com tag `GITHUB_SHA` antes do `docker stack deploy`.
+- O workflow nao executa migrations ou seeds.
+
+Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `security-review`, `test`.

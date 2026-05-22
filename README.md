@@ -39,6 +39,11 @@ npm run typecheck
 npm run db:check-env
 npm run db:check-connections
 npm run db:seed (exige autorização explícita)
+npm run db:validate:staging:purchase-fifo (read-only; usar após QA manual em staging)
+
+Nota sobre skills locais:
+
+- O repositório pode conter skills locais em `.claude/skills` usadas para auxílio (code-review, frontend-patterns, security-review, test, saas-multi-tenant). Essas skills são ferramentas de apoio: regras operacionais e decisões finais residem no agente residente (`.github/agents/visiomilhas.agent.md`) e na documentação em `docs/ai-context`.
 ```
 
 Status das validações (local):
@@ -58,6 +63,7 @@ Planejamento 1.3.22:
 Nota operacional (2026-05-20):
 
 - As bases `DATABASE_STAGING` e `DATABASE_TEST` foram criadas e estão disponíveis; use `STAGING_DATABASE_URL` e `TEST_DATABASE_URL` explicitamente para preflights e validações. Não usar `DATABASE_URL` como fallback quando houver risco de ambiguidade.
+- O QA manual de compra FIFO em staging usa `USE_FIFO_MOVEMENTS_ENGINE=1` apenas em staging e o validador read-only `npm run db:validate:staging:purchase-fifo` com identificadores seguros da compra/conta.
 
 Notas da versão 1.3.21:
 
@@ -83,6 +89,13 @@ Observações de segurança:
 
 - Não versionar `.env`.
 - Não expor `APP_DATABASE_URL` / `ADM_DATABASE_URL` em logs.
+
+Referência de ambiente e deploy:
+
+- Veja `docs/ai-context/ENVIRONMENT.md` para a convenção de variáveis e placeholders.
+- Veja `docs/ai-context/PRODUCTION_DEPLOY_RUNBOOK.md` para o fluxo de `.env.production`, deploy remoto e validação do workflow manual `workflow_dispatch`.
+- A produção inicial deve manter `USE_FIFO_MOVEMENTS_ENGINE=0` até validação explícita.
+- Os artefatos de produção Swarm estão em `Dockerfile`, `.dockerignore` e `stack.visiomilhas.yml`.
 
 Notas da versão 1.3.12 (preparação do schema para ledger/FIFO):
 

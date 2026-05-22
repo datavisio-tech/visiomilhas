@@ -1,5 +1,92 @@
 # TODO_AI - Pendências e próximas ações
 
+## 1.3.32.1 — limpeza de artefatos externos locais
+
+- Manter `backend-livraria-node/` e `projetos/` fora do workspace do VisioMilhas.
+- Preservar os artefatos movidos em `../_fora_visiomilhas_acidental/`.
+- Evitar que `FoodComerce` volte a aparecer na árvore do VisioMilhas.
+- `.claude/` continua fora de commit.
+
+## 1.3.32 — revisão do workflow de deploy production
+
+- Revisar o workflow `workflow_dispatch` antes do PR.
+- Confirmar que todas as secrets de production estão configuradas corretamente.
+- Confirmar permissão de escrita em `/opt/datavisio/visiomilhas` para `gitdatavisiodeploy`.
+- Executar o workflow manual somente após PR/merge autorizado.
+- Validar o primeiro deploy controlado antes de liberar o rollout.
+- Planejar o rollback operacional do primeiro deploy.
+
+Pendências específicas:
+
+- `USE_FIFO_MOVEMENTS_ENGINE` permanece `0` na produção inicial.
+- `.claude/` continua fora de commit.
+
+## 1.3.29 — production env/secrets registrados
+
+- Auditar servidor via SSH antes de qualquer deploy.
+- Identificar se o ambiente remoto usa Docker Compose standalone ou Docker Swarm.
+- Identificar a rede do Traefik existente.
+- Identificar labels e entrypoints usados pelo Traefik.
+- Confirmar a estratégia de build da imagem de produção.
+- Definir healthcheck para o container da aplicação.
+- Definir rollback operacional para o primeiro deploy.
+- Manter `USE_FIFO_MOVEMENTS_ENGINE=0` na produção inicial.
+- Não criar `.env.production` real no repositório.
+
+## 1.3.30 — auditoria Docker/Traefik/Swarm concluída
+
+- Swarm está ativo no host de produção e o node atual é manager único.
+- Traefik existe como serviço do stack `traefik` na rede overlay `traefik_public`.
+- O diretório `/opt/datavisio/visiomilhas` existe, mas está vazio e ainda não contém repo Git.
+- A estratégia recomendada agora é construir artefatos para `docker stack deploy`.
+- Próximo passo técnico: criar Dockerfile/stack e depois o workflow de deploy.
+
+## 1.3.30.1 — env example e docs padronizados
+
+- `.env.example` precisa ficar apenas com placeholders seguros e sem valores reais.
+- `ENVIRONMENT.md` deve ser a referência de convenção de variáveis de produção.
+- `PRODUCTION_DEPLOY_RUNBOOK.md` deve continuar a fonte operacional para `.env.production` e `chmod 600` remoto.
+- Próxima etapa técnica: criar `stack.visiomilhas.yml`, Dockerfile e workflow de deploy.
+- Validar healthcheck e rollback na mesma trilha de produção.
+
+## 1.3.31 — artefatos Swarm em andamento
+
+- `certresolver` do Traefik confirmado como `le` e será reutilizado.
+- Decidir a estratégia de imagem para o primeiro deploy: build no servidor sem registry obrigatório nesta etapa.
+- Validar que o stack não publica `3000` diretamente no host.
+- Definir rollback operacional do stack `visiomilhas`.
+- Criar workflow de deploy apenas na próxima etapa.
+
+Concluído recentemente:
+
+- Diagnóstico 1.3.27.1 do runtime local: usa `APP_DATABASE_URL`, aponta para `visiomilhas_app` e não possui `mile_point_lots`.
+
+Pendência imediata:
+
+- Não usar localhost para concluir o QA staging.
+- Executar a compra manual no app staging real, onde `mile_point_lots` já foi validado.
+
+Pendência para a próxima etapa:
+
+- Rodar apenas comandos read-only na auditoria de produção e registrar host, diretório remoto, modo Docker e Traefik.
+
+Observação:
+
+- A alteração funcional pendente do loop anterior foi revertida antes do commit.
+
+Concluído recentemente:
+
+- QA 1.3.27 retomado em staging: preflight, base, ledger e validador read-only sem IDs passaram, mas sem compra detectável.
+
+Pendência imediata:
+
+- Aguardar compra manual pequena em staging com a flag ativa e receber `accountId`/`purchaseId`/`entryId` para rodar a validação read-only filtrada.
+- Solicitar rollback da flag para `USE_FIFO_MOVEMENTS_ENGINE=0` após o QA.
+
+Concluído recentemente:
+
+- Validar runtime da página de compras 1.3.26.3: OK, sem reproduzir `Cannot redefine property: $$id`; `USE_FIFO_MOVEMENTS_ENGINE` permaneceu OFF.
+
 Prioridades imediatas:
 
 1. Scaffold do projeto Next.js + TypeScript + Tailwind + shadcn/ui
@@ -27,6 +114,7 @@ Notas operacionais:
 Concluído recentemente:
 
 - Implementar camada de domínio e validações Zod (lib/domain, lib/validations).
+- Validar runtime da página de compras antes de retomar QA FIFO em staging (1.3.26.3).
 
 Próximos itens prioritários:
 
@@ -138,6 +226,21 @@ Pendências (relacionadas a 1.3.21):
   2. Actions → Integration Tests - MovementsRepo → Run workflow → selecionar branch `1.3.25.3-ci-manual-run-instructions` → Run
   3. Aguardar execução e confirmar que os passos passaram; coletar logs sanitizados.
 
+2026-05-20 — 1.3.26 (QA compra FIFO em staging)
+
+- Branch de trabalho: `1.3.26-qa-compra-fifo-staging`
+- Preflight staging: concluído com `current_database(): staging_db`
+- Validação base staging: concluída
+- Validação ledger staging: concluída
+- Próximo passo: executar validações locais (`test`, `typecheck`, `lint`, `build`) e depois o checklist manual de QA da compra FIFO em staging
+- Regra: não ativar `USE_FIFO_MOVEMENTS_ENGINE` em produção; qualquer ativação em staging depende de nova autorização explícita
+
+2026-05-20 — 1.3.26.1 (preparação do QA manual FIFO)
+
+- Checklist de QA expandido com roteiro de ativação da flag em staging, rollback operacional e parâmetros de validação.
+- Adicionado script npm `db:validate:staging:purchase-fifo`.
+- Próximo passo: aguardar o operador ativar `USE_FIFO_MOVEMENTS_ENGINE=1` apenas em staging, registrar os IDs da compra e então executar a validação read-only.
+
 Status 1.3.14 — Consolidação do motor FIFO puro:
 
 - Motor FIFO consolidado em `lib/services/movements.ts` com testes unitários em `lib/services/__tests__/movements.test.ts`.
@@ -164,6 +267,22 @@ Status 1.3.16 (implementação do repo):
 
 - `lib/repositories/movements.drizzle-repo.ts` implementado como adapter Drizzle.
 - Próximo: preparar testes de integração em DB de desenvolvimento isolado e documento de rollback/aplicação de migration.
+
+2026-05-20 — Uso controlado de skills locais (decisão operacional)
+
+- Registrar as skills locais instaladas em `.claude/skills` e seu escopo de uso no agente residente.
+- Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `security-review`, `test`.
+- Ação: atualizar `.github/agents/visiomilhas.agent.md` com regras e limites (feito localmente).
+- Validação: rodar `npm run lint` e `npm run typecheck` após alterações documentais.
+
+Pendência adicional — diretório `.claude`:
+
+- O diretório `.claude/` existe localmente e contém skills auxiliares (SKILL.md e implementações).
+- Decisão atual: **não commitar `.claude/`**; registrar como pendência para avaliação futura.
+- Ação recomendada antes de versionar `.claude`:
+  1. Revisar cada `SKILL.md` para garantir que não exponha segredos, URLs ou instruções operacionais perigosas.
+  2. Validar permissões de rede/IO esperadas pelas skills.
+  3. Documentar quais skills, se any, serão versionadas e quais permanecerão locais.
 
 Nota (2026-05-18): adicionado esqueleto de testes de integração em `tests/integration/movements.drizzle-repo.test.ts`.
 Estes testes são placeholders e dependem de variáveis de ambiente (`APP_DATABASE_URL` ou `DATABASE_URL`) apontando para um banco de desenvolvimento isolado. Não execute `npm run test:integration` contra bancos de produção.

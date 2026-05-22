@@ -1,3 +1,180 @@
+# CHECKPOINT - 1.3.32.1 — limpeza de artefatos externos locais
+
+Data: 2026-05-22
+
+- Branch atual: `1.3.32-production-deploy-workflow`.
+- Status Git inicial desta subetapa: `?? .claude/`, `?? backend-livraria-node/`, `?? projetos/`.
+- Objetivo: remover do caminho do workspace os diretórios externos que estavam quebrando `typecheck` e `build`.
+- `backend-livraria-node/` e `projetos/` foram movidos para `../_fora_visiomilhas_acidental/`.
+- `FoodComerce` foi preservado dentro de `../_fora_visiomilhas_acidental/projetos/`.
+- Os diretórios originais permaneceram apenas com `.git` e deixaram de interferir nas validações do VisioMilhas.
+- `npm run typecheck` passou após a limpeza.
+- `npm run build` passou após a limpeza.
+- `npm run lint` passou.
+- `git diff --check` passou.
+- Nenhum deploy, push, PR, migration ou seed foi executado.
+- Nenhum arquivo funcional do VisioMilhas foi alterado.
+
+Pendências:
+
+- `.claude/` continua não rastreado e fora de commit.
+
+Próxima etapa recomendada:
+
+1. Manter a pasta segura fora do repositório e evitar que os diretórios externos retornem ao workspace.
+
+# CHECKPOINT - 1.3.32 — revisão do workflow de deploy production
+
+Data: 2026-05-22
+
+- Branch atual: `1.3.32-production-deploy-workflow`.
+- Status Git inicial desta etapa: `M .github/agents/visiomilhas.agent.md`, `M .github/workflows/production-deploy.yml`, `M README.md`, `M docs/ai-context/CHANGELOG_AI.md`, `M docs/ai-context/ENVIRONMENT.md`, `M docs/ai-context/PRODUCTION_DEPLOY_RUNBOOK.md`, `M docs/ai-context/TODO_AI.md`, `?? .claude/`, `?? backend-livraria-node/`, `?? projetos/`.
+- Objetivo: revisar o workflow manual de deploy production, completar documentação operacional e validar localmente sem deploy.
+- O workflow ficou manual via `workflow_dispatch`, com `environment: production` e `contents: read`.
+- A geração de `.env.production` foi movida para o runner e enviada como arquivo temporário ao servidor.
+- A validação de secrets passou a incluir autenticação e Stripe.
+- O step de validação final passou a usar apenas `docker stack services` e `docker service ps`, sem logs do serviço.
+- `npm run lint` passou.
+- `npm run typecheck` falhou por erros pré-existentes em `projetos/FoodComerce/`, fora do escopo desta etapa.
+- `npm run build` falhou pelo mesmo motivo pré-existente em `projetos/FoodComerce/`.
+- `git diff --check` passou.
+- Nenhum deploy foi executado.
+- Nenhum push, PR, migration ou seed foi executado.
+- Commit criado: `5d0ab31` (`ci: revisa workflow deploy production 1.3.32`).
+- Status Git final: apenas `?? .claude/`, `?? backend-livraria-node/` e `?? projetos/` permanecem não rastreados; nenhum arquivo da revisão ficou pendente.
+
+Pendências:
+
+- O workspace ainda contém ruído não rastreado em `.claude/`, `backend-livraria-node/` e `projetos/`.
+- `typecheck` e `build` continuam bloqueados por arquivos externos ao app principal.
+
+Próxima etapa recomendada:
+
+1. Revisar se o ruído dos subprojetos deve ser excluído do typecheck/build ou tratado separadamente antes de uma rodada de validação completa.
+
+# CHECKPOINT - 1.3.31 — artefatos Docker Swarm de produção
+
+Data: 2026-05-21
+
+- Branch atual: `1.3.31-production-swarm-artifacts`.
+- Status Git inicial desta etapa: `M .env.example`, `?? .claude/`.
+- Objetivo: preparar Dockerfile, `.dockerignore`, `stack.visiomilhas.yml` e healthcheck para Swarm.
+- `next.config.mjs` passou a usar `output: "standalone"`.
+- `scripts/healthcheck.js` verifica `http://127.0.0.1:3000/` sem expor segredos.
+- `stack.visiomilhas.yml` usa `traefik_public`, não publica `3000` no host e reutiliza o `certresolver` `le` confirmado na auditoria.
+- Nenhum deploy foi executado.
+
+Próxima etapa recomendada:
+
+1. Rodar validações locais e então preparar o workflow de deploy 1.3.32.
+
+# CHECKPOINT - 1.3.30.1 — padronização do .env.example e docs operacionais
+
+Data: 2026-05-21
+
+- Branch atual: `1.3.30.1-env-example-production-docs`.
+- Status Git inicial desta etapa: `M .env.example`, `?? .claude/`.
+- Objetivo: padronizar `.env.example` com placeholders seguros e alinhar a documentação operacional.
+- `NODE_ENV=development` ficou explícito no exemplo; produção deve usar `production`.
+- `USE_FIFO_MOVEMENTS_ENGINE=0` permanece como padrão no exemplo.
+- `ENVIRONMENT.md` agora é a referência das variáveis base, compostas e da diferença entre `.env.example` e `.env.production`.
+- `PRODUCTION_DEPLOY_RUNBOOK.md` explicita que `.env.production` será materializado pelo workflow.
+- Nenhuma alteração de runtime, deploy ou servidor foi executada nesta etapa.
+
+Próxima etapa recomendada:
+
+1. Criar os artefatos Docker/Swarm de produção e o stack `stack.visiomilhas.yml`.
+
+# CHECKPOINT - 1.3.30 — auditoria Docker/Traefik/Swarm em produção
+
+Data: 2026-05-21
+
+- Branch atual: `1.3.30-audit-docker-traefik-production`.
+- Status Git inicial desta etapa: apenas `.claude/` não rastreado; nenhum arquivo versionado pendente.
+- `git log` confirmou o commit `6070752` da etapa 1.3.29 no histórico local.
+- Auditoria read-only executada via SSH com `gitdatavisiodeploy`.
+- Swarm: ativo, node local manager, um único manager no cluster.
+- Traefik: serviço do stack `traefik` na rede overlay `traefik_public`.
+- `/opt/datavisio/visiomilhas`: existe, mas está vazio e sem repo Git nesta auditoria.
+- Estratégia recomendada: `docker stack deploy` em Swarm.
+- Nenhuma mudança foi aplicada no servidor remoto.
+
+Próxima etapa recomendada:
+
+1. Criar os artefatos Docker de produção para Swarm e o workflow de deploy.
+
+# CHECKPOINT - 1.3.29 — production env e secrets registrados
+
+Data: 2026-05-21
+
+- Branch atual: `1.3.29-production-env-registered`.
+- Status Git inicial desta etapa: `?? .claude/`.
+- GitHub Environment `production` já foi criado pelo operador.
+- Secrets de production já foram cadastradas pelo operador no Environment `production`.
+- `.env.production` não foi criado nesta etapa.
+- `USE_FIFO_MOVEMENTS_ENGINE` permanece `0` na produção inicial.
+- Objetivo da próxima etapa: auditoria read-only de Docker, Traefik, Swarm, Portainer e diretório remoto.
+
+Próxima etapa recomendada:
+
+1. Executar a auditoria 1.3.30 apenas com comandos read-only no servidor remoto.
+
+# CHECKPOINT - 1.3.27.1 — diagnóstico do runtime da compra FIFO
+
+Data: 2026-05-21
+
+- Branch atual: `1.3.27-qa-compra-fifo-staging`.
+- Status Git inicial desta etapa: `M lib/repositories/movements.drizzle-repo.ts`, `?? .claude/`.
+- Runtime local diagnosticado com `npm run db:diagnose:runtime`.
+- Runtime local usa `APP_DATABASE_URL`.
+- `current_database()` no runtime local: `visiomilhas_app`.
+- `program_accounts`: FOUND.
+- `mile_entries`: FOUND.
+- `mile_point_lots`: MISSING.
+- Staging segue validado: `staging_db` com `mile_point_lots` FOUND.
+- Conclusão: erro é de ambiente/schema do runtime local, não de staging.
+- Próximo passo: não concluir QA em localhost; usar o app staging real para a compra manual.
+
+Próxima etapa recomendada:
+
+1. Levar a compra manual para o app staging real e não para localhost.
+
+# CHECKPOINT - 1.3.27 — QA controlado da compra FIFO em staging
+
+Data: 2026-05-21
+
+- Branch atual: `1.3.27-qa-compra-fifo-staging`.
+- Status Git inicial desta retomada: `?? .claude/`.
+- Preflight staging: OK, com `current_database(): staging_db` e host/usuário mascarados.
+- Schema base staging: OK.
+- Ledger/FIFO staging: OK.
+- Validador read-only sem IDs: executado e sem compra/lote recente detectável; contadores retornaram `mile_entries_count: 0`, `mile_point_lots_count: 0`, `program_accounts_count: 0`.
+- Compra manual ainda é necessária para continuar a validação com IDs.
+- A flag foi informada como ativada manualmente pelo operador; o agente não alterou `.env`.
+- Próximo passo: aguardar a compra de QA em staging e os identificadores para rodar o validador read-only com filtros.
+
+Próxima etapa recomendada:
+
+1. Fazer a compra pequena em staging com a flag ativa e informar os IDs gerados.
+
+# CHECKPOINT - 1.3.26.3 — validação de runtime da página de compras
+
+Data: 2026-05-21
+
+- Objetivo: validar o runtime da página de compras antes de retomar o QA FIFO em staging.
+- Branch atual: `1.3.26.2-fix-staging-qa-blockers`.
+- Resultado: página `/app/purchases` abriu normalmente em `next dev`, sem reproduzir `Cannot redefine property: $$id`.
+- Validações executadas: `npm run test` OK; `npm run typecheck` OK; `npm run lint` OK; `npm run build` OK.
+- Runtime validado via navegador local em `http://localhost:3000/app/purchases`.
+- Flag FIFO permaneceu OFF durante toda a validação.
+- Nenhuma compra de teste foi executada.
+- `.claude/` continua não rastreado e não foi incluído em nenhum commit.
+- Pendência: manter QA staging pausado até nova autorização para reativar `USE_FIFO_MOVEMENTS_ENGINE`.
+
+Próxima etapa recomendada:
+
+1. Retomar o roteiro de QA em staging apenas após autorização explícita para reativar a flag FIFO.
+
 ---
 
 ## CHECKPOINT - 1.3.25.2 (CI de integração MovementsRepo)
@@ -41,6 +218,7 @@ Registre aqui a data/hora e o resultado (operador):
 - Passos que passaram:
 - Passo que falhou (se houver):
 - Mensagem sanitizada de erro (se houver):
+
 # CHECKPOINT - Encerramento do dia — 1.3.21
 
 Data: 2026-05-18
@@ -82,6 +260,77 @@ Comandos perigosos NÃO executados:
 Próxima etapa recomendada:
 
 1. Agendar execução de regressão de integração completa e coletar logs/outputs sanitizados para QA.
+
+---
+
+# CHECKPOINT - 1.3.26 staging QA compra FIFO
+
+Data: 2026-05-20
+
+## CHECKPOINT - 2026-05-20 — Fechamento seguro do dia (1.3.26.2)
+
+- Branch atual: `1.3.26.2-fix-staging-qa-blockers`.
+- Último commit local: `fc0bb46` — docs: define uso controlado de skills locais no agente (registro operacional).
+- Correções realizadas nesta etapa (1.3.26.2):
+  - `scripts/validate-staging-purchase-fifo.ts`: passou a usar `dotenv-expand` para resolver variáveis interpoladas (`STAGING_DATABASE_URL`).
+  - `app/app/purchases/actions.ts`: separação entre implementação testável e wrapper Server Action (`"use server"` no wrapper) para evitar `Cannot redefine property: $$id`.
+  - Registro e documentação do uso controlado das skills locais em `.github/agents/visiomilhas.agent.md`.
+- Validações executadas: `npm run lint` — OK; `npm run typecheck` — OK; testes/build passaram em etapas anteriores da correção técnica.
+- Pendência operacional: diretório não rastreado `.claude/` detectado (contém skills locais). A decisão operacional é não commitar `.claude` neste momento; registrar como pendência para avaliação posterior.
+
+Recomendações de segurança e próximas ações:
+
+- Manter `USE_FIFO_MOVEMENTS_ENGINE=0` em ambientes não validados até nova autorização.
+- Validar runtime da página de compras localmente antes de ativar a flag em staging.
+- Quando decidir versionar `.claude`, revisar cada `SKILL.md` e o código das skills para conformidade com regras de segurança e privacidade antes de commitar.
+- Não fazer push/PR/deploy/seed/migration sem autorização explícita.
+
+Status final do working tree (sanitizado):
+
+- Arquivos modificados (docs): `.github/agents/visiomilhas.agent.md`, `docs/ai-context/CHANGELOG_AI.md`, `docs/ai-context/DAILY_CHECKPOINT.md`, `docs/ai-context/DECISIONS.md`, `docs/ai-context/TODO_AI.md`, `README.md`.
+- Diretório não rastreado: `.claude/` (não será adicionado).
+
+Registro concluído por: agente residente (local). Próxima retomada recomendada conforme checklist operacional.
+Ações executadas nesta rodada:
+
+Resumo sanitizado:
+
+Comandos perigosos NÃO executados:
+
+Pendências:
+
+Próxima etapa recomendada:
+
+1. Rodar as validações locais e, se passarem, revisar o checklist manual antes de autorizar a ativação da flag em staging.
+
+# CHECKPOINT - 1.3.26.1 preparação do QA manual FIFO
+
+- Checklist de QA expandido com pré-condições, ativação controlada da flag, roteiro de compra, validação read-only e rollback.
+- Script `scripts/validate-staging-purchase-fifo.ts` revisado para exigir `STAGING_DATABASE_URL`, validar `current_database() = staging_db` e aceitar parâmetros seguros opcionais.
+- Script npm `db:validate:staging:purchase-fifo` adicionado ao `package.json`.
+- Documentação operacional atualizada para manter `USE_FIFO_MOVEMENTS_ENGINE=1` somente em staging e `0` em produção.
+
+Resumo sanitizado:
+
+- Validador read-only preparado para `--account-id`, `--purchase-id` e `--entry-id`.
+- Nenhuma compra executada.
+- Nenhuma alteração em staging ainda aplicada nesta etapa.
+
+Comandos perigosos NÃO executados:
+
+- `npm run db:seed`
+- qualquer deploy
+- qualquer alteração em produção
+- qualquer uso de `DATABASE_URL`/`TEST_DATABASE_URL` para staging
+
+Pendências:
+
+- Operador ativa a flag em staging, registra horário e executa a compra de teste.
+- Depois, rodar `npm run db:validate:staging:purchase-fifo` com os identificadores coletados.
+
+Próxima etapa recomendada:
+
+1. Aguardar o operador executar a compra de teste em staging e fornecer `accountId`, `purchaseId`/`entryId`, pontos e horário aproximado.
 
 ---
 
