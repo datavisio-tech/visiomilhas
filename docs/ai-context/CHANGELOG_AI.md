@@ -1,5 +1,32 @@
 # CHANGELOG_AI
 
+## 2026-05-22 — 1.3.32.1 — limpeza de artefatos externos locais
+
+Objetivo:
+
+- Remover do caminho do workspace os diretórios externos que estavam interferindo em `typecheck` e `build`.
+
+Resultado desta limpeza local:
+
+- `backend-livraria-node/` e `projetos/` foram movidos para `../_fora_visiomilhas_acidental/` fora do repositório.
+- `FoodComerce` ficou preservado dentro de `../_fora_visiomilhas_acidental/projetos/`.
+- Os diretórios originais ficaram apenas com `.git` e deixaram de interferir nas validações do VisioMilhas.
+- `npm run typecheck` passou.
+- `npm run build` passou.
+- `npm run lint` passou.
+- `git diff --check` passou.
+- Nenhum arquivo funcional do VisioMilhas foi alterado nesta limpeza.
+
+Arquivos atualizados nesta etapa:
+
+- `docs/ai-context/CHANGELOG_AI.md`
+- `docs/ai-context/DAILY_CHECKPOINT.md`
+- `docs/ai-context/TODO_AI.md`
+
+Próxima etapa recomendada:
+
+1. Manter os artefatos externos fora do workspace antes da próxima rodada de validação completa.
+
 ## 2026-05-22 — 1.3.32 — revisão técnica do workflow de deploy production
 
 Objetivo:

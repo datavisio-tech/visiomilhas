@@ -1,3 +1,28 @@
+# CHECKPOINT - 1.3.32.1 — limpeza de artefatos externos locais
+
+Data: 2026-05-22
+
+- Branch atual: `1.3.32-production-deploy-workflow`.
+- Status Git inicial desta subetapa: `?? .claude/`, `?? backend-livraria-node/`, `?? projetos/`.
+- Objetivo: remover do caminho do workspace os diretórios externos que estavam quebrando `typecheck` e `build`.
+- `backend-livraria-node/` e `projetos/` foram movidos para `../_fora_visiomilhas_acidental/`.
+- `FoodComerce` foi preservado dentro de `../_fora_visiomilhas_acidental/projetos/`.
+- Os diretórios originais permaneceram apenas com `.git` e deixaram de interferir nas validações do VisioMilhas.
+- `npm run typecheck` passou após a limpeza.
+- `npm run build` passou após a limpeza.
+- `npm run lint` passou.
+- `git diff --check` passou.
+- Nenhum deploy, push, PR, migration ou seed foi executado.
+- Nenhum arquivo funcional do VisioMilhas foi alterado.
+
+Pendências:
+
+- `.claude/` continua não rastreado e fora de commit.
+
+Próxima etapa recomendada:
+
+1. Manter a pasta segura fora do repositório e evitar que os diretórios externos retornem ao workspace.
+
 # CHECKPOINT - 1.3.32 — revisão do workflow de deploy production
 
 Data: 2026-05-22

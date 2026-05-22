@@ -1,5 +1,12 @@
 # TODO_AI - Pendências e próximas ações
 
+## 1.3.32.1 — limpeza de artefatos externos locais
+
+- Manter `backend-livraria-node/` e `projetos/` fora do workspace do VisioMilhas.
+- Preservar os artefatos movidos em `../_fora_visiomilhas_acidental/`.
+- Evitar que `FoodComerce` volte a aparecer na árvore do VisioMilhas.
+- `.claude/` continua fora de commit.
+
 ## 1.3.32 — revisão do workflow de deploy production
 
 - Revisar o workflow `workflow_dispatch` antes do PR.
