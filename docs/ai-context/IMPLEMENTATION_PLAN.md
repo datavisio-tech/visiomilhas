@@ -1,3 +1,10 @@
+## 1.3.34.1 — proteção textual do workflow de produção
+
+- O workflow manual de produção recebeu inputs explícitos em `workflow_dispatch`.
+- A confirmação textual `DEPLOY` passou a ser exigida logo após o checkout, antes de qualquer SSH/sync.
+- A estratégia de tag atual foi preservada para evitar complexidade desnecessária.
+- Próximo passo: publicar a correção em PR e somente depois considerar o primeiro dispatch controlado.
+
 Atualização 1.3.14:
 
 - Consolidação do motor FIFO puro/in-memory em `lib/services/movements.ts` com testes unitários em `lib/services/__tests__/movements.test.ts`.

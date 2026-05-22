@@ -10,6 +10,14 @@
 - Domínio público: `https://visiomilhas.visiochat.cloud`.
 - Produção inicial: `USE_FIFO_MOVEMENTS_ENGINE=0`.
 
+## Correção 1.3.34.1 — confirmação textual do dispatch
+
+- O workflow de produção passou a exigir `confirm_production_deploy=DEPLOY` como confirmação textual.
+- Os inputs `confirm_production_deploy` e `image_tag` foram tornados explícitos no `workflow_dispatch`.
+- A trava ocorre logo após o checkout, antes de qualquer step de SSH ou sync.
+- O workflow continua manual e sem gatilhos automáticos.
+- O deploy ainda não foi executado nesta etapa.
+
 ## Objetivos do runbook
 
 - Servir como guia para a auditoria pré-deploy e para o deploy remoto final.

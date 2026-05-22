@@ -1,3 +1,28 @@
+# CHECKPOINT - 1.3.34.1 — trava textual do dispatch manual
+
+Data: 2026-05-22
+
+- Branch atual: `1.3.34.1-fix-production-workflow-dispatch`.
+- Objetivo: proteger o workflow manual de produção com confirmação textual antes de qualquer SSH/deploy.
+- Correção aplicada: `workflow_dispatch` agora exige `confirm_production_deploy=DEPLOY` e expõe `image_tag` como input explícito.
+- O workflow continua manual e sem gatilhos automáticos.
+- Nenhum deploy foi executado.
+- Nenhum comando remoto foi executado.
+- Nenhuma migration, seed ou alteração funcional foi realizada.
+
+Diagnóstico registrado:
+
+- O `gh workflow run production-deploy.yml --ref main` havia retornado `HTTP 422: Workflow does not have 'workflow_dispatch' trigger` no contexto observado.
+- A trava textual foi adicionada para impedir execução acidental do primeiro deploy.
+
+Pendências:
+
+- A alteração precisa ser publicada em PR/merge antes de qualquer tentativa de dispatch manual.
+
+Próxima etapa recomendada:
+
+1. Abrir PR para `main`, revisar e só depois considerar o dispatch manual com `DEPLOY`.
+
 # CHECKPOINT - 1.3.32.1 — limpeza de artefatos externos locais
 
 Data: 2026-05-22

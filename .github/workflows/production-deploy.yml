@@ -2,6 +2,16 @@ name: Production Deploy - VisioMilhas
 
 on:
   workflow_dispatch:
+    inputs:
+      confirm_production_deploy:
+        description: "Digite DEPLOY para confirmar o deploy em produção"
+        required: true
+        type: string
+      image_tag:
+        description: "Tag da imagem Docker a ser usada no deploy"
+        required: false
+        default: "latest"
+        type: string
 
 permissions:
   contents: read
@@ -21,6 +31,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Validate production deploy confirmation
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event.inputs.confirm_production_deploy }}" != "DEPLOY" ]; then
+            echo "Production deploy not confirmed. Type DEPLOY to continue."
+            exit 1
+          fi
+          echo "Production deploy confirmation accepted."
 
       - name: Validate required secrets
         shell: bash
