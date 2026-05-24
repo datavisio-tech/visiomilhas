@@ -53,6 +53,12 @@ Objetivo:
 - Readiness recovery: stable quando usuários parcialmente provisionados forem recuperados sem criar organização ou conta duplicada.
 - Readiness deploy: transitional enquanto o rollout permanecer pequeno e reversível.
 
+## Onboarding 2.4-B — Real Interface Validation & Browser Runtime Audit
+
+- Readiness browser: transitional until the public sign-in page validates redirect, callback and recovery in browser real.
+- Readiness UX: stable only when loading/error feedback and onboarding retry are visible and consistent.
+- Readiness onboarding: remains transitional until a full sign-in -> callback -> onboarding -> dashboard path is observed without 404 or loop.
+
 Decisao alvo:
 
 - Experiencia principal de conta/pessoa.

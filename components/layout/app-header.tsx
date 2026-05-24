@@ -1,23 +1,78 @@
-import { resolveControlledSessionContext } from "../../lib/server/controlled-session";
+"use client";
 
-export default async function AppHeader() {
-  const sessionContext = await resolveControlledSessionContext({
-    source: "app.header",
-    allowFallback: false,
-  });
+import { useState } from "react";
 
-  const email = sessionContext?.auth?.email;
+type AppHeaderProps = {
+  email?: string | null;
+};
+
+export default function AppHeader({ email }: AppHeaderProps) {
+  const [loadingAction, setLoadingAction] = useState<"signin" | "signout" | null>(null);
+  const isAuthenticated = Boolean(email);
+
+  async function handleGoogleSignIn() {
+    try {
+      setLoadingAction("signin");
+      const callbackURL = encodeURIComponent(window.location.pathname);
+      window.location.assign(`/sign-in?callbackUrl=${callbackURL}`);
+    } catch (error) {
+      // eslint-disable-next-line no-alert
+      window.alert(error instanceof Error ? error.message : "Falha ao iniciar login com Google");
+    } finally {
+      setLoadingAction(null);
+    }
+  }
+
+  async function handleSignOut() {
+    try {
+      setLoadingAction("signout");
+
+      const response = await fetch("/api/auth/sign-out", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha ao encerrar a sessão");
+      }
+
+      window.location.assign("/");
+    } catch (error) {
+      // eslint-disable-next-line no-alert
+      window.alert(error instanceof Error ? error.message : "Falha ao encerrar a sessão");
+    } finally {
+      setLoadingAction(null);
+    }
+  }
 
   return (
     <header className="w-full bg-white border-b p-4 flex items-center justify-between">
       <div className="text-lg font-semibold">VisioMilhas</div>
-      <div className="text-sm text-gray-600">
-        {email ? (
+      <div className="flex items-center gap-3 text-sm text-gray-600">
+        {isAuthenticated ? (
           <>
-            {email} — <a href="/api/auth/signout" className="text-blue-600">Sair</a>
+            <span className="rounded-full bg-emerald-50 px-2 py-1 text-emerald-700">
+              Autenticado
+            </span>
+            <span>{email}</span>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              disabled={loadingAction === "signout"}
+              className="rounded border border-slate-300 px-3 py-1 text-slate-700 disabled:opacity-60"
+            >
+              {loadingAction === "signout" ? "Saindo..." : "Sair"}
+            </button>
           </>
         ) : (
-          <a href="/api/auth?provider=google" className="text-blue-600">Entrar com Google</a>
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={loadingAction === "signin"}
+            className="rounded bg-blue-600 px-3 py-1 text-white disabled:opacity-60"
+          >
+            {loadingAction === "signin" ? "Entrando..." : "Entrar com Google"}
+          </button>
         )}
       </div>
     </header>

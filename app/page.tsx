@@ -10,7 +10,7 @@ export default function Home() {
           <a href="#pricing" className="text-gray-700">
             Preços
           </a>
-          <a href="/app/dashboard" className="text-indigo-600 font-semibold">
+          <a href="/sign-in?callbackUrl=/app/dashboard" className="text-indigo-600 font-semibold">
             Entrar
           </a>
         </nav>
@@ -27,12 +27,12 @@ export default function Home() {
           </p>
           <div className="space-x-3">
             <a
-              href="/app/dashboard"
+              href="/sign-in?callbackUrl=/app/dashboard"
               className="px-4 py-2 bg-indigo-600 text-white rounded"
             >
               Começar teste grátis de 15 dias
             </a>
-            <a href="/app/dashboard" className="px-4 py-2 border rounded">
+            <a href="/sign-in?callbackUrl=/app/dashboard" className="px-4 py-2 border rounded">
               Ver demonstração
             </a>
           </div>
@@ -66,7 +66,7 @@ export default function Home() {
           </p>
           <div className="mt-4">
             <a
-              href="/app/dashboard"
+              href="/sign-in?callbackUrl=/app/dashboard"
               className="px-4 py-2 bg-indigo-600 text-white rounded"
             >
               Começar teste grátis

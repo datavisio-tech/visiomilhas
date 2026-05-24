@@ -62,6 +62,12 @@ Decisao alvo:
 - OAuth readiness: transitional until a controlled rollout validates login, callback, session persistence, logout and refresh with a real test user.
 - Runtime readiness: stable only when recovery-only fallback stays in effect and callback failures do not introduce loops.
 - Deploy readiness: transitional until the first control group of users completes the checklist without regression.
+
+## Onboarding 2.4-B — Real Interface Validation & Browser Runtime Audit
+
+- OAuth entrypoint: public sign-in page is the browser-first entry for Google OAuth and preserves callbackUrl.
+- UX readiness: loading and error states are part of the contract for sign-in and retry.
+- Browser readiness: redirect, reopen, refresh and logout need to be valid without 404 or auth loop.
 ## Readiness Summary (2026-05-24)
 
 - O que foi estabilizado: boundary de leitura hardened por padrão; matriz operacional e `auth-observability` registram fallback e readiness score.

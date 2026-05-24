@@ -76,6 +76,13 @@ Fase 2.2-J: AI Governance Versioning
 - Consolidar checklist do primeiro deploy controlado e observar hotspots antes de ampliar acesso.
 - Evitar qualquer mudança estrutural em deploy, infraestrutura, middleware ou auth rewrite.
 
+## 2.4-B — Real Interface Validation & Browser Runtime Audit
+
+- Validar visualmente home, sign-in, callback, dashboard, onboarding, logout e reload no navegador.
+- Corrigir apenas o que quebrar a navegação browser-first, com loading/error states explícitos.
+- Manter Better Auth dominante e o fallback recovery-only preservado.
+- Evitar redesign, middleware global, infraestrutura, RBAC e mudanças de contrato além da entrada pública de sign-in.
+
 Atualização 1.3.14:
 
 - Consolidação do motor FIFO puro/in-memory em `lib/services/movements.ts` com testes unitários em `lib/services/__tests__/movements.test.ts`.

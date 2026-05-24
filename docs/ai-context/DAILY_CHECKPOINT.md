@@ -1,3 +1,72 @@
+# DAILY_CHECKPOINT — 2026-05-24 — 2.4-B Real Interface Validation & Browser Runtime Audit
+
+Etapa executada:
+
+- Validação visual do fluxo browser-first de login, callback, redirects e loading/error states.
+
+Branch atual:
+
+- `2.3-c-initial-onboarding-flow`
+
+Commits criados:
+
+- `70b40fa` — `feat(runtime): valida staging real e rollout controlado OAuth (2.4-A)`
+
+Arquivos alterados nesta etapa:
+
+- `app/page.tsx`
+- `app/app/layout.tsx`
+- `app/app/dashboard/page.tsx`
+- `app/app/onboarding/page.tsx`
+- `app/sign-in/page.tsx`
+- `components/auth/google-sign-in-card.client.tsx`
+- `components/layout/app-header.tsx`
+- `docs/ai-context/CHANGELOG_AI.md`
+- `docs/ai-context/DAILY_CHECKPOINT.md`
+- `docs/ai-context/IMPLEMENTATION_PLAN.md`
+- `docs/ai-context/TODO_AI.md`
+- `docs/ai-context/AUTH_CONTEXT_CONTRACTS.md`
+- `docs/specs/auth.spec.md`
+- `docs/specs/organizations.spec.md`
+
+Validações executadas:
+
+- Navegação visual em `http://localhost:3000/`
+- Navegação visual em `http://localhost:3000/sign-in?callbackUrl=/app/dashboard`
+- Redirecionamento visual de `/app/dashboard` para `/sign-in?callbackUrl=/app/dashboard`
+- Redirecionamento visual de `/app/onboarding` para `/sign-in?callbackUrl=/app/onboarding`
+- Estado visual de loading do botão OAuth confirmado com intercept temporário
+- Estado visual de erro operacional confirmado sem crash quando o POST de auth falhou localmente
+- `npm run lint`
+- `npm run typecheck`
+- `npm run test`
+- `git diff --check`
+
+Comandos executados:
+
+- `npm run lint && npm run typecheck && npm run test && git diff --check`
+
+Comandos perigosos não executados:
+
+- Migration de banco
+- Seed de banco
+- Deploy
+- Push
+- PR
+
+Status Git final:
+
+- Há mudanças locais em andamento para 2.4-B; `.claude/*` permanece fora do escopo.
+
+Pendências:
+
+- Criar o commit da etapa 2.4-B após revisar o diff final.
+- Se houver ambiente OAuth staging disponível, repetir o mesmo roteiro com usuário real.
+
+Próxima etapa recomendada:
+
+- Revisar o diff final, registrar o commit 2.4-B e então repetir a validação visual em staging real.
+
 # CHECKPOINT - 2.2-J — AI Governance Versioning
 
 Data: 2026-05-24

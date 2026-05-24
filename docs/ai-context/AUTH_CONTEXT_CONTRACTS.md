@@ -156,6 +156,7 @@ Regra obrigatória desta fase:
 - Email/senha pode entrar depois sem alterar boundaries.
 - A integracao deve mapear o payload externo para AuthContext, OwnershipContext e SessionContext, sem mudar os helpers.
 - A fundacao atual expõe `/api/auth/[...all]` e um resolver server-side baseado em `auth.api.getSession`.
+- A entrada browser-first do login público deve ser uma página de sign-in que inicia o POST OAuth e preserva `callbackUrl` para dashboard/onboarding.
 
 ## Estrategia Google OAuth futura
 

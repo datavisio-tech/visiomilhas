@@ -18,7 +18,7 @@ export default async function DashboardPage() {
   });
 
   if (!sessionContext) {
-    redirect("/api/auth?provider=google");
+    redirect("/sign-in?callbackUrl=/app/dashboard");
   }
   const metrics = await getMetrics(sessionContext);
   const recentEntries = await getRecentEntries(sessionContext);

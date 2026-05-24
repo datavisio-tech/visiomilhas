@@ -10,7 +10,7 @@ export default async function OnboardingPage() {
   });
 
   if (!sessionContext) {
-    redirect("/api/auth?provider=google");
+    redirect("/sign-in?callbackUrl=/app/onboarding");
   }
 
   const email = sessionContext.auth.email ?? null;

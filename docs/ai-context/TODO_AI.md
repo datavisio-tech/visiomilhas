@@ -184,6 +184,13 @@ Decisões registradas:
 - Classificar readiness final para OAuth, onboarding, runtime, recovery, staging e deploy antes de ampliar acesso.
 - Manter rollback simples, fallback recovery-only e sem mudança de infraestrutura.
 
+## 2.4-B — Real Interface Validation & Browser Runtime Audit
+
+- Manter a rota pública de sign-in como entrada browser-first para OAuth.
+- Validar visualmente loading, erro, redirect, callback e retorno do onboarding/dash em browser real.
+- Acompanhar o comportamento em desktop/mobile, refresh e reopen sem alterar arquitetura.
+- Se o OAuth staging estiver pronto, repetir o roteiro com usuário real de teste.
+
 ## 2.1-B — auth helpers reais e provider-agnostic
 
 - Implementar helpers reais para AuthContext, OwnershipContext e SessionContext.

@@ -1,5 +1,28 @@
 # CHANGELOG_AI
 
+## 2026-05-24 — Fase 2.4-B — Real Interface Validation & Browser Runtime Audit
+
+Objetivo:
+
+- Validar o fluxo real de login, callback, onboarding, redirects e loading states no navegador, sem introduzir nova arquitetura.
+
+Resultado desta etapa:
+
+- O fluxo público passou a apontar para a rota browser-first `/sign-in`, com callback preservado para dashboard/onboarding.
+- O dashboard e o onboarding agora redirecionam para a entrada pública correta em vez de cair em 404 de auth.
+- O sign-in page ganhou loading state e erro operacional visível para falhas do runtime OAuth local.
+- A validação visual confirmou home, sign-in, redirect para sign-in, estado de loading e erro tratado sem crash.
+
+Decisões registradas:
+
+- O login Google precisa ser iniciado por UI browser-first, não por link direto a endpoint POST.
+- Redirect server-side deve apontar para a página pública de sign-in com callback explícito.
+- Loading/error states são parte do contrato operacional da etapa.
+
+Próxima etapa recomendada:
+
+1. Se o ambiente de OAuth estiver completo no staging, repetir o mesmo roteiro com usuário real e verificar sucesso do callback, logout e reopen do browser.
+
 ## 2026-05-24 — Fase 2.2-J — AI Governance Versioning
 
 Objetivo:
