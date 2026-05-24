@@ -190,6 +190,12 @@ Regra obrigatória desta fase:
 - Eventos de onboarding devem expor apenas `source`, `timestamp`, `fallback state`, `onboarding state` e `flow stage`.
 - A telemetria não deve registrar email completo, tokens, cookies ou sessão bruta.
 - O fluxo deve suportar retry seguro e idempotência completa, inclusive para usuários parcialmente provisionados.
+
+## Staging validation e OAuth hardening
+
+- A validação de staging deve observar callback, sessão persistida, logout, refresh e retry onboarding.
+- A telemetria deve registrar `OAUTH_CALLBACK_FAILED`, `OAUTH_REDIRECT_LOOP` e `OAUTH_RUNTIME_STAGING_CHECK` sem expor payload sensível.
+- O estado parcial do onboarding deve ser recuperável por server-side guards simples, sem locking complexo.
 ## Estrategia de repositories futura
 
 - Repositories devem operar com contexto autorizado, nao com parametros de UX.

@@ -55,6 +55,13 @@ Fase 2.2-J: AI Governance Versioning
 - Reduzir risco operacional: guards simples, deduplicação incremental e validações server-side.
 - Preparar staging real documentando readiness onboarding/auth/OAuth/observability/deploy sem alterar infraestrutura.
 
+## 2.3-E — Staging Validation & OAuth Runtime Hardening
+
+- Validar staging real com Google OAuth, callback, logout, refresh e retry onboarding.
+- Reduzir duplicidade e race conditions por guards incrementais e slug determinístico por usuário.
+- Expandir observabilidade de auth/onboarding para callback failures, redirect loops e recovery flows.
+- Classificar readiness em stable, transitional e recovery-only antes do primeiro rollout controlado.
+
 Atualização 1.3.14:
 
 - Consolidação do motor FIFO puro/in-memory em `lib/services/movements.ts` com testes unitários em `lib/services/__tests__/movements.test.ts`.

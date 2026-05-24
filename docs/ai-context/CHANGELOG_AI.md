@@ -221,6 +221,27 @@ Próxima etapa recomendada:
 
 1. Validar o fluxo em staging com Google OAuth real e observar hotspots/residual fallback antes do primeiro grupo de usuários.
 
+## 2026-05-24 — Fase 2.3-E — Staging Validation & OAuth Runtime Hardening
+
+Objetivo:
+
+- Endurecer o runtime OAuth e a prontidão de staging sem mudar a arquitetura de auth ou onboarding.
+
+Resultado desta etapa:
+
+- O endpoint de onboarding passou a distinguir estados `missing-session`, `not-started`, `partial` e `ready`, reduzindo retry duplicado e recuperando provisionamentos parciais.
+- A telemetria mínima foi expandida com sinais de `OAUTH_REDIRECT_LOOP`, `OAUTH_CALLBACK_FAILED`, `OAUTH_RUNTIME_STAGING_CHECK`, além de `ONBOARDING_RECOVERY` e `ONBOARDING_DUPLICATE_PREVENTED`.
+- A UX de onboarding passou a expor estado operacional, mensagens de recovery e feedback de retry sem redesign visual.
+
+Decisões registradas:
+
+- Slug de organização foi tornado determinístico por usuário para reduzir colisão em retry sem lock distribuído.
+- O fluxo segue server-side first, staging-first e recovery-only para fallback.
+
+Próxima etapa recomendada:
+
+1. Executar validação real em staging com Google OAuth e observar os hotspots antes do primeiro grupo de usuários de teste.
+
 Próximos passos recomendados:
 
 1. Implementar criação automática de conta pessoal no callback/login handler (server-side), com transação segura e idempotência.

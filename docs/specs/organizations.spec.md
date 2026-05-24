@@ -35,6 +35,12 @@ Objetivo:
 - Rotas e retries devem continuar server-side first.
 - Readiness de staging deve considerar slug collision, race conditions e provisionamento parcial.
 
+## Onboarding 2.3-E — Staging Validation & OAuth Runtime Hardening
+
+- organizationId continua derivado no servidor e não deve virar boundary de entrada.
+- slug determinístico por usuário reduz colisão durante retry e staging validation.
+- Retentativas e provisionamento parcial devem continuar idempotentes e server-side first.
+
 Decisao alvo:
 
 - Experiencia principal de conta/pessoa.

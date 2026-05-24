@@ -163,6 +163,13 @@ Decisões registradas:
 - Atualizar readiness para staging real: onboarding, auth, OAuth, observability e deploy.
 - Auditar duplicidade, slug collision e race conditions sem introduzir locking complexo.
 
+## 2.3-E — Staging Validation & OAuth Runtime Hardening
+
+- Validar Google OAuth em staging real, incluindo callback, sessão, logout e refresh.
+- Monitorar `OAUTH_CALLBACK_FAILED`, `OAUTH_REDIRECT_LOOP`, `ONBOARDING_RECOVERY` e `ONBOARDING_DUPLICATE_PREVENTED`.
+- Manter fallback recovery-only e registrar hotspots residuais antes do primeiro grupo de usuários.
+- Evitar qualquer mudança de deploy, Docker, middleware global ou arquitetura nova.
+
 ## 2.1-B — auth helpers reais e provider-agnostic
 
 - Implementar helpers reais para AuthContext, OwnershipContext e SessionContext.

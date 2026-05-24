@@ -148,6 +148,25 @@ Próximos passos:
 1. Testar staging com Google OAuth real.
 2. Monitorar `auth-observability` para `onboarding_failed` e hotspots residuais.
 
+## CHECKPOINT - 2.3-E — Staging Validation & OAuth Runtime Hardening
+
+Data: 2026-05-24
+
+- Branch atual: `2.3-c-initial-onboarding-flow`.
+- Objetivo: endurecer runtime OAuth e consolidar prontidão de staging sem mudar arquitetura.
+- Ações tomadas: onboarding passou a expor estados operacionais (`missing-session`, `not-started`, `partial`, `ready`); telemetria ganhou sinais de callback/loop/recovery/duplicate prevention; UX exibiu estado operacional e recovery;
+- Validações executadas: `npm run lint`, `npm run typecheck`, `npm run test` — todas OK.
+
+Estado atual resumido:
+
+- OAuth e onboarding estão mais observáveis e mais seguros para retry em staging.
+- Duplicidade foi reduzida por guards idempotentes e slug determinístico por usuário.
+
+Próximos passos:
+
+1. Validar staging real com Google OAuth e monitorar `onboarding_failed`, `OAUTH_CALLBACK_FAILED` e `OAUTH_REDIRECT_LOOP`.
+2. Registrar hotspots residuais antes do primeiro grupo de usuários de teste.
+
 # CHECKPOINT - 2.2-D — Better Auth Operational Consolidation
 
 Data: 2026-05-24

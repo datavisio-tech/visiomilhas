@@ -4,7 +4,9 @@ import {
   getAuthFallbackHotspots,
   getAuthFallbackSnapshot,
   getAuthOperationalMatrix,
+  getOnboardingMetricSnapshot,
   recordAuthFallbackUsage,
+  reportOnboardingEvent,
   resetAuthObservabilityState,
 } from "../auth-observability";
 
@@ -102,5 +104,47 @@ describe("auth-observability", () => {
     expect(matrix.readinessScore).toBe(0);
     expect(matrix.stabilizationLevel).toBe("transitional");
     expect(matrix.hotspots[0].source).toBe("dashboard.page");
+  });
+
+  it("tracks onboarding telemetry metrics for started, completed, failed and recovery", () => {
+    reportOnboardingEvent("ONBOARDING_STARTED", {
+      source: "api.onboarding",
+      stage: "start",
+      state: "not-started",
+      flowStage: "staging-validation",
+    });
+    reportOnboardingEvent("ONBOARDING_RECOVERY", {
+      source: "api.onboarding",
+      stage: "recovery",
+      state: "partial",
+      flowStage: "staging-validation",
+    });
+    reportOnboardingEvent("ONBOARDING_DUPLICATE_PREVENTED", {
+      source: "api.onboarding",
+      stage: "dedupe",
+      state: "ready",
+      flowStage: "staging-validation",
+    });
+    reportOnboardingEvent("ONBOARDING_COMPLETED", {
+      source: "api.onboarding",
+      stage: "completed",
+      state: "ready",
+      flowStage: "completed",
+    });
+    reportOnboardingEvent("ONBOARDING_FAILED", {
+      source: "api.onboarding",
+      stage: "failed",
+      reason: "boom",
+      state: "partial",
+      flowStage: "failed",
+    });
+
+    expect(getOnboardingMetricSnapshot()).toEqual({
+      onboarding_started: 1,
+      onboarding_completed: 1,
+      onboarding_failed: 1,
+      onboarding_recovery: 1,
+      onboarding_duplicate_prevented: 1,
+    });
   });
 });

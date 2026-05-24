@@ -5,12 +5,17 @@ export type AuthEventCode =
   | "SESSION_RESOLUTION_FALLBACK"
   | "SESSION_RESOLUTION_EMPTY"
   | "UNAUTHENTICATED"
-  | "FORBIDDEN";
+  | "FORBIDDEN"
+  | "OAUTH_CALLBACK_FAILED"
+  | "OAUTH_REDIRECT_LOOP"
+  | "OAUTH_RUNTIME_STAGING_CHECK";
 
 export type OnboardingEventCode =
   | "ONBOARDING_STARTED"
   | "ONBOARDING_COMPLETED"
-  | "ONBOARDING_FAILED";
+  | "ONBOARDING_FAILED"
+  | "ONBOARDING_RECOVERY"
+  | "ONBOARDING_DUPLICATE_PREVENTED";
 
 export type AuthEvent = {
   level: AuthEventLevel;
@@ -28,7 +33,9 @@ export type AuthMetricName =
 export type OnboardingMetricName =
   | "onboarding_started"
   | "onboarding_completed"
-  | "onboarding_failed";
+  | "onboarding_failed"
+  | "onboarding_recovery"
+  | "onboarding_duplicate_prevented";
 
 export type AuthFallbackReason = "session-empty" | "session-error" | "fallback-disabled";
 
@@ -81,6 +88,8 @@ const onboardingMetricCounts: Record<OnboardingMetricName, number> = {
   onboarding_started: 0,
   onboarding_completed: 0,
   onboarding_failed: 0,
+  onboarding_recovery: 0,
+  onboarding_duplicate_prevented: 0,
 };
 
 const fallbackUsageCountsBySource = new Map<string, number>();
@@ -220,6 +229,8 @@ export function resetAuthObservabilityState(): void {
   onboardingMetricCounts.onboarding_started = 0;
   onboardingMetricCounts.onboarding_completed = 0;
   onboardingMetricCounts.onboarding_failed = 0;
+  onboardingMetricCounts.onboarding_recovery = 0;
+  onboardingMetricCounts.onboarding_duplicate_prevented = 0;
 }
 
 export function reportAuthEvent(event: AuthEvent): void {
@@ -243,7 +254,14 @@ export function reportAuthEvent(event: AuthEvent): void {
 
 export function reportOnboardingEvent(
   code: OnboardingEventCode,
-  details: { source: string; stage?: string; fallback?: boolean; reason?: string },
+  details: {
+    source: string;
+    stage?: string;
+    fallback?: boolean;
+    reason?: string;
+    state?: string;
+    flowStage?: string;
+  },
 ): void {
   // increment lightweight metrics
   switch (code) {
@@ -256,6 +274,12 @@ export function reportOnboardingEvent(
     case "ONBOARDING_FAILED":
       incrementOnboardingMetric("onboarding_failed");
       break;
+    case "ONBOARDING_RECOVERY":
+      incrementOnboardingMetric("onboarding_recovery");
+      break;
+    case "ONBOARDING_DUPLICATE_PREVENTED":
+      incrementOnboardingMetric("onboarding_duplicate_prevented");
+      break;
   }
 
   const payload = {
@@ -265,12 +289,19 @@ export function reportOnboardingEvent(
       stage: details.stage ?? null,
       fallback: details.fallback ?? false,
       reason: details.reason ?? null,
+      state: details.state ?? null,
+      flowStage: details.flowStage ?? null,
     },
   };
 
   // Log at appropriate level
   if (code === "ONBOARDING_FAILED") {
     console.error(`[auth:${code}] Onboarding failed`, payload);
+    return;
+  }
+
+  if (code === "ONBOARDING_DUPLICATE_PREVENTED") {
+    console.warn(`[auth:${code}] Onboarding duplicate prevented`, payload);
     return;
   }
 

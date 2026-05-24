@@ -45,6 +45,11 @@ Decisao alvo:
 - A UX deve manter loading, erro amigável e retry seguro sem wizard complexo.
 - Readiness para staging real deve ser documentada antes do primeiro grupo de usuários.
 
+## Onboarding 2.3-E — Staging Validation & OAuth Runtime Hardening
+
+- OAuth staging validation must cover callback, session persistence, logout, refresh and onboarding retry.
+- Observability should include callback failures, redirect loops, duplicate prevention and recovery flows without sensitive payloads.
+- Runtime remains recovery-only on fallback and Better Auth remains dominant.
 ## Readiness Summary (2026-05-24)
 
 - O que foi estabilizado: boundary de leitura hardened por padrão; matriz operacional e `auth-observability` registram fallback e readiness score.
