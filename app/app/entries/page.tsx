@@ -3,11 +3,15 @@ export const dynamic = "force-dynamic";
 import PageHeader from "../../../components/ui/page-header";
 import { getEntriesOverview } from "../../../lib/data/entries";
 import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
+import { redirect } from "next/navigation";
 
 export default async function EntriesPage() {
   const sessionContext = await resolveControlledSessionContext({
     source: "entries.page",
+    allowFallback: false,
   });
+
+  if (!sessionContext) redirect("/api/auth?provider=google");
   const entries = await getEntriesOverview(sessionContext);
 
   return (

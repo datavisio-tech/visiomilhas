@@ -5,11 +5,15 @@ import { getPurchasesOverview } from "../../../lib/data/purchases";
 import { getAccountsOverview } from "../../../lib/data/accounts";
 import PurchaseForm from "../../../components/forms/purchase-form";
 import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
+import { redirect } from "next/navigation";
 
 export default async function PurchasesPage() {
   const sessionContext = await resolveControlledSessionContext({
     source: "purchases.page",
+    allowFallback: false,
   });
+
+  if (!sessionContext) redirect("/api/auth?provider=google");
   const purchases = await getPurchasesOverview(sessionContext);
   const accounts = await getAccountsOverview(sessionContext);
 

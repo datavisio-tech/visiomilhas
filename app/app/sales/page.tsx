@@ -5,11 +5,15 @@ import { getSalesOverview } from "../../../lib/data/sales";
 import { getAccountsOverview } from "../../../lib/data/accounts";
 import SaleForm from "../../../components/forms/sale-form";
 import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
+import { redirect } from "next/navigation";
 
 export default async function SalesPage() {
   const sessionContext = await resolveControlledSessionContext({
     source: "sales.page",
+    allowFallback: false,
   });
+
+  if (!sessionContext) redirect("/api/auth?provider=google");
   const sales = await getSalesOverview(sessionContext);
   const accounts = await getAccountsOverview(sessionContext);
 

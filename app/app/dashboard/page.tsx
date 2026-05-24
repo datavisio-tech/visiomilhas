@@ -9,11 +9,17 @@ import {
   getRecentPurchases,
 } from "../../../lib/server/dashboard";
 import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
+import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
   const sessionContext = await resolveControlledSessionContext({
     source: "dashboard.page",
+    allowFallback: false,
   });
+
+  if (!sessionContext) {
+    redirect("/api/auth?provider=google");
+  }
   const metrics = await getMetrics(sessionContext);
   const recentEntries = await getRecentEntries(sessionContext);
   const purchases = await getRecentPurchases(sessionContext);

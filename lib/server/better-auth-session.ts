@@ -5,6 +5,7 @@ import {
   buildSessionContext,
   type SessionContext,
 } from "./auth-context";
+import { ensureGlobalUser } from "./onboarding";
 
 type BetterAuthSessionLike = {
   user?: {
@@ -73,7 +74,21 @@ export async function resolveBetterAuthSessionContext(
     headers: requestHeaders ?? (await headers()),
   })) as BetterAuthSessionLike | null;
 
-  return buildSessionContextFromBetterAuthSession(session);
+  const sessionContext = buildSessionContextFromBetterAuthSession(session);
+
+  // Ensure global user exists in admin DB (idempotent). Do not fail the request if DB is unavailable.
+  try {
+    const email = session?.user?.email;
+    if (email) {
+      await ensureGlobalUser(email, session.user?.id ?? null, session.user?.provider ?? null);
+    }
+  } catch (err) {
+    // Swallow errors to keep auth resilient; observability should record this elsewhere.
+    // eslint-disable-next-line no-console
+    console.warn("ensureGlobalUser failed:", err instanceof Error ? err.message : String(err));
+  }
+
+  return sessionContext;
 }
 
 export async function resolveCurrentBetterAuthSessionContext(

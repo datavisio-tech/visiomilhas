@@ -5,11 +5,15 @@ import { getTransfersOverview } from "../../../lib/data/transfers";
 import { getAccountsOverview } from "../../../lib/data/accounts";
 import TransferForm from "../../../components/forms/transfer-form";
 import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
+import { redirect } from "next/navigation";
 
 export default async function TransfersPage() {
   const sessionContext = await resolveControlledSessionContext({
     source: "transfers.page",
+    allowFallback: false,
   });
+
+  if (!sessionContext) redirect("/api/auth?provider=google");
   const transfers = await getTransfersOverview(sessionContext);
   const accounts = await getAccountsOverview(sessionContext);
 
