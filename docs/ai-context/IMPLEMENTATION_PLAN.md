@@ -1,3 +1,33 @@
+# IMPLEMENTATION_PLAN - MVP1 (VisioMilhas)
+
+Fase 2.2-F: Transitional Surface Cleanup
+
+- Evitar middleware global, RBAC, ACL, permission framework, auth rewrite e big bang migration.
+
+Fase 2.2-G: Transitional Finalization & Recovery-Only Fallback
+
+- Tornar o fallback recovery-only explícito no boundary de leitura e manter o runtime normal hardened.
+- Consolidar Better Auth nas últimas superfícies de leitura estáveis.
+- Monitorar hotspots e fallback near-zero com `auth-observability.ts` e a matriz operacional.
+- Classificar superfícies como transitional, stabilized e hardened com base em uso real.
+- Preservar o fake adapter para dev/test/recovery, sem permitir uso silencioso em runtime normal.
+- Evitar middleware global, RBAC, ACL, permission framework, auth rewrite e big bang migration.
+
+Fase 2.2-I: AI Knowledge & Skill Consolidation
+
+- Consolidar a hierarquia oficial entre docs, specs, skills e agents sem criar arquitetura paralela em `.claude`.
+- Atualizar o operating model para deixar claro o que pertence a contexto, contrato, especializacao operacional e orchestration.
+- Sincronizar skills e agents com as specs oficiais quando houver sobreposicao de responsabilidade.
+- Detectar drift por duplicacao, conflito ou regra antiga que contradiz o boundary oficial.
+- Evitar framework de agentes, orchestration engine ou runtime IA.
+
+Fase 2.2-J: AI Governance Versioning
+
+- Consolidar `AI_OPERATING_MODEL_VERSION=2.2-I` como baseline oficial ativa.
+- Versionar skills e agents com metadados simples de compatibilidade e status operacional.
+- Criar matriz de compatibilidade entre operating model, skills, agents e governança de auth/recovery/ownership.
+- Documentar regras de drift e quando bump de versão é obrigatório.
+- Evitar semver complexo, compatibilidade automática ou tooling pesado.
 ## 1.3.34.3 — reindex do workflow manual por novo filename
 
 - O workflow manual de produção foi renomeado para `production-deploy-manual.yml`.
@@ -98,12 +128,125 @@ Fase 0: documentação e setup
 - Inicializar scaffold Next.js + TypeScript + Tailwind
 - Configurar .env.example, .gitignore
 
+Fase 0.5: stack IA-First operacional
+
+- Consolidar docs/ai-context como fonte de verdade operacional
+- Criar docs/specs com specs enxutas e versionadas
+- Criar docs/ai-skills com skills reutilizaveis e controladas
+- Definir padroes de prompt e fluxo de trabalho IA-First
+- Registrar agentes especializados apenas onde houver ganho real
+
+Fase 2.1-A: auth context + ownership contracts
+
+- Definir AuthContext e OwnershipContext sem runtime de auth
+- Consolidar boundaries obrigatórias para routes, actions, services e repositories
+- Reduzir dependencia de organizationId como eixo de autorizacao
+- Documentar strategy de Better Auth e Google OAuth sem instalar dependencias
+- Preparar rollout incremental e rollback seguro
+
+Fase 2.1-B: helpers reais de auth/ownership
+
+- Implementar helpers internos para criar, resolver e exigir AuthContext e OwnershipContext
+- Manter os helpers independentes de Better Auth
+- Centralizar validação de ownership por userId e admin interno
+- Preparar o terreno para um future adapter de auth, nao para a biblioteca em si
+
+Fase 2.1-C: boundary integration sem provider
+
+- Integrar os helpers nas mutações e rotas mais criticas
+- Usar fake auth adapters controlados para simular boundary
+- Proteger primeiro compras, vendas e transferencias
+- Deixar dashboard, entries e accounts para a proxima leitura critica
+- Manter middleware global fora do escopo desta fase
+- Nao alterar schema nesta etapa
+
+Fase 2.1-D: read enforcement
+
+- Remover slug e params da entrada de leitura
+- Passar sessionContext explicitamente para services de leitura
+- Derivar organizationId no servidor
+- Proteger dashboard, accounts, entries, purchases, sales e transfers na leitura
+- Manter middleware global fora do escopo
+
 Fase 1: auth, tenant e onboarding
 
-- Implementar Auth.js (email/senha) + Google OAuth
-- Middleware de proteção e checagem de tenant/membership
-- Criação automática de `organization` no primeiro registro + papel `owner`
+- Implementar Better Auth com Google OAuth
+- Middleware de proteção e checagem de ownership
+- Sessão server-side e helpers de auth
+- Criação automatizada de ownership/conta principal no onboarding
 - Criar subscription trialing de 15 dias
+- Manter organization_id apenas como compatibilidade arquitetural quando necessário
+- Permissoes iniciais: usuario comum e admin interno
+
+Fase 2.2: Better Auth foundation
+
+- Criar a instância Better Auth com Drizzle e cookies seguros
+- Expor o route handler App Router de auth
+- Resolver sessão server-side por `auth.api.getSession`
+- Mapear o payload externo para `SessionContext` sem alterar os helpers centrais
+- Preservar fake-auth-adapter e read-scope até o rollout da sessão real estabilizar
+- Preparar Google OAuth como primeiro provider
+
+Fase 2.2-B: Controlled Session Migration
+
+- Migrar `purchases`, `sales` e `transfers` para `resolveCurrentBetterAuthSessionContext()` via resolvedor controlado
+- Manter fake-auth como fallback operacional e rollback rápido
+- Adicionar logs mínimos para auth/session/ownership
+- Cobrir o novo fluxo com testes de boundary e de fallback
+
+Fase 2.2-C: Ownership Hardening
+
+- Remover `orgSlug` dos contratos de escrita e derivar `organizationId` no servidor a partir da ownership resolvida.
+- Validar origem e destino em transferências sob o mesmo escopo de ownership.
+- Manter `controlled-session.ts` como entrada única para boundaries migradas.
+- Reduzir a confiança em input de cliente sem espalhar middleware global.
+- Preparar a redução gradual do fake adapter sem criar RBAC enterprise.
+
+Fase 2.2-D: Better Auth Operational Consolidation
+
+- Tornar Better Auth o caminho primário de sessão para os fluxos já migrados.
+- Manter fake-auth-adapter como transitional para desenvolvimento local, testes e recovery controlado.
+- Consolidar observabilidade de fallback com origem, motivo e timestamp por operação.
+- Continuar a migração incremental das rotas restantes sem big bang.
+- Documentar critérios futuros para remoção gradual do fallback quando a estabilidade for suficiente.
+
+Fase 2.2-E: Fallback Reduction & Stabilization
+
+- Medir uso real do fallback em produção e em ambientes controlados.
+- Mover as rotas restantes uma por uma para o caminho controlado por Better Auth.
+- Reduzir gradualmente os caminhos transitional conforme a observabilidade permitir.
+- Manter rollback simples e explícito enquanto o fallback ainda for necessário.
+- Preparar a retirada futura do fake adapter apenas após estabilidade sustentada.
+- Expandir observabilidade com source, reason, firstSeen e lastSeen por superfície.
+- Consolidar a matriz operacional com status de Better Auth, fallback usage, ownership status, rollout status e stabilization level.
+- Considerar remoção futura apenas quando o fallback ficar near-zero e sem incidentes operacionais relevantes.
+- Permanecer sem middleware global, RBAC, ACL, auth microservice ou reescrita ampla do domínio.
+
+Fase 2.2-F: Transitional Surface Cleanup
+
+Fase 2.3-A: SaaS B2C Onboarding Foundation
+
+- Objetivo: preparar onboarding B2C mínimo com Google OAuth, sessão server-side persistente, criação automática de conta pessoal e proteção de rotas/Server Actions.
+- Critérios: login Google funcional, sessão persistente, ownership derivada, onboarding mínimo funcionando, runtime hardened preservado.
+- Itens de entrega iniciais:
+  - Integração do fluxo de login via `Better Auth` (já presente em `lib/auth.ts` e `app/api/auth/[...all]/route.ts`).
+  - Cabeçalho global exibindo estado de sessão e links de login/logout (`components/layout/app-header.tsx`).
+  - Página de onboarding mínima e handlers para criação de conta (próxima subfase).
+  - Documentação de readiness atualizada e matriz de checagem de pré-lançamento.
+- Restrições: sem RBAC, sem middleware global, sem alterações de infra ou schema nesta etapa.
+
+Próximos passos técnicos:
+
+1. Implementar handler server-side idempotente para criar conta pessoal após callback de login (transação, verificação de existência).
+2. Criar `/onboarding` com fluxo simples de perfil e criação de conta, e redirecionamento seguro após sucesso.
+3. Cobrir fluxo com testes unitários e integração mínima em staging.
+
+- Identificar as últimas superfícies transitional em páginas, routes, actions, services e componentes server-side.
+- Reduzir dependências diretas ao fake adapter nas assinaturas públicas; preferir a camada controlada como boundary de entrada.
+- Explicitar hotspots de fallback na observabilidade para apoiar estabilização por superfície.
+- Classificar estados operacionais como transitional, stabilized e hardened sem mudar o domínio.
+- Preparar o fake adapter para uso dev/test/recovery-only, mas só formalizar isso quando o fallback de runtime estiver near-zero.
+- Evitar middleware global, RBAC, ACL, permission framework, auth rewrite e big bang migration.
 
 Fase 1.5: domínio e validações (atual)
 
@@ -141,11 +284,20 @@ Fase 8: billing/trial
 
 - Estrutura Stripe (customers, webhooks), plan seeds
 - Banner de trial e lógica de migração para free_limited
+- Billing individual recorrente como prioridade de produto
 
 Fase 9: deploy e hardening
 
 - GitHub Actions (lint/typecheck/build)
 - Preparar deploy remoto seguro (secrets, proxy reverse)
+
+Fase 10: governanca IA-First incremental
+
+- Criar e evoluir specs por dominio antes de grandes refatoracoes
+- Criar e revisar skills de apoio por area tecnica
+- Registrar checkpoints operacionais em cada ciclo relevante
+- Usar prompts padronizados para diagnostico, implementacao e validacao
+- Consolidar o operating model em `AI_OPERATING_MODEL.md` como fonte de verdade para futuros SaaS DataVisio
 
 Observação:
 

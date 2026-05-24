@@ -2,9 +2,13 @@ export const dynamic = "force-dynamic";
 
 import PageHeader from "../../../components/ui/page-header";
 import { getEntriesOverview } from "../../../lib/data/entries";
+import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
 
 export default async function EntriesPage() {
-  const entries = await getEntriesOverview();
+  const sessionContext = await resolveControlledSessionContext({
+    source: "entries.page",
+  });
+  const entries = await getEntriesOverview(sessionContext);
 
   return (
     <div>

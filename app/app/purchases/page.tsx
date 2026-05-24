@@ -4,10 +4,14 @@ import PageHeader from "../../../components/ui/page-header";
 import { getPurchasesOverview } from "../../../lib/data/purchases";
 import { getAccountsOverview } from "../../../lib/data/accounts";
 import PurchaseForm from "../../../components/forms/purchase-form";
+import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
 
 export default async function PurchasesPage() {
-  const purchases = await getPurchasesOverview();
-  const accounts = await getAccountsOverview();
+  const sessionContext = await resolveControlledSessionContext({
+    source: "purchases.page",
+  });
+  const purchases = await getPurchasesOverview(sessionContext);
+  const accounts = await getAccountsOverview(sessionContext);
 
   return (
     <div>

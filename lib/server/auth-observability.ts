@@ -1,0 +1,215 @@
+export type AuthEventLevel = "info" | "warn" | "error";
+
+export type AuthEventCode =
+  | "SESSION_RESOLUTION_FAILED"
+  | "SESSION_RESOLUTION_FALLBACK"
+  | "SESSION_RESOLUTION_EMPTY"
+  | "UNAUTHENTICATED"
+  | "FORBIDDEN";
+
+export type AuthEvent = {
+  level: AuthEventLevel;
+  code: AuthEventCode;
+  message: string;
+  details?: Record<string, unknown>;
+};
+
+export type AuthMetricName =
+  | "better_auth_sessions_valid"
+  | "session_fallback_used"
+  | "unauthorized"
+  | "forbidden";
+
+export type AuthFallbackReason = "session-empty" | "session-error" | "fallback-disabled";
+
+export type AuthFallbackUsage = {
+  source: string;
+  reason: AuthFallbackReason;
+  occurredAt: string;
+  accountId?: number | null;
+  organizationId?: number | null;
+};
+
+export type AuthFallbackSnapshot = {
+  bySource: Record<string, number>;
+  byReason: Record<AuthFallbackReason, number>;
+  bySourceAndReason: Record<string, number>;
+  firstSeenBySource: Record<string, string>;
+  lastSeenBySource: Record<string, string>;
+};
+
+export type AuthFallbackHotspot = {
+  source: string;
+  count: number;
+  firstSeenAt: string;
+  lastSeenAt: string;
+};
+
+export type AuthOperationalStabilizationLevel =
+  | "transitional"
+  | "stabilized"
+  | "hardened";
+
+export type AuthOperationalMatrix = {
+  readinessScore: number;
+  fallbackRate: number;
+  fallbackCount: number;
+  stabilizedCoverage: number;
+  hardenedCoverage: number;
+  stabilizationLevel: AuthOperationalStabilizationLevel;
+  hotspots: AuthFallbackHotspot[];
+};
+
+const authMetricCounts: Record<AuthMetricName, number> = {
+  better_auth_sessions_valid: 0,
+  session_fallback_used: 0,
+  unauthorized: 0,
+  forbidden: 0,
+};
+
+const fallbackUsageCountsBySource = new Map<string, number>();
+const fallbackUsageCountsByReason = new Map<AuthFallbackReason, number>();
+const fallbackUsageCountsBySourceAndReason = new Map<string, number>();
+const fallbackUsageFirstSeenBySource = new Map<string, string>();
+const fallbackUsageLastSeenBySource = new Map<string, string>();
+
+export function incrementAuthMetric(metricName: AuthMetricName): void {
+  authMetricCounts[metricName] += 1;
+}
+
+export function getAuthMetricSnapshot(): Record<AuthMetricName, number> {
+  return { ...authMetricCounts };
+}
+
+export function recordAuthFallbackUsage(usage: AuthFallbackUsage): void {
+  incrementAuthMetric("session_fallback_used");
+  const sourceAndReasonKey = `${usage.source}::${usage.reason}`;
+
+  fallbackUsageCountsBySource.set(
+    usage.source,
+    (fallbackUsageCountsBySource.get(usage.source) ?? 0) + 1,
+  );
+  fallbackUsageCountsByReason.set(
+    usage.reason,
+    (fallbackUsageCountsByReason.get(usage.reason) ?? 0) + 1,
+  );
+  fallbackUsageLastSeenBySource.set(usage.source, usage.occurredAt);
+  if (!fallbackUsageFirstSeenBySource.has(usage.source)) {
+    fallbackUsageFirstSeenBySource.set(usage.source, usage.occurredAt);
+  }
+  fallbackUsageCountsBySourceAndReason.set(
+    sourceAndReasonKey,
+    (fallbackUsageCountsBySourceAndReason.get(sourceAndReasonKey) ?? 0) + 1,
+  );
+
+  reportAuthEvent({
+    level: "warn",
+    code: "SESSION_RESOLUTION_FALLBACK",
+    message: "Using simulated auth session fallback",
+    details: {
+      source: usage.source,
+      reason: usage.reason,
+      occurredAt: usage.occurredAt,
+      accountId: usage.accountId ?? null,
+      organizationId: usage.organizationId ?? null,
+    },
+  });
+}
+
+export function getAuthFallbackSnapshot(): AuthFallbackSnapshot {
+  return {
+    bySource: Object.fromEntries(fallbackUsageCountsBySource.entries()),
+    byReason: {
+      "session-empty": fallbackUsageCountsByReason.get("session-empty") ?? 0,
+      "session-error": fallbackUsageCountsByReason.get("session-error") ?? 0,
+      "fallback-disabled":
+        fallbackUsageCountsByReason.get("fallback-disabled") ?? 0,
+    },
+    bySourceAndReason: Object.fromEntries(
+      fallbackUsageCountsBySourceAndReason.entries(),
+    ),
+    firstSeenBySource: Object.fromEntries(
+      fallbackUsageFirstSeenBySource.entries(),
+    ),
+    lastSeenBySource: Object.fromEntries(fallbackUsageLastSeenBySource.entries()),
+  };
+}
+
+export function getAuthFallbackHotspots(
+  limit = 5,
+): AuthFallbackHotspot[] {
+  const snapshot = getAuthFallbackSnapshot();
+
+  return Object.entries(snapshot.bySource)
+    .map(([source, count]) => ({
+      source,
+      count,
+      firstSeenAt: snapshot.firstSeenBySource[source] ?? "",
+      lastSeenAt: snapshot.lastSeenBySource[source] ?? "",
+    }))
+    .sort((left, right) => right.count - left.count || left.source.localeCompare(right.source))
+    .slice(0, limit);
+}
+
+export function getAuthOperationalMatrix(): AuthOperationalMatrix {
+  const metrics = getAuthMetricSnapshot();
+  const fallbackCount = metrics.session_fallback_used;
+  const validSessionCount = metrics.better_auth_sessions_valid;
+  const totalObserved = validSessionCount + fallbackCount;
+  const fallbackRate = totalObserved > 0 ? fallbackCount / totalObserved : 0;
+  const readinessScore =
+    totalObserved > 0
+      ? Math.max(0, Math.min(100, Math.round((validSessionCount / totalObserved) * 100)))
+      : 0;
+  const stabilizationLevel: AuthOperationalStabilizationLevel =
+    totalObserved === 0
+      ? "transitional"
+      : fallbackCount === 0
+        ? "hardened"
+        : fallbackRate <= 0.05
+          ? "stabilized"
+          : "transitional";
+
+  return {
+    readinessScore,
+    fallbackRate,
+    fallbackCount,
+    stabilizedCoverage:
+      totalObserved > 0 ? 1 - fallbackRate : 0,
+    hardenedCoverage:
+      totalObserved > 0 && fallbackCount === 0 ? 1 : 0,
+    stabilizationLevel,
+    hotspots: getAuthFallbackHotspots(5),
+  };
+}
+
+export function resetAuthObservabilityState(): void {
+  authMetricCounts.better_auth_sessions_valid = 0;
+  authMetricCounts.session_fallback_used = 0;
+  authMetricCounts.unauthorized = 0;
+  authMetricCounts.forbidden = 0;
+  fallbackUsageCountsBySource.clear();
+  fallbackUsageCountsByReason.clear();
+  fallbackUsageCountsBySourceAndReason.clear();
+  fallbackUsageFirstSeenBySource.clear();
+  fallbackUsageLastSeenBySource.clear();
+}
+
+export function reportAuthEvent(event: AuthEvent): void {
+  const payload = {
+    code: event.code,
+    details: event.details ?? {},
+  };
+
+  if (event.level === "error") {
+    console.error(`[auth:${event.code}] ${event.message}`, payload);
+    return;
+  }
+
+  if (event.level === "warn") {
+    console.warn(`[auth:${event.code}] ${event.message}`, payload);
+    return;
+  }
+
+  console.info(`[auth:${event.code}] ${event.message}`, payload);
+}

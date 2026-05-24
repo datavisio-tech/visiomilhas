@@ -4,10 +4,14 @@ import PageHeader from "../../../components/ui/page-header";
 import { getTransfersOverview } from "../../../lib/data/transfers";
 import { getAccountsOverview } from "../../../lib/data/accounts";
 import TransferForm from "../../../components/forms/transfer-form";
+import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
 
 export default async function TransfersPage() {
-  const transfers = await getTransfersOverview();
-  const accounts = await getAccountsOverview();
+  const sessionContext = await resolveControlledSessionContext({
+    source: "transfers.page",
+  });
+  const transfers = await getTransfersOverview(sessionContext);
+  const accounts = await getAccountsOverview(sessionContext);
 
   return (
     <div>

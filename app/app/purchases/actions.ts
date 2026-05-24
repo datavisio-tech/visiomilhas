@@ -1,18 +1,26 @@
 import { createPurchaseSchema } from "../../../lib/validations/purchases";
 import { appPool } from "../../../db/app/client";
-import { admPool } from "../../../db/adm/client";
 import { calculatePurchaseImpact } from "../../../lib/domain/miles-calculations";
 import { revalidatePath } from "next/cache";
 import { isFifoMovementsEngineEnabled } from "../../../lib/featureFlags";
 import { acquireMilesUseCase } from "../../../lib/services/movements.use-cases";
 import { createDrizzleMovementsRepoFromClient } from "../../../lib/repositories/movements.drizzle-repo";
+import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
+import {
+  AuthContextError,
+  requireAuth,
+} from "../../../lib/server/auth-context";
+import { reportAuthEvent } from "../../../lib/server/auth-observability";
+import { resolveOwnedAccount } from "../../../lib/server/ownership-resolvers";
+import { type SessionContextResolver } from "../../../lib/server/controlled-session";
 
 type Deps = {
   appPool?: any;
-  admPool?: any;
   isFifoMovementsEngineEnabled?: any;
   acquireMilesUseCase?: any;
   revalidatePath?: any;
+  resolveSessionContext?: SessionContextResolver;
+  resolveOwnedAccount?: typeof resolveOwnedAccount;
 };
 
 export async function createPurchaseAction(
@@ -25,17 +33,32 @@ export async function createPurchaseAction(
   if (!parsed.success)
     return { success: false, errors: parsed.error.flatten() };
   const input = parsed.data;
+  const sessionContext = await (
+    deps.resolveSessionContext ?? resolveControlledSessionContext
+  )({
+    accountId: input.accountId,
+    source: "purchase.action",
+  });
 
-  const admClient = await (deps.admPool ?? admPool)().connect();
+  if (!sessionContext) {
+    reportAuthEvent({
+      level: "warn",
+      code: "UNAUTHENTICATED",
+      message: "Purchase action rejected before ownership check",
+      details: { accountId: input.accountId },
+    });
+    return { success: false, error: "authentication required" };
+  }
+
   try {
-    const orgRes = await admClient.query(
-      `SELECT id FROM organizations WHERE slug = $1 LIMIT 1`,
-      [input.orgSlug ?? "demo-visiomilhas"],
-    );
-    if (!orgRes.rows.length)
-      return { success: false, error: "organization not found" };
-    const orgId = orgRes.rows[0].id;
+    const auth = requireAuth(sessionContext.auth);
+    const resolveOwnedAccountFn = deps.resolveOwnedAccount ?? resolveOwnedAccount;
+    const ownedAccount = await resolveOwnedAccountFn(auth, input.accountId);
+    const orgId = ownedAccount.ownership.organizationId;
 
+    if (orgId === null || orgId === undefined) {
+      return { success: false, error: "organization not found" };
+    }
     const pool = (deps.appPool ?? appPool)();
     const client = await pool.connect();
     try {
@@ -72,23 +95,17 @@ export async function createPurchaseAction(
           input.description || null,
         ],
       );
-      // If FIFO movements engine is enabled, delegate entry/lot creation and
-      // balance update to the movements use-case. We still insert the purchase
-      // record and update cost-related columns here to preserve pricing data.
+
       if (
         (deps.isFifoMovementsEngineEnabled ?? isFifoMovementsEngineEnabled)()
       ) {
-        // Update cost-related columns first (still within the same transaction)
         await client.query(
           `UPDATE program_accounts SET current_avg_cost_per_thousand_cents = $1, current_cost_basis_cents = $2, updated_at = NOW() WHERE id = $3`,
           [impact.newCpmCents, impact.newTotalCostCents, input.accountId],
         );
 
-        // Create a movements repo bound to the current `pg` client so that
-        // the movements use-case executes on the same connection/transaction.
         const txRepo = createDrizzleMovementsRepoFromClient(client);
 
-        // Delegate to the movements engine *within the same transaction*.
         await (deps.acquireMilesUseCase ?? acquireMilesUseCase)(
           {
             organizationId: orgId,
@@ -127,11 +144,10 @@ export async function createPurchaseAction(
             input.accountId,
           ],
         );
-        // commit will happen after this branch
       }
+
       await client.query("COMMIT");
 
-      // revalidate relevant paths (injectable for tests)
       (deps.revalidatePath ?? revalidatePath)("/app/dashboard");
       (deps.revalidatePath ?? revalidatePath)("/app/accounts");
       (deps.revalidatePath ?? revalidatePath)("/app/entries");
@@ -142,14 +158,27 @@ export async function createPurchaseAction(
         purchaseId: insertPurchase.rows[0].id,
         newBalance: impact.newBalance,
       };
-    } catch (err: any) {
+    } catch (error) {
       await client.query("ROLLBACK");
-      throw err;
+      throw error;
     } finally {
       client.release();
     }
-  } finally {
-    admClient.release();
+  } catch (error) {
+    if (error instanceof AuthContextError) {
+      reportAuthEvent({
+        level: "warn",
+        code: error.code === "FORBIDDEN" ? "FORBIDDEN" : "UNAUTHENTICATED",
+        message: `Purchase action blocked: ${error.message}`,
+        details: {
+          accountId: input.accountId,
+          status: error.status,
+        },
+      });
+      return { success: false, error: error.message };
+    }
+
+    throw error;
   }
 }
 

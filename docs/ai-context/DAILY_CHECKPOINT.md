@@ -1,3 +1,346 @@
+# CHECKPOINT - 2.2-J — AI Governance Versioning
+
+Data: 2026-05-24
+
+- Branch atual: `main`.
+- Objetivo: consolidar o versionamento oficial do operating model, skills e agents.
+- Ações tomadas: `AI_OPERATING_MODEL.md` passou a declarar `AI_OPERATING_MODEL_VERSION=2.2-I`, baseline ativa, matriz de compatibilidade e regras de drift; docs centrais passaram a referenciar essa baseline.
+- Validações executadas: `git diff --check`, `npm run lint`, `npm run typecheck` e `npm run test`.
+- Nenhum deploy, migration, seed, schema change, middleware global, RBAC ou ACL foi executado.
+
+Estado atual resumido:
+
+- A governança IA agora possui baseline explícita e compatibilidade textual entre camadas.
+- Skills e agents carregam alinhamento de versão suficiente para auditoria incremental.
+
+Próxima etapa recomendada:
+
+
+# CHECKPOINT - 2.3-A — SaaS B2C Onboarding Foundation
+
+Data: 2026-05-24
+
+- Branch atual: `main`.
+- Objetivo: preparar a base para onboarding B2C com Google OAuth e sessão server-side persistente.
+- Ações tomadas: adicionado estado de sessão no header (`components/layout/app-header.tsx`) para mostrar email e links de login/logout; atualizadas specs e contratos para readiness de onboarding; validações locais executadas (lint, typecheck, tests).
+- Validações executadas: `git diff --check`, `npm run lint`, `npm run typecheck`, `npm run test` — todas OK.
+- Nenhum deploy, migration, seed, schema change, middleware global, RBAC ou ACL foi executado.
+
+Estado atual resumido:
+
+- Better Auth continua integrado; sessão server-side suportada; onboarding parcial preparado no plano e docs.
+- A criação automática de conta no callback ainda está pendente (próxima implementação server-side).
+
+Próxima etapa recomendada:
+
+1. Implementar criação automática de conta pessoal no servidor (idempotente e transacional).
+1. Atualizar versões apenas quando a baseline ou os contratos das specs mudarem.
+
+# CHECKPOINT - 2.2-I — AI Knowledge & Skill Consolidation
+
+Data: 2026-05-24
+
+- Branch atual: `main`.
+- Objetivo: consolidar a hierarquia oficial entre docs, specs, skills e agents.
+- Ações tomadas: `AI_OPERATING_MODEL.md` passou a explicitar a fonte de verdade estrategica, a camada operacional IA e o modelo de sincronizacao; `docs/specs/ai-agents.spec.md` e `docs/ai-skills/README.md` foram alinhados ao mesmo contrato.
+- Validações executadas: `git diff --check`, `npm run lint`, `npm run typecheck` e `npm run test`.
+- Nenhum deploy, migration, seed, schema change, middleware global, RBAC ou ACL foi executado.
+
+Estado atual resumido:
+
+- Docs estrategicos, specs e skills agora apontam para a mesma hierarquia oficial.
+- Falta sincronizar os artefatos operacionais locais `.claude/skills` e `.github/agents` para fechar o alinhamento de ponta a ponta.
+
+Próxima etapa recomendada:
+
+1. Atualizar a camada operacional local e registrar qualquer drift remanescente antes de avançar para novas fases IA-First.
+
+# CHECKPOINT - 2.2-G — Transitional Finalization & Recovery-Only Fallback
+
+Data: 2026-05-24
+
+- Branch atual: `main`.
+- Objetivo: finalizar a redução transitional e deixar o fallback como recovery-only explícito.
+- Ações tomadas: `resolveReadScope()` ficou hardened por padrão; `auth-observability.ts` ganhou matriz operacional com readiness score, fallback rate, cobertura estabilizada e nível de estabilização; hotspots continuam rastreáveis por source.
+- Nenhum deploy, migration, seed, schema change, middleware global, RBAC ou ACL foi executado.
+
+Estado atual resumido:
+
+- Better Auth segue dominante.
+- O fake adapter permanece disponível para dev/test/recovery, mas não deve ser usado como runtime normal.
+- A última superfície transitional real agora é o fallback recovery-only do boundary de leitura explícita.
+
+Próxima etapa recomendada:
+
+1. Observar a queda dos hotspots e manter o fallback em near-zero antes de decidir sobre a remoção opcional do fake adapter do runtime principal.
+
+# CHECKPOINT - 2.2-F — Transitional Surface Cleanup
+
+Data: 2026-05-24
+
+- Branch atual: `main`.
+- Objetivo: limpar as últimas superfícies transitional e tornar o fake adapter candidato futuro a dev/test/recovery-only, sem big bang.
+- Ações tomadas: actions migradas para importar o tipo de resolvedor pela camada controlada; `auth-observability.ts` ganhou hotspots por source; docs foram preparados para distinguir transitional, stabilized e hardened.
+- Nenhum deploy, migration, seed, schema change, middleware global, RBAC ou ACL foi executado.
+
+Estado atual resumido:
+
+- Better Auth segue primário e a telemetria já identifica hotspots por superfície.
+- O fallback residual continua presente no boundary de leitura controlado; ainda não há base operacional para declarar o fake adapter oficialmente dev/test-only em runtime.
+
+Próxima etapa recomendada:
+
+1. Manter redução incremental das superfícies de leitura que ainda podem acionar fallback e monitorar o hotspot `read-scope`.
+
+# CHECKPOINT - 2.2-E — Fallback Reduction & Stabilization
+
+Data: 2026-05-24
+
+- Branch atual: `main`.
+- Objetivo: reduzir a superfície transitional e medir fallback real com telemetria por source, reason e temporalidade.
+- Ações tomadas: páginas server-side migradas para `resolveControlledSessionContext()` com labels por superfície; `resolveReadScope()` passou a usar o resolvedor controlado quando não recebe sessão explícita; `auth-observability.ts` ganhou primeiro/último visto e contagem por source+motive; criado teste dedicado para snapshot de fallback.
+- Nenhum deploy, migration, seed, schema change, middleware global, RBAC ou ACL foi executado.
+
+Pendências:
+
+- Continuar a migração incremental dos pontos restantes que ainda dependem de leitura simulada direta.
+- Acompanhar fallback near-zero antes de considerar a remoção futura do fake adapter.
+
+Próxima etapa recomendada:
+
+1. Manter Better Auth como caminho primário e reduzir os caminhos transitional restantes com rollback simples preservado.
+
+# CHECKPOINT - 2.2-D — Better Auth Operational Consolidation
+
+Data: 2026-05-24
+
+- Branch atual: `main`.
+- Objetivo: tornar Better Auth o caminho primário operacional de sessão e manter o fake adapter como fallback transitional observável.
+- Ações tomadas: `controlled-session.ts` passou a registrar fallback com origem, motivo e timestamp; purchases/sales/transfers passaram a enviar rótulos de origem; adicionados testes para o snapshot de fallback.
+- Nenhum deploy, seed, migration, schema change ou middleware global foi executado.
+
+Diagnóstico registrado:
+
+- O sistema já consegue medir onde e quando o fallback ocorre, o que reduz o risco de uma migração cega.
+- A próxima redução de risco é continuar a migração incremental das rotas restantes e manter o fallback perto de zero.
+
+Pendências:
+
+- Migrar as entradas restantes uma por uma.
+- Definir o ponto de corte operacional para desligar o fallback transitional.
+
+Próxima etapa recomendada:
+
+1. Manter a consolidação incremental até que Better Auth seja o caminho padrão em todo o fluxo migrado.
+
+# CHECKPOINT - 2.2-C — Ownership Hardening
+
+Data: 2026-05-24
+
+- Branch atual: `main`.
+- Objetivo: reduzir a dependência de `organizationId` como boundary de cliente e fortalecer ownership centrada em userId.
+- Ações tomadas: `orgSlug` foi removido dos contratos de escrita, purchases/sales/transfers passaram a derivar `organizationId` da ownership resolvida no servidor e transfers agora validam origem e destino sob o mesmo escopo.
+- O fake adapter continua preservado como fallback controlado.
+- Nenhum deploy, seed, migration ou alteração de produção foi executado.
+
+Diagnóstico registrado:
+
+- O boundary de escrita ficou mais estreito e menos dependente de input de front.
+- A próxima redução de risco é seguir diminuindo a superfície do fake adapter sem espalhar middleware global.
+
+Pendências:
+
+- Continuar a migração incremental de auth sem liberar writes por slug.
+
+Próxima etapa recomendada:
+
+1. Seguir reduzindo a dependência do fake adapter com rollout controlado e sem mudar a arquitetura para enterprise.
+
+# CHECKPOINT - 1.3.36 — operating model IA-First consolidado
+
+Data: 2026-05-24
+
+- Branch atual: `main`.
+- Objetivo: consolidar um modelo operacional IA-First unico para DataVisio e VisioMilhas.
+- Ações tomadas: criado `docs/ai-context/AI_OPERATING_MODEL.md`, alinhado o agente de infraestrutura persistente e atualizado o contexto operacional para apontar para a nova fonte de verdade.
+- Nenhum deploy, seed, migration ou alteração de runtime foi executado.
+- Nenhuma secret, workflow, Dockerfile funcional ou schema foi alterado.
+
+Diagnóstico registrado:
+
+- O repositório ja tinha contexto, specs e skills; faltava a espinha única que define quando usar cada um.
+- A infraestrutura real do projeto exige automação limitada, human-in-the-loop e poucos agents bem definidos.
+
+Pendências:
+
+- Transformar o operating model em referência recorrente para novos specs e skills.
+
+Próxima etapa recomendada:
+
+1. Manter o operating model como ponto de partida para qualquer novo fluxo IA-First do ecossistema.
+
+# CHECKPOINT - 1.3.35 — alinhamento arquitetural IA-First
+
+Data: 2026-05-23
+
+- Branch atual: `main`.
+- Objetivo: consolidar as respostas arquiteturais do produto e registrar a direcao IA-First operacional.
+- Ações tomadas: ainda nenhuma alteração de runtime funcional; validacoes locais anteriores mantidas (`npm run lint` e `npm run typecheck` OK).
+- Nenhum deploy, seed, migration ou PR foi executado nesta etapa.
+- Nenhum comando remoto foi executado nesta etapa.
+
+Diagnóstico registrado:
+
+- VisioMilhas segue como SaaS B2C de assinatura individual, sem white-label e com permissao simplificada.
+- A IA do projeto e operacional/de desenvolvimento, nao produto IA.
+- O monolito modular continua sendo a base, com observabilidade minima inicialmente.
+
+Pendências:
+
+- Criar a espinha inicial de `docs/specs` e `docs/ai-skills`.
+
+Próxima etapa recomendada:
+
+1. Estruturar os primeiros specs e skills basicos alinhados ao modelo B2C individual.
+
+# CHECKPOINT - 2.1-A — auth context + ownership contracts
+
+Data: 2026-05-23
+
+- Branch atual: `main`.
+- Objetivo: definir contratos conceituais de auth context, ownership e boundaries antes da implementacao de Better Auth.
+- Ações tomadas: leitura das docs obrigatórias, skills equivalentes e superfícies críticas de routes, actions, services e repositories.
+- Nenhum código funcional foi alterado.
+- Nenhuma dependência foi instalada.
+- Nenhum deploy, workflow, migration ou seed foi executado.
+
+Diagnóstico registrado:
+
+- O sistema ainda depende de organizationId/slug para escopo, sem auth boundary real.
+- O eixo recomendado é ownership por userId com session server-side futura.
+
+Pendências:
+
+- Revisar os contratos de AuthContext e OwnershipContext antes de qualquer implementação.
+
+Próxima etapa recomendada:
+
+1. Implementar helpers e boundaries reais apenas depois de validar a ordem dos módulos críticos.
+
+# CHECKPOINT - 2.1-B — helpers reais de auth/ownership sem Better Auth
+
+Data: 2026-05-23
+
+- Branch atual: `main`.
+- Objetivo: criar helpers reais de auth/ownership sem dependência de Better Auth.
+- Ações tomadas: criação de `lib/server/auth-context.ts`, testes unitários e atualização dos docs operacionais para deixar explícito que a fase e provider-agnostic.
+- Nenhum deploy, seed, migration ou workflow foi executado.
+
+Diagnóstico registrado:
+
+- A base agora possui contratos executáveis para resolver contexto de sessão e aplicar boundaries de ownership no servidor.
+- Better Auth continua fora da implementação desta fase e fica apenas como adaptador futuro.
+
+Pendências:
+
+- Integrar os helpers nas primeiras rotas e Server Actions sensíveis.
+
+Próxima etapa recomendada:
+
+1. Aplicar os helpers nas rotas e actions críticas antes de qualquer instalação de auth library.
+
+# CHECKPOINT - 2.1-C — boundary integration sem provider
+
+Data: 2026-05-23
+
+- Branch atual: `main`.
+- Objetivo: integrar os helpers nas rotas e Server Actions mais críticas sem provider real.
+- Ações tomadas: ajuste de `requireOwnership` para entrada orientada a recurso, criação de fake auth adapter controlado e integração nas mutações de purchases, sales e transfers.
+- Nenhum deploy, seed, migration ou middleware global foi executado.
+
+Diagnóstico registrado:
+
+- O boundary agora está explícito no servidor antes das mutações mais sensíveis.
+- A próxima leitura crítica é dashboard, entries e accounts.
+
+Pendências:
+
+- Proteger as leituras críticas com a mesma abordagem.
+- Auditar histórico e logs de secrets.
+
+Próxima etapa recomendada:
+
+1. Aplicar a mesma fronteira server-side explícita nas rotas de leitura críticas.
+
+# CHECKPOINT - 2.1-D — read enforcement sem orgSlug
+
+Data: 2026-05-23
+
+- Branch atual: `main`.
+- Objetivo: mover a leitura crítica para sessionContext, sem orgSlug nem params de cliente.
+- Ações tomadas: criação de `lib/server/read-scope.ts`, atualização dos serviços de leitura e passagem explícita de sessionContext nas páginas críticas.
+- Nenhum deploy, seed, migration ou middleware global foi executado.
+
+Diagnóstico registrado:
+
+- A leitura agora deriva escopo no servidor em vez de aceitar slug do cliente.
+- A próxima redução de risco é diminuir a confiança em organizationId/accountId externos ao longo do tempo.
+
+Pendências:
+
+- Auditar secrets históricos e logs de Actions.
+
+Próxima etapa recomendada:
+
+1. Seguir para a próxima fase de auth real depois de estabilizar a leitura com boundary explícita.
+
+# CHECKPOINT - 2.2 — Better Auth foundation
+
+Data: 2026-05-23
+
+- Branch atual: `main`.
+- Objetivo: iniciar a fundação Better Auth com Google OAuth, cookies seguros e sessão server-side real.
+- Ações tomadas: adicionada a instância Better Auth com Drizzle adapter, route handler App Router, resolver de sessão server-side, helper de env e testes de mapeamento.
+- `fake-auth-adapter` e `read-scope` foram preservados.
+- Nenhum deploy, seed ou migration foi executado.
+
+Diagnóstico registrado:
+
+- Better Auth entrou apenas como adaptador de sessão e callback.
+- Os contratos centrais de AuthContext/OwnershipContext permanecem intactos.
+
+Pendências:
+
+- Ligar a sessão real nas próximas rotas/actions migradas.
+- Auditar secrets, `.env.example` e fontes de trusted origins antes do rollout completo.
+
+Próxima etapa recomendada:
+
+1. Migrar apenas as entradas que já estejam prontas para consumir a sessão Better Auth real.
+
+# CHECKPOINT - 2.2-B — Controlled Session Migration
+
+Data: 2026-05-23
+
+- Branch atual: `main`.
+- Objetivo: migrar purchases, sales e transfers para a sessão Better Auth controlada, mantendo fallback fake operacional.
+- Ações tomadas: criado resolvedor controlado único, logs mínimos de auth, remoção da injeção direta de fake adapter nas rotas migradas e validação com testes unitários.
+- `fake-auth-adapter` continua presente como fallback.
+- Nenhum deploy, seed ou migration foi executado.
+
+Diagnóstico registrado:
+
+- A resolução de sessão agora tem uma entrada única para os fluxos migrados.
+- O fallback ficou explícito e reversível por configuração.
+
+Pendências:
+
+- Endurecer ownership por usuário autenticado e reduzir a dependência em organizationId derivado da sessão fake.
+
+Próxima etapa recomendada:
+
+1. Seguir para a fase 2.2-C de hardening de ownership.
+
 # CHECKPOINT - 1.3.34.3 — reindex do workflow por novo filename
 
 Data: 2026-05-22

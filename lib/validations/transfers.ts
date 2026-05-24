@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const createTransferSchema = z
   .object({
-    orgSlug: z.string().optional(),
     fromAccountId: z.string().transform((s) => Number(s)),
     toAccountId: z.string().transform((s) => Number(s)),
     pointsSent: z

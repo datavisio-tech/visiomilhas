@@ -1,29 +1,57 @@
 "use server";
 import { createSaleSchema } from "../../../lib/validations/sales";
 import { appPool } from "../../../db/app/client";
-import { admPool } from "../../../db/adm/client";
 import { calculateSaleImpact } from "../../../lib/domain/miles-calculations";
 import { revalidatePath } from "next/cache";
 import { isFifoMovementsEngineEnabled } from "../../../lib/featureFlags";
 import { consumeMilesUseCase } from "../../../lib/services/movements.use-cases";
+import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
+import {
+  AuthContextError,
+  requireAuth,
+} from "../../../lib/server/auth-context";
+import { reportAuthEvent } from "../../../lib/server/auth-observability";
+import { resolveOwnedAccount } from "../../../lib/server/ownership-resolvers";
+import { type SessionContextResolver } from "../../../lib/server/controlled-session";
 
-export async function createSaleAction(formData: FormData) {
+type Deps = {
+  resolveSessionContext?: SessionContextResolver;
+  resolveOwnedAccount?: typeof resolveOwnedAccount;
+};
+
+export async function createSaleAction(formData: FormData, deps: Deps = {}) {
   const parsed = createSaleSchema.safeParse(
     Object.fromEntries(formData.entries()),
   );
   if (!parsed.success)
     return { success: false, errors: parsed.error.flatten() };
   const input = parsed.data;
+  const sessionContext = await (
+    deps.resolveSessionContext ?? resolveControlledSessionContext
+  )({
+    accountId: input.accountId,
+    source: "sale.action",
+  });
 
-  const admClient = await admPool().connect();
+  if (!sessionContext) {
+    reportAuthEvent({
+      level: "warn",
+      code: "UNAUTHENTICATED",
+      message: "Sale action rejected before ownership check",
+      details: { accountId: input.accountId },
+    });
+    return { success: false, error: "authentication required" };
+  }
+
   try {
-    const orgRes = await admClient.query(
-      `SELECT id FROM organizations WHERE slug = $1 LIMIT 1`,
-      [input.orgSlug ?? "demo-visiomilhas"],
-    );
-    if (!orgRes.rows.length)
+    const auth = requireAuth(sessionContext.auth);
+    const resolveOwnedAccountFn = deps.resolveOwnedAccount ?? resolveOwnedAccount;
+    const ownedAccount = await resolveOwnedAccountFn(auth, input.accountId);
+    const orgId = ownedAccount.ownership.organizationId;
+
+    if (orgId === null || orgId === undefined) {
       return { success: false, error: "organization not found" };
-    const orgId = orgRes.rows[0].id;
+    }
 
     const pool = appPool();
     const client = await pool.connect();
@@ -65,8 +93,6 @@ export async function createSaleAction(formData: FormData) {
       );
 
       if (isFifoMovementsEngineEnabled()) {
-        // insert sale and commit cost/revenue info, let movements engine
-        // handle entries and balance update
         await client.query("COMMIT");
 
         await consumeMilesUseCase({
@@ -112,14 +138,27 @@ export async function createSaleAction(formData: FormData) {
         saleId: insertSale.rows[0].id,
         newBalance: impact.newBalance,
       };
-    } catch (err: any) {
+    } catch (error) {
       await client.query("ROLLBACK");
-      throw err;
+      throw error;
     } finally {
       client.release();
     }
-  } finally {
-    admClient.release();
+  } catch (error) {
+    if (error instanceof AuthContextError) {
+      reportAuthEvent({
+        level: "warn",
+        code: error.code === "FORBIDDEN" ? "FORBIDDEN" : "UNAUTHENTICATED",
+        message: `Sale action blocked: ${error.message}`,
+        details: {
+          accountId: input.accountId,
+          status: error.status,
+        },
+      });
+      return { success: false, error: error.message };
+    }
+
+    throw error;
   }
 }
 

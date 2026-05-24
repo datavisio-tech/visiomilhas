@@ -4,10 +4,14 @@ import PageHeader from "../../../components/ui/page-header";
 import { getSalesOverview } from "../../../lib/data/sales";
 import { getAccountsOverview } from "../../../lib/data/accounts";
 import SaleForm from "../../../components/forms/sale-form";
+import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
 
 export default async function SalesPage() {
-  const sales = await getSalesOverview();
-  const accounts = await getAccountsOverview();
+  const sessionContext = await resolveControlledSessionContext({
+    source: "sales.page",
+  });
+  const sales = await getSalesOverview(sessionContext);
+  const accounts = await getAccountsOverview(sessionContext);
 
   const revenueCents = sales.reduce(
     (acc: number, s: any) => acc + (s.revenueCents || 0),

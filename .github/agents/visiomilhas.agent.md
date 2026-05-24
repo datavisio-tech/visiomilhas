@@ -1,5 +1,8 @@
 name: visiomilhas-dev-agent
 description: "Use when: trabalhar no repo 'visiomilhas' para tarefas de desenvolvimento, refatoração, implementação de features, correção de bugs, e ajustes de testes. Preferência por mudanças cirúrgicas, com testes e mínima superfície de alteração."
+AGENT_VERSION: v1
+REQUIRES_OPERATING_MODEL: 2.2-I
+AGENT_STATUS: operational
 applyTo:
 
 - "app/\*\*"
@@ -53,6 +56,12 @@ allowTools:
 - O deploy continua sujeito à execução explícita posterior, nunca nesta etapa de documentação/reindex.
 
 Este agente foi desenhado para ser escolhido quando a tarefa envolve trabalhar diretamente no repositório `visiomilhas` — alterações de código, testes, refatorações e correções.
+
+## Hierarquia oficial de conhecimento
+
+- Fonte de verdade estratégica: `docs/ai-context`, `docs/specs` e `docs/ai-skills`.
+- Camada operacional IA: `.claude/skills` e `.github/agents`.
+- Skills e agents operacionalizam os contratos oficiais; nao redefinem arquitetura, auth, ownership, permissões ou deploy.
 
 # Quando escolher este agente
 

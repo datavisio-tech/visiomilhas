@@ -69,6 +69,27 @@ Versionamento operacional:
 - Versão operacional atual registrada: `1.1.6` — próxima incremental: `1.1.7`
 - Versão operacional atual registrada: `1.2.1` — próxima incremental: `1.2.2`
 
+## 2026-05-23 — direcao de produto e stack IA-First
+
+- Decisão: VisioMilhas seguirá como SaaS B2C de assinatura individual mensal recorrente, com foco em usuarios finais, milheiros e viajantes.
+- Decisão: o produto nao sera white-label.
+- Decisão: a experiencia principal sera de uma conta/pessoa, mantendo organization_id por compatibilidade tecnica e evolucao futura, sem multi-organizacao enterprise como prioridade.
+- Decisão: permissões simplificadas nesta fase, com usuario comum e admin interno.
+- Decisão: a aplicacao administrativa global da DataVisio sera uma aplicacao separada, responsavel por billing consolidado, contratos, licencas e metricas do ecossistema.
+- Decisão: observabilidade inicial sera minima, com logs basicos, healthcheck e diagnostico de erros criticos.
+- Decisão: a IA dentro do produto nao e prioridade inicial; a stack IA-First e operacional/de desenvolvimento, focada em memoria persistente, specs, prompts, skills e agentes controlados.
+- Decisão: a arquitetura inicial continua monolito modular, sem microservicos como meta de curto prazo.
+- Decisão: o operating model oficial passa a ser `AI_OPERATING_MODEL.md`, que define quando usar Context, Specs, Skills, Agents e Prompts.
+- Decisão: os fluxos de escrita nao devem aceitar `orgSlug` como boundary; `organizationId` deve ser derivado no servidor.
+- Decisão: transferencias devem validar origem e destino sob a mesma ownership antes de atualizar saldos.
+
+### 2026-05-24 — 2.2-D Better Auth Operational Consolidation
+
+- Decisão: Better Auth é o caminho operacional primário para os fluxos já migrados.
+- Decisão: o fake auth adapter permanece transitional para desenvolvimento local, testes e recovery controlado.
+- Decisão: fallback precisa ser observável com source, reason e timestamp para permitir redução gradual segura.
+- Decisão: não introduzir middleware global nem RBAC novo nesta fase.
+
 Decisão operacional recente (1.2.8):
 
 - Reforçar separação ADM/APP: resolver `organizations` apenas no ADM e ler dados do produto no APP.
@@ -179,3 +200,12 @@ Decisões recentes (1.3.21):
 - O workflow nao executa migrations ou seeds.
 
 Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `security-review`, `test`.
+
+### 2026-05-24 — 2.2-I AI Knowledge & Skill Consolidation
+
+- Decisão: `docs/ai-context`, `docs/specs` e `docs/ai-skills` formam a fonte de verdade estrategica da governanca IA-First.
+- Decisão: `.claude/skills` e `.github/agents` pertencem a camada operacional IA e devem apenas operacionalizar o que os docs oficiais já definiram.
+- Decisão: skills e agents nao podem redefinir arquitetura, auth, ownership, permissões ou deploy.
+- Decisão: qualquer drift entre docs, skills e agents deve ser registrado em `CHANGELOG_AI.md` e `DAILY_CHECKPOINT.md` antes de novas mudanças operacionais.
+- Decisão: `AI_OPERATING_MODEL_VERSION=2.2-I` é a baseline oficial ativa da governança IA.
+- Decisão: skills versionadas usam baseline `v1` e agents versionados usam baseline `v1`, ambos compatíveis com `2.2-I`.

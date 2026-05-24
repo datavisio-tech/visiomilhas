@@ -1,29 +1,74 @@
 "use server";
 import { createTransferSchema } from "../../../lib/validations/transfers";
 import { appPool } from "../../../db/app/client";
-import { admPool } from "../../../db/adm/client";
 import { calculateTransferImpact } from "../../../lib/domain/miles-calculations";
 import { revalidatePath } from "next/cache";
 import { isFifoMovementsEngineEnabled } from "../../../lib/featureFlags";
 import { transferMilesUseCase } from "../../../lib/services/movements.use-cases";
+import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
+import {
+  AuthContextError,
+  requireAuth,
+} from "../../../lib/server/auth-context";
+import { reportAuthEvent } from "../../../lib/server/auth-observability";
+import { resolveOwnedAccount } from "../../../lib/server/ownership-resolvers";
+import { type SessionContextResolver } from "../../../lib/server/controlled-session";
 
-export async function createTransferAction(formData: FormData) {
+type Deps = {
+  resolveSessionContext?: SessionContextResolver;
+  resolveOwnedAccount?: typeof resolveOwnedAccount;
+};
+
+export async function createTransferAction(
+  formData: FormData,
+  deps: Deps = {},
+) {
   const parsed = createTransferSchema.safeParse(
     Object.fromEntries(formData.entries()),
   );
   if (!parsed.success)
     return { success: false, errors: parsed.error.flatten() };
   const input = parsed.data;
+  const sessionContext = await (
+    deps.resolveSessionContext ?? resolveControlledSessionContext
+  )({
+    accountId: input.fromAccountId,
+    source: "transfer.action",
+  });
 
-  const admClient = await admPool().connect();
+  if (!sessionContext) {
+    reportAuthEvent({
+      level: "warn",
+      code: "UNAUTHENTICATED",
+      message: "Transfer action rejected before ownership check",
+      details: { accountId: input.fromAccountId },
+    });
+    return { success: false, error: "authentication required" };
+  }
+
   try {
-    const orgRes = await admClient.query(
-      `SELECT id FROM organizations WHERE slug = $1 LIMIT 1`,
-      [input.orgSlug ?? "demo-visiomilhas"],
+    const auth = requireAuth(sessionContext.auth);
+    const resolveOwnedAccountFn = deps.resolveOwnedAccount ?? resolveOwnedAccount;
+    const ownedFromAccount = await resolveOwnedAccountFn(
+      auth,
+      input.fromAccountId,
     );
-    if (!orgRes.rows.length)
+    const ownedToAccount = await resolveOwnedAccountFn(auth, input.toAccountId);
+    const orgId = ownedFromAccount.ownership.organizationId;
+
+    if (orgId === null || orgId === undefined) {
       return { success: false, error: "organization not found" };
-    const orgId = orgRes.rows[0].id;
+    }
+
+    if (
+      ownedToAccount.ownership.organizationId !== null &&
+      ownedToAccount.ownership.organizationId !== orgId
+    ) {
+      return {
+        success: false,
+        error: "accounts must belong to the same organization",
+      };
+    }
 
     const pool = appPool();
     const client = await pool.connect();
@@ -79,8 +124,6 @@ export async function createTransferAction(formData: FormData) {
       );
 
       if (isFifoMovementsEngineEnabled()) {
-        // commit transfer record and delegate entry/lot updates and balance
-        // updates to the movements engine
         await client.query("COMMIT");
 
         await transferMilesUseCase({
@@ -149,14 +192,27 @@ export async function createTransferAction(formData: FormData) {
       revalidatePath("/app/transfers");
 
       return { success: true, transferId: insertTransfer.rows[0].id };
-    } catch (err: any) {
+    } catch (error) {
       await client.query("ROLLBACK");
-      throw err;
+      throw error;
     } finally {
       client.release();
     }
-  } finally {
-    admClient.release();
+  } catch (error) {
+    if (error instanceof AuthContextError) {
+      reportAuthEvent({
+        level: "warn",
+        code: error.code === "FORBIDDEN" ? "FORBIDDEN" : "UNAUTHENTICATED",
+        message: `Transfer action blocked: ${error.message}`,
+        details: {
+          accountId: input.fromAccountId,
+          status: error.status,
+        },
+      });
+      return { success: false, error: error.message };
+    }
+
+    throw error;
   }
 }
 

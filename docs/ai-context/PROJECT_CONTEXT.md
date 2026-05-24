@@ -4,13 +4,15 @@ Produto: VisioMilhas
 
 Objetivo:
 
-- Construir um MVP1 de uma plataforma SaaS para controle financeiro e operacional de milhas, fornecendo saldos, custo médio do milheiro, registro de compras/vendas/transferências e dashboards básicos.
+- Construir um SaaS B2C acessível para gerenciamento de milhas, pontos e estratégias de acúmulo, com baixo custo por usuario, simplicidade operacional e evolucao incremental.
 
 Público-alvo:
 
-- Pessoas físicas que acumulam milhas
-- Milheiros profissionais
-- Usuários avançados que compram, transferem e vendem milhas/pontos
+- Pessoas fisicas que acumulam milhas
+- Milheiros
+- Viajantes
+- Acumuladores de pontos
+- Usuarios finais que compram, transferem e vendem milhas/pontos
 
 Módulos do MVP1:
 
@@ -24,13 +26,13 @@ Módulos do MVP1:
 - Lançamentos (mile_entries)
 - Compras, Vendas, Transferências
 - Clubes (assinaturas de pontos) — geração manual de crédito
-- Estrutura básica de billing (Stripe)
+- Estrutura basica de billing individual recorrente
 
 Escopo fora do MVP1:
 
 - Importação massiva (CSV/Excel)
-- IA/Modelos e simulações avançadas
-- Automatizações específicas por provedor
+- IA/Modelos e simulacoes avancadas dentro do produto
+- Automatizacoes especificas por provedor
 - Relatórios analíticos avançados
 
 Domínio: visiomilhas.visiochat.cloud
@@ -50,9 +52,11 @@ Stack (obrigatória no MVP1):
 
 Decisões iniciais:
 
-- Separar dados administrativos compartilhados (control_adm_saas_datavisio) e dados específicos (visiomilhas_app).
-- Trial full: 15 dias por organização.
-- Modelo de cobrança: por organização/plano.
+- Separar dados administrativos compartilhados (control_adm_saas_datavisio) e dados especificos (visiomilhas_app).
+- Trial full: 15 dias por conta/assinatura.
+- Modelo de cobranca: individual mensal recorrente.
+- Identidade propria VisioMilhas, sem estrategia white-label.
+- Permissoes simplificadas: usuario comum e admin interno.
 
 Deploy de produção:
 
@@ -67,7 +71,17 @@ Deploy de produção:
 
 Observações:
 
-- Código e identidade visual próprios; não copiar código proprietário de terceiros.
+- Codigo e identidade visual proprios; nao copiar codigo proprietario de terceiros.
+
+IA-First operacional:
+
+- A stack IA-First do projeto e operacional/de desenvolvimento, nao uma promessa de IA dentro do produto.
+- O foco e previsibilidade, memoria persistente, padronizacao de prompts/specs, agentes controlados e baixo retrabalho.
+- O monolito modular continua sendo a base tecnica; microservicos nao sao prioridade.
+- O documento consolidado de governanca e operacao e `AI_OPERATING_MODEL.md`, que amarra Context, Specs, Skills, Agents e Prompts.
+- `AI_OPERATING_MODEL_VERSION=2.2-I` é a baseline oficial ativa da governança IA.
+- `docs/specs`, `docs/ai-skills`, `.claude/skills` e `.github/agents` formam uma cadeia: docs definem a verdade, skills operacionalizam e agents orquestram.
+- Os fluxos de escrita nao devem aceitar `orgSlug` como boundary; `organizationId` deve ser derivado no servidor.
 
 Versionamento operacional
 

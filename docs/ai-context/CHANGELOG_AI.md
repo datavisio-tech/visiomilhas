@@ -1,5 +1,259 @@
 # CHANGELOG_AI
 
+## 2026-05-24 — Fase 2.2-J — AI Governance Versioning
+
+Objetivo:
+
+- Consolidar o versionamento oficial da governança IA sem criar um sistema enterprise de compatibilidade.
+
+Resultado desta etapa:
+
+- `AI_OPERATING_MODEL.md` agora declara `AI_OPERATING_MODEL_VERSION=2.2-I`, baseline ativa e matriz de compatibilidade.
+- `PROJECT_CONTEXT.md`, `ARCHITECTURE.md`, `DECISIONS.md`, `IMPLEMENTATION_PLAN.md` e `TODO_AI.md` passaram a referenciar a baseline oficial.
+- `docs/ai-skills/*`, `.claude/skills/*` e `.github/agents/*` passaram a carregar metadata ou alinhamento explícito de versão.
+
+Decisões registradas:
+
+- O versionamento é textual, auditável e incremental.
+- Skills e agents devem ser compatíveis com a baseline oficial, mas não podem se tornar fonte paralela de governança.
+- Breaks de compatibilidade devem ser registrados antes de qualquer mudança operacional adicional.
+
+Próxima etapa recomendada:
+
+1. Monitorar futuras mudanças de specs e atualizar versões apenas quando contrato, baseline ou compatibilidade mudarem.
+
+## 2026-05-24 — Fase 2.2-I — AI Knowledge & Skill Consolidation
+
+Objetivo:
+
+- Consolidar a hierarquia oficial entre contexto, specs, skills e agents, reduzindo drift entre docs e camada operacional.
+
+Resultado desta etapa:
+
+- `AI_OPERATING_MODEL.md` passou a explicitar a divisao entre fonte de verdade estrategica e camada operacional IA.
+- `docs/specs/ai-agents.spec.md` passou a descrever o papel dos agents como orquestradores, nao como nova fonte de arquitetura.
+- `docs/ai-skills/README.md` passou a registrar que skills operacionalizam specs oficiais e nao criam uma arquitetura paralela.
+
+Decisões registradas:
+
+- `docs/ai-context`, `docs/specs` e `docs/ai-skills` formam a fonte de verdade estrategica.
+- `.claude/skills` e `.github/agents` pertencem a camada operacional IA.
+- Skills devem especializar, operacionalizar e orquestrar, nunca redefinir auth, ownership, deploy ou permissões.
+- Agents devem seguir checkpoints, validation e rollout incremental.
+
+Próxima etapa recomendada:
+
+1. Sincronizar a camada operacional local (`.claude/skills` e `.github/agents`) com a hierarquia oficial e registrar qualquer divergência remanescente.
+
+## 2026-05-24 — Fase 2.2-G — Transitional Finalization & Recovery-Only Fallback
+
+Objetivo:
+
+- Reduzir os últimos hotspots transitional, manter Better Auth dominante e transformar o fallback em caminho recovery-only explícito.
+
+Resultado desta etapa:
+
+- `resolveReadScope()` passou a operar em modo hardened por padrão; fallback só acontece quando a opção de recovery é explicitamente habilitada.
+- `auth-observability.ts` passou a expor uma matriz operacional com readiness score, fallback rate, cobertura estabilizada e nível de estabilização.
+- A telemetria continua registrando hotspots por source para identificar superfícies ainda não hardened.
+- O caminho transitional ficou mais curto e agora é rastreável como dev/test/recovery, não como runtime normal.
+
+Decisões registradas:
+
+- Better Auth continua dominante.
+- O fake adapter não foi removido e ainda existe como contingência controlada, mas o runtime normal não deve depender dele.
+- Não houve mudança de schema, deploy, middleware global, RBAC, ACL ou domínio.
+
+Próxima etapa recomendada:
+
+1. Manter o fallback em near-zero e monitorar hotspots antes de considerar a retirada opcional do fake adapter do runtime principal.
+
+## 2026-05-24 — Fase 2.2-F — Transitional Surface Cleanup
+
+Objetivo:
+
+- Identificar e reduzir as últimas superfícies transitional, mantendo Better Auth como caminho principal e preparando o fake adapter para uso dev/test/recovery-only.
+
+Resultado desta etapa:
+
+- As actions migradas deixaram de depender diretamente do tipo exportado pelo fake adapter e passaram a usar a camada controlada.
+- `auth-observability.ts` ganhou leitura de hotspots por source para facilitar identificação de superfícies recorrentes.
+- O boundary de leitura continua centralizado em `resolveReadScope()`, que agora usa o resolvedor controlado quando não recebe sessão explícita.
+- A documentação passa a distinguir explicitamente estados transitional, stabilized e hardened.
+
+Decisões registradas:
+
+- Better Auth permanece primário.
+- O fake adapter continua transitional e ainda não pode ser tratado como dev/test-only absoluto enquanto o fallback de leitura existir.
+- Não houve alteração de schema, deploy, middleware global, RBAC, ACL ou domínio.
+
+Próxima etapa recomendada:
+
+1. Reduzir o fallback residual até ficar near-zero nas superfícies de leitura restantes antes de considerar a retirada operacional do fake adapter.
+
+## 2026-05-24 — Fase 2.2-E — Fallback Reduction & Stabilization
+
+Objetivo:
+
+- Medir o uso real do fallback, reduzir as superfícies transitional e consolidar Better Auth operacionalmente sem big bang.
+
+Resultado desta etapa:
+
+- As páginas server-side de leitura migraram para `resolveControlledSessionContext()` com source labels próprios por superfície.
+- `resolveReadScope()` passou a acionar o resolvedor controlado quando não recebe sessão explícita, reduzindo o uso direto do fake adapter no boundary compartilhado.
+- `auth-observability.ts` agora expõe primeiro/último uso por source e contagem por source+motive para apoiar análise temporal e por fluxo.
+- Foi criado teste dedicado para o snapshot de fallback em `lib/server/__tests__/auth-observability.test.ts`.
+
+Decisões registradas:
+
+- Better Auth continua como caminho primário.
+- O fake adapter continua transitional, mas com superfície menor e observabilidade mais rica.
+- Não houve mudança de schema, deploy, middleware global, RBAC ou ACL.
+
+Próxima etapa recomendada:
+
+1. Continuar a migração incremental dos poucos pontos restantes que ainda usam leitura simulada direta e manter o fallback perto de zero.
+
+## 2026-05-24 — Fase 2.2-D — Better Auth Operational Consolidation
+
+Objetivo:
+
+- Consolidar Better Auth como caminho primário de sessão, mantendo fallback transitional observável e rollback simples.
+
+Resultado desta etapa:
+
+- `resolveControlledSessionContext()` passou a priorizar Better Auth como fonte operacional principal e registrar fallback com origem, motivo e timestamp.
+- As mutações migradas passam a enviar rótulos explícitos de origem para a telemetria de fallback.
+- O fallback continua disponível para desenvolvimento local, testes e recovery controlado, sem remoção total imediata.
+- A documentação da fase foi alinhada para registrar critérios futuros de remoção do fallback.
+
+Decisões registradas:
+
+- Better Auth é primário operacional, mas o rollback precisa continuar simples.
+- O fake adapter permanece transitional até a estabilidade e a observabilidade indicarem que a redução final é segura.
+- Não houve mudança de schema, deploy ou middleware global.
+
+Próxima etapa recomendada:
+
+1. Continuar a migração das rotas restantes uma por vez e manter a telemetria de fallback perto de zero.
+
+## 2026-05-24 — Fase 2.2-C — Ownership Hardening
+
+Objetivo:
+
+- Reduzir a dependência de `organizationId` como entrada de cliente e consolidar ownership centrada em userId nos fluxos de escrita.
+
+Resultado desta etapa:
+
+- `orgSlug` foi removido dos contratos de escrita de purchases, sales e transfers.
+- As actions passaram a derivar `organizationId` da ownership resolvida no servidor.
+- Transfers passaram a validar origem e destino sob a mesma ownership antes de tocar saldos.
+- O teste de purchase foi ajustado para o novo caminho sem lookup administrativo por slug.
+
+Decisões registradas:
+
+- O boundary de cliente ficou mais estreito; `organizationId` agora é contexto de execução, não input confiável do front.
+- O rollback e o enforcement server-side permanecem centralizados nas actions e nos helpers.
+
+Próxima etapa recomendada:
+
+1. Continuar a redução gradual do fake adapter sem introduzir middleware global ou RBAC complexo.
+
+## 2026-05-24 — operating model IA-First consolidado
+
+Objetivo:
+
+- Consolidar a governanca IA-First da DataVisio em um documento unico e reutilizavel para VisioMilhas e futuros SaaS.
+
+Resultado desta etapa:
+
+- Criado `docs/ai-context/AI_OPERATING_MODEL.md` como fonte de verdade para Context, Specs, Skills, Agents e Prompts.
+- Criado `.github/agents/infrastructure.agent.md` para refletir infraestrutura como contexto persistente.
+- Atualizados `PROJECT_CONTEXT.md`, `ARCHITECTURE.md`, `IMPLEMENTATION_PLAN.md`, `DECISIONS.md` e `TODO_AI.md` para apontar para o modelo consolidado.
+
+Decisoes registradas:
+
+- Poucos agents, com responsabilidade clara, sao preferidos a uma proliferacao de agents superficiais.
+- Infraestrutura enxuta e deploy manual exigem human-in-the-loop para qualquer acao de risco.
+- O operating model deve ser reutilizavel por futuros SaaS da DataVisio sem replicar complexidade desnecessaria.
+
+Proxima etapa recomendada:
+
+1. Manter o modelo como referencia operacional e criar specs/skills futuras a partir dele, nao ao lado dele.
+
+## 2026-05-24 — Fase 2.3-A — SaaS B2C Onboarding Foundation
+
+Objetivo:
+
+- Preparar o produto para usuários reais com onboarding B2C mínimo, Google OAuth e sessão server-side persistente.
+
+Resultado desta etapa (inicial):
+
+- Integrado o header para exibir estado de sessão server-side e links de login/logout (Entrar com Google / Sign out).
+- Confirmação de que `Better Auth` já está conectado via `lib/auth.ts` e `app/api/auth/[...all]/route.ts`.
+- Documentação de readiness e specs atualizada para refletir a preparação de onboarding (AUTH_CONTEXT_CONTRACTS, auth.spec, organizations.spec).
+- Validações executadas: `git diff --check`, `npm run lint`, `npm run typecheck`, `npm run test` — todas aprovadas.
+
+Decisões registradas:
+
+- Onboarding B2C será simples e incremental: criação automática de conta pessoal no primeiro login será implementada por fluxo separado (próximo passo).
+- Não haverá RBAC, middleware global, nem alterações de infraestrutura nesta fase.
+
+Próximos passos recomendados:
+
+1. Implementar criação automática de conta pessoal no callback/login handler (server-side), com transação segura e idempotência.
+2. Criar página de onboarding minimal (`/onboarding`) que direcione novos usuários para completar perfil e criar conta.
+3. Monitorar fallback e readiness durante os primeiros testes com usuários reais em staging.
+
+## 2026-05-23 — Fase 2.2 — Better Auth foundation
+
+Objetivo:
+
+- Iniciar a fundacao de Better Auth com Google OAuth, cookies seguros e sessao server-side real sem quebrar os contratos centrais.
+
+Resultado desta etapa:
+
+- Adicionado `lib/auth.ts` com Better Auth + Drizzle adapter usando `ADM_DATABASE_URL`.
+- Criado `app/api/auth/[...all]/route.ts` para montar o handler App Router.
+- Adicionado `lib/server/better-auth-session.ts` com mapeamento de sessao externa para `SessionContext`.
+- Adicionado `lib/server/better-auth-config.ts` para centralizar env, trusted origins e secrets.
+- Atualizado `.env.example` com placeholders seguros para Better Auth e Google OAuth.
+- Criados testes para o mapeamento de env e de sessao.
+
+Decisoes registradas:
+
+- Better Auth entra como adaptador, nao como centro do dominio.
+- fake-auth-adapter e read-scope permanecem ativos nesta fase.
+- cookies seguros e trusted origins sao obrigatorios.
+
+Proxima etapa recomendada:
+
+1. Plugar o resolver server-side real nas rotas e Server Actions que forem migradas para a sessao Better Auth.
+
+## 2026-05-23 — Fase 2.2-B — Controlled Session Migration
+
+Objetivo:
+
+- Migrar de forma controlada purchases, sales e transfers para a sessão Better Auth, preservando fallback e rollback fácil.
+
+Resultado desta etapa:
+
+- Criado `lib/server/controlled-session.ts` como entrada única para a migração incremental.
+- Adicionado `lib/server/auth-observability.ts` para logs mínimos de session/auth.
+- As actions de purchases, sales e transfers passaram a usar o resolvedor controlado por padrão.
+- As rotas API de purchases, sales e transfers pararam de injetar o fake adapter diretamente.
+- Adicionados testes do resolvedor controlado e mantido o fallback fake como operacional.
+
+Decisões registradas:
+
+- Better Auth virou a entrada primária apenas nos fluxos migrados.
+- fake-auth-adapter continua como fallback, não como destino final.
+- middleware global continua fora do escopo.
+
+Próxima etapa recomendada:
+
+1. Iniciar o endurecimento de ownership por usuário autenticado e reduzir a confiança em organizationId derivado de sessão fake.
+
 ## 2026-05-22 — 1.3.34.3 — reindex do workflow manual de produção por novo filename
 
 Objetivo:
@@ -21,6 +275,128 @@ Motivo do reindex:
 Próxima etapa recomendada:
 
 1. Abrir PR para `main`, aguardar merge e só então considerar um novo dispatch manual único com `confirm_production_deploy=DEPLOY`.
+
+## 2026-05-23 — resposta arquitetural consolidada para IA-First
+
+Objetivo:
+
+- Consolidar as respostas arquiteturais do produto e transformar as respostas em contexto operacional oficial.
+
+Decisões registradas:
+
+- VisioMilhas segue como SaaS B2C de assinatura individual mensal recorrente.
+- O produto nao e white-label.
+- A experiencia principal e de conta/pessoa, com organization_id mantido por compatibilidade tecnica.
+- Permissoes simplificadas nesta fase: usuario comum e admin interno.
+- A aplicacao administrativa global da DataVisio sera separada e desacoplada do produto.
+- Observabilidade inicial sera minima.
+- IA dentro do produto nao e prioridade inicial; a stack IA-First e de desenvolvimento/operacao.
+- O monolito modular segue como base tecnica; microservicos nao sao prioridade.
+
+Arquivos atualizados nesta etapa:
+
+- `docs/ai-context/PROJECT_CONTEXT.md`
+- `docs/ai-context/ARCHITECTURE.md`
+- `docs/ai-context/DECISIONS.md`
+- `docs/ai-context/IMPLEMENTATION_PLAN.md`
+- `docs/ai-context/TODO_AI.md`
+- `docs/ai-context/CHANGELOG_AI.md`
+
+Próxima etapa recomendada:
+
+1. Criar a espinha inicial de `docs/specs` e `docs/ai-skills` com escopo minimo e incremental.
+
+## 2026-05-23 — Fase 2.1-A — contratos de auth context e ownership
+
+Objetivo:
+
+- Definir o núcleo mínimo de identidade, ownership e boundaries antes de instalar qualquer biblioteca de auth.
+
+Resultado desta etapa:
+
+- Criado o documento de contratos conceituais `docs/ai-context/AUTH_CONTEXT_CONTRACTS.md`.
+- Atualizadas specs de auth, organizations, permissions e ai-agents para refletir Better Auth, Google OAuth e ownership por userId.
+- Atualizado o plano de implementação para incluir a Fase 2.1-A sem runtime de auth.
+- Atualizado o TODO operacional com a prioridade de boundaries e contratos.
+
+Decisões registradas:
+
+- Auth e ownership devem ser centralizados em contexto server-side.
+- organization_id permanece apenas como compatibilidade.
+- memberships e RBAC enterprise não entram na fase.
+- Better Auth e Google OAuth ficam para a próxima implementação, sem dependências instaladas agora.
+
+Próxima etapa recomendada:
+
+1. Implementar a Fase 2.1-B com helpers reais de auth/ownership apenas depois de revisar os contratos e a ordem dos módulos críticos.
+
+## 2026-05-23 — Fase 2.1-B — helpers reais de auth/ownership agnósticos de provider
+
+Objetivo:
+
+- Implementar a primeira camada executável de auth/ownership sem depender de Better Auth.
+
+Resultado desta etapa:
+
+- Criado o módulo `lib/server/auth-context.ts` com tipos, construtores, resolvers e guards de auth/ownership.
+- Adicionado teste unitário cobrindo provider normalization, session resolution e boundaries de auth, ownership e admin interno.
+- Atualizados os contratos e o planejamento para deixar explícito que Better Auth fica apenas como adaptador futuro.
+
+Decisões registradas:
+
+- Nenhum helper desta fase importa ou depende de Better Auth.
+- O eixo de enforcement segue em userId, ownership e admin interno.
+- A futura integração com provider externo deve alimentar SessionContextInput, sem mudar os helpers.
+
+Próxima etapa recomendada:
+
+1. Integrar estes helpers nas primeiras rotas e Server Actions sensíveis, ainda sem instalar Better Auth.
+
+## 2026-05-23 — Fase 2.1-C — boundary integration sem provider
+
+Objetivo:
+
+- Integrar os helpers de auth/ownership nas rotas e Server Actions mais críticas sem provider real.
+
+Resultado desta etapa:
+
+- As mutações de purchases, sales e transfers passaram a resolver uma sessão simulada e a exigir ownership por recurso antes de tocar no banco.
+- As rotas API dessas mutações passaram a injetar o fake auth adapter explicitamente.
+- A estratégia de middleware global ficou fora do escopo desta fase.
+- O schema permaneceu intacto.
+
+Decisões registradas:
+
+- requireOwnership foi orientado a recurso via accountUserId.
+- A simulação de boundary usa fake auth adapter controlado, não Better Auth.
+- A leitura crítica e o middleware global ficam para a próxima fase.
+
+Próxima etapa recomendada:
+
+1. Proteger dashboard, entries e accounts com a mesma abordagem server-side explícita.
+
+## 2026-05-23 — Fase 2.1-D — read enforcement sem orgSlug
+
+Objetivo:
+
+- Eliminar orgSlug e params de leitura como fonte de escopo.
+
+Resultado desta etapa:
+
+- Dashboard, accounts, entries, purchases, sales e transfers passaram a receber sessionContext e a derivar organizationId no servidor.
+- A sessão simulada passou a ser o ponto único de entrada para leitura crítica.
+- O escopo não depende mais de slug nas páginas servidas.
+- O middleware global permaneceu fora do desenho.
+
+Decisões registradas:
+
+- read enforcement fica no service, não no route handler.
+- sessionContext é a entrada oficial de leitura.
+- organizationId continua sendo derivado internamente até a fase de remoção gradual.
+
+Próxima etapa recomendada:
+
+1. Auditar e reduzir a confiança em organizationId e accountId externos nas próximas refatorações.
 
 ## 2026-05-22 — 1.3.34.1 — trava textual no dispatch manual de produção
 

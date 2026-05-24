@@ -2,9 +2,13 @@ export const dynamic = "force-dynamic";
 
 import PageHeader from "../../../components/ui/page-header";
 import { getAccountsOverview } from "../../../lib/data/accounts";
+import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
 
 export default async function AccountsPage() {
-  const accounts = await getAccountsOverview();
+  const sessionContext = await resolveControlledSessionContext({
+    source: "accounts.page",
+  });
+  const accounts = await getAccountsOverview(sessionContext);
 
   return (
     <div>

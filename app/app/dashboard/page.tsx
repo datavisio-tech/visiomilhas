@@ -8,11 +8,15 @@ import {
   getRecentEntries,
   getRecentPurchases,
 } from "../../../lib/server/dashboard";
+import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
 
 export default async function DashboardPage() {
-  const metrics = await getMetrics();
-  const recentEntries = await getRecentEntries();
-  const purchases = await getRecentPurchases();
+  const sessionContext = await resolveControlledSessionContext({
+    source: "dashboard.page",
+  });
+  const metrics = await getMetrics(sessionContext);
+  const recentEntries = await getRecentEntries(sessionContext);
+  const purchases = await getRecentPurchases(sessionContext);
 
   return (
     <div>

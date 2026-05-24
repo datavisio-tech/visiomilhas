@@ -13,6 +13,217 @@ Concluído nesta etapa:
 
 - O workflow foi renomeado para forçar reindexação pelo GitHub Actions.
 
+## 1.3.35 — alinhamento arquitetural IA-First
+
+- Registrar as respostas arquiteturais de produto no contexto operacional.
+- Atualizar PROJECT_CONTEXT, ARCHITECTURE, DECISIONS, IMPLEMENTATION_PLAN, CHANGELOG_AI e DAILY_CHECKPOINT com a direcao B2C individual.
+- Criar a estrutura base de docs/specs e docs/ai-skills.
+- Manter o escopo incremental, sem big bang refactor.
+- Nao alterar schema, migrations, seeds, deploy de producao nem feature flags nesta etapa.
+- Consolidar o operating model em `AI_OPERATING_MODEL.md` e apontar os docs centrais para ele.
+
+Decisões registradas:
+
+- B2C individual, assinatura mensal recorrente.
+- Sem white-label.
+- Permissoes simples: usuario comum e admin interno.
+- IA no produto nao e prioridade inicial.
+- Monolito modular como base.
+- Observabilidade minima inicialmente.
+
+## 1.3.36 — operating model IA-First consolidado
+
+- Criar `docs/ai-context/AI_OPERATING_MODEL.md` como fonte de verdade para governanca IA.
+- Registrar a relacao entre Context, Specs, Skills, Agents e Prompts.
+- Criar ou alinhar o agente de infraestrutura persistente.
+- Atualizar CHANGELOG_AI, IMPLEMENTATION_PLAN, DECISIONS e DAILY_CHECKPOINT com o rationale do modelo.
+- Nao alterar runtime, deploy, Docker, auth, workflows, banco ou producao.
+
+Decisões registradas:
+
+- Infraestrutura real influencia o desenho da IA.
+- Poucos agents com responsabilidade clara sao melhores do que muitos agents superficiais.
+- Human-in-the-loop continua obrigatorio para deploy, migrations, secrets e billing critico.
+
+## 2.2-I — AI Knowledge & Skill Consolidation
+
+Concluído nesta etapa:
+
+- Consolidada a hierarquia oficial entre docs, specs, skills e agents.
+- `AI_OPERATING_MODEL.md` passou a explicitar a hierarquia, o sync model e as responsabilidades por camada.
+- `docs/specs/ai-agents.spec.md`, `docs/ai-skills/README.md`, `.github/agents/*` e `.claude/skills/*` foram alinhados ao mesmo boundary model.
+- Drift futuro deve continuar registrado em `CHANGELOG_AI.md` e `DAILY_CHECKPOINT.md`.
+
+Decisões registradas:
+
+- Docs estratégicos continuam sendo a fonte de verdade.
+- Skills operacionalizam contratos oficiais.
+- Agents orquestram e registram checkpoints.
+
+## 2.2-J — AI Governance Versioning
+
+Concluído nesta etapa:
+
+- `AI_OPERATING_MODEL_VERSION=2.2-I` consolidado como baseline oficial ativa.
+- Criada a matriz de compatibilidade no operating model com versões de skills, agents e governanças associadas.
+- Skills e agents receberam metadata de versão e compatibilidade simples.
+- Regras de drift e gatilhos de bump de versão foram documentados.
+
+Decisões registradas:
+
+- Semver complexo e tooling automático continuam fora do escopo.
+- O versionamento serve para rastreabilidade, auditoria e sincronização incremental.
+
+## 2.2-C — Ownership Hardening
+
+- Remover `orgSlug` dos contratos de escrita e depender da ownership resolvida no servidor.
+- Validar origem e destino em transferencias sob a mesma ownership.
+- Reduzir a confiança em `organizationId` vindo da UI.
+- Manter `controlled-session.ts` como entrada única para boundaries migradas.
+- Preparar a redução gradual do fake adapter sem middleware global agressivo.
+
+Decisões registradas:
+
+- `organizationId` continua como contexto de dados, nao como boundary de cliente.
+- `orgSlug` sai dos fluxos de escrita para reduzir confiança em input de front.
+- Repositories devem continuar recebendo contexto mínimo, sem acesso direto à sessão.
+
+## 2.2-D — Better Auth Operational Consolidation
+
+- Tornar Better Auth o caminho primário operacional de sessão para as rotas já migradas.
+- Manter fake-auth-adapter como transitional para desenvolvimento local, testes e recovery controlado.
+- Registrar fallback com origem, motivo e timestamp em `auth-observability.ts`.
+- Migrar as rotas restantes uma por vez, sem big bang.
+- Definir critérios futuros de remoção do fallback quando a estabilidade e a telemetria forem suficientes.
+
+Decisões registradas:
+
+- O fallback continua aceitável enquanto for observável, auditável e simples de reativar.
+- A remoção do fake adapter só deve acontecer após estabilidade operacional contínua e uso quase nulo.
+- Não introduzir middleware global nem RBAC complexo nesta fase.
+# TODO_AI - Pendências e próximas ações
+
+## 2.2-F — Transitional Surface Cleanup
+
+- O fake adapter não vira dev/test-only oficialmente antes de o runtime estabilizar.
+
+## 2.2-G — Transitional Finalization & Recovery-Only Fallback
+
+- Confirmar que o boundary de leitura ficou hardened por padrão e só aceita fallback em recovery explícito.
+- Monitorar o readiness score, fallback rate e hotspots por source.
+- Manter o fake adapter disponível para dev, testes e recovery controlado.
+- Reduzir quaisquer hotspots residuais antes de considerar a remoção opcional do fake adapter do runtime principal.
+
+Decisões registradas:
+
+- O runtime normal não deve depender de fallback implícito.
+- Recovery-only continua aceitável como contingência operacional.
+- A retirada do fake adapter só deve ser avaliada depois de fallback near-zero e cobertura hardened suficiente.
+
+## 2.2-E — Fallback Reduction & Stabilization
+
+- Medir uso real do fallback por source, reason e timestamp.
+- Migrar rotas restantes para o caminho controlado por Better Auth.
+- Reduzir caminhos transitional de forma incremental e segura.
+- Manter rollback simples enquanto o fallback continuar necessário.
+- Evitar middleware global, RBAC, ACL, auth microservice e reescrita ampla do domínio.
+- Atualizar a matriz operacional com status Better Auth, fallback usage, ownership status, rollout status e stabilization level.
+- Documentar readiness para remoção futura com fallback near-zero, cobertura mínima e ausência de incidentes.
+
+Decisões registradas:
+
+- A fase é de estabilização, não de reescrita.
+- A redução do fallback depende de métricas, não de suposição.
+- O fake adapter continua transitional até a remoção segura.
+
+## 2.2-F — Transitional Surface Cleanup
+
+- Mapear as últimas superfícies transitional que ainda podem acionar fallback.
+- Reduzir dependências diretas ao fake adapter nas APIs públicas.
+- Acompanhar hotspots de fallback por source e motivo.
+- Classificar surfaces como transitional, stabilized ou hardened com base em uso real.
+- Preparar o fake adapter para dev/test/recovery-only apenas quando o fallback de runtime estiver near-zero.
+
+Decisões registradas:
+
+- O boundary de leitura continua controlado e observável.
+- O fake adapter não vira dev/test-only oficialmente antes de o runtime estabilizar.
+- A saída é incremental e reversível por superfície.
+
+## 2.1-B — auth helpers reais e provider-agnostic
+
+- Implementar helpers reais para AuthContext, OwnershipContext e SessionContext.
+- Manter a camada sem dependencia de Better Auth.
+- Reduzir organization_id a compatibilidade futura, nao boundary principal.
+- Mapear protecao inicial para compras, vendas, transferencias, entries, dashboard, accounts e programs.
+- Documentar as boundaries de routes, Server Actions, services e repositories.
+- Nao alterar runtime, banco, migrations, workflows ou deploy.
+
+Decisões registradas:
+
+- Better Auth sera apenas um adaptador futuro, nao uma dependencia desta fase.
+- Google OAuth entra primeiro.
+- Ownership por userId e o eixo principal.
+- Sem memberships complexas e sem RBAC enterprise.
+
+## 2.1-C — boundary integration sem provider
+
+- Integrar os helpers nas rotas e Server Actions mais criticas.
+- Proteger primeiro purchases, sales e transfers.
+- Simular boundary com fake auth adapters controlados antes do provider real.
+- Adiar middleware global para depois da consolidacao do fluxo server-side.
+- Manter schema inalterado nesta etapa.
+
+Decisões registradas:
+
+- requireOwnership deve ser orientado a recurso, via accountUserId.
+- organizationId nao deve voltar a ser boundary principal.
+- A proxima fase de auth real virá depois do boundary simulation estabilizar.
+
+Seguranca adicional a auditar:
+
+- secrets historicos no git e em logs de actions.
+- GOOGLE_CLIENT_SECRET, AUTH_SECRET, DATABASE_URL e SSH_PRIVATE_KEY.
+- .gitignore e historico git.
+
+## 2.2 — Better Auth foundation
+
+- Manter `fake-auth-adapter` e `read-scope` por enquanto.
+- Preservar `AuthContext`, `OwnershipContext` e `SessionContext` como contratos centrais.
+- Integrar Better Auth apenas como adaptador externo de sessao e callback.
+- Expor handler App Router em `/api/auth/[...all]`.
+- Usar Google OAuth como primeiro provider.
+- Garantir cookies seguros/httpOnly e trusted origins apenas das origens esperadas.
+- Registrar e auditar `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET`.
+- Conferir que o rollout nao cria middleware global nem muda schema de negocio nesta etapa.
+
+## 2.2-B — controlled session migration
+## 2.3-A — SaaS B2C Onboarding Foundation (next)
+
+- Implementar handler server-side idempotente para criação automática de conta pessoal após callback de login.
+- Criar página `/onboarding` com fluxo minimal de perfil e criação de conta.
+- Garantir que o fluxo seja observável (auth-observability) e cobrir com testes.
+
+- Migrar apenas `purchases`, `sales` e `transfers` para a sessão Better Auth controlada.
+- Manter `fake-auth-adapter` como fallback operacional enquanto a migração estiver em curso.
+- Centralizar a resolução de sessão em `resolveCurrentBetterAuthSessionContext()` via uma única camada controlada.
+- Adicionar observabilidade mínima para falhas de sessão, fallback e bloqueios de auth.
+- Criar testes de boundary para sessão ausente, fallback acionado e ownership negado.
+
+## 2.1-D — read enforcement
+
+- Remover slug e params das leituras criticas.
+- Passar sessionContext para dashboard, accounts, entries, purchases, sales e transfers.
+- Derivar organizationId no servidor, nunca no client.
+- Criar fake session resolver unico para leitura.
+- Manter middleware global fora do escopo.
+
+Decisões registradas:
+
+- service continua como boundary principal.
+- repository segue executando query minima.
+- route/server component nao deve resolver ownership por conta própria.
+
 ## 1.3.34.1 — trava textual do dispatch manual
 
 - Confirmar que `confirm_production_deploy=DEPLOY` é obrigatório antes de qualquer SSH/deploy.
