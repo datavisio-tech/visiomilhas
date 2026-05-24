@@ -186,6 +186,25 @@ Próximos passos:
 1. Validar Google OAuth em staging real e confirmar ausência de loop, duplicidade e regressão.
 2. Registrar hotspots residuais e fallback residual antes do primeiro deploy controlado.
 
+## CHECKPOINT - 2.4-A — Controlled Real Staging Rollout
+
+Data: 2026-05-24
+
+- Branch atual: `2.3-c-initial-onboarding-flow`.
+- Objetivo: preparar o rollout controlado real com checklist operacional e auditoria de staging.
+- Ações tomadas: o endpoint de onboarding passou a carregar browser context derivado do request; a telemetria ganhou metadata de rollout mais rica; os docs de readiness e checklist foram atualizados.
+- Validações executadas: pendentes desta etapa no momento do checkpoint; a última rodada anterior permaneceu verde.
+
+Estado atual resumido:
+
+- A operação está pronta para o primeiro deploy controlado real, com observabilidade e recovery mais claros.
+- Fallback permanece recovery-only e Better Auth segue dominante.
+
+Próximos passos:
+
+1. Executar lint, typecheck, test e diff check após a última alteração desta fase.
+2. Validar primeiro usuário de teste controlado e observar hotspots/callback failures.
+
 # CHECKPOINT - 2.2-D — Better Auth Operational Consolidation
 
 Data: 2026-05-24

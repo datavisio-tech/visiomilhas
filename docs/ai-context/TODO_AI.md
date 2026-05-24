@@ -177,6 +177,13 @@ Decisões registradas:
 - Separar readiness em stable, transitional e recovery-only para OAuth, onboarding, runtime, recovery, observability e deploy.
 - Evitar qualquer mudança de arquitetura, deploy ou infraestrutura.
 
+## 2.4-A — Controlled Real Staging Rollout
+
+- Preparar checklist final de rollout controlado com usuários reais de teste.
+- Monitorar callback failures, redirect loops, onboarding recovery, duplicate prevention e hotspots residuais.
+- Classificar readiness final para OAuth, onboarding, runtime, recovery, staging e deploy antes de ampliar acesso.
+- Manter rollback simples, fallback recovery-only e sem mudança de infraestrutura.
+
 ## 2.1-B — auth helpers reais e provider-agnostic
 
 - Implementar helpers reais para AuthContext, OwnershipContext e SessionContext.

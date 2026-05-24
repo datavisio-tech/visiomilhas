@@ -202,6 +202,12 @@ Regra obrigatória desta fase:
 - A auditoria de staging deve classificar OAuth, onboarding, runtime, recovery, observability e deploy como stable, transitional ou recovery-only.
 - O checklist de staging deve confirmar callback real, sessão persistida, logout, refresh, retry onboarding e ausência de loop/duplicidade.
 - Mudanças de boundary não são esperadas; esta etapa apenas consolida readiness operacional.
+
+## Controlled real staging rollout
+
+- O primeiro rollout controlado deve ser pequeno, observável e reversível.
+- Browser context, environment tag, retry stage e recovery stage podem entrar na telemetria, mas sem capturar dados brutos sensíveis.
+- O objetivo é validar operação real com usuários de teste, não expandir contratos de auth ou onboarding.
 ## Estrategia de repositories futura
 
 - Repositories devem operar com contexto autorizado, nao com parametros de UX.

@@ -19,6 +19,8 @@ export type OnboardingEventCode =
 
 export type RuntimeEnvironmentTag = "development" | "staging" | "production" | "test" | "unknown";
 
+export type BrowserContextTag = "desktop" | "mobile" | "tablet" | "bot" | "unknown";
+
 export type AuthEvent = {
   level: AuthEventLevel;
   code: AuthEventCode;
@@ -121,6 +123,23 @@ export function resolveRuntimeEnvironmentTag(): RuntimeEnvironmentTag {
   }
 
   return "unknown";
+}
+
+export function resolveBrowserContextTag(userAgent?: string | null): BrowserContextTag {
+  const normalized = userAgent?.trim().toLowerCase();
+
+  if (!normalized) return "unknown";
+  if (normalized.includes("bot") || normalized.includes("crawler") || normalized.includes("spider")) {
+    return "bot";
+  }
+  if (normalized.includes("ipad") || normalized.includes("tablet")) {
+    return "tablet";
+  }
+  if (normalized.includes("mobi") || normalized.includes("android") || normalized.includes("iphone")) {
+    return "mobile";
+  }
+
+  return "desktop";
 }
 
 export function incrementOnboardingMetric(metricName: OnboardingMetricName): void {
@@ -283,6 +302,7 @@ export function reportOnboardingEvent(
     retryState?: string;
     recoveryState?: string;
     environmentTag?: RuntimeEnvironmentTag;
+    browserContext?: BrowserContextTag;
   },
 ): void {
   // increment lightweight metrics
@@ -318,6 +338,7 @@ export function reportOnboardingEvent(
       retryState: details.retryState ?? null,
       recoveryState: details.recoveryState ?? null,
       environmentTag: details.environmentTag ?? resolveRuntimeEnvironmentTag(),
+      browserContext: details.browserContext ?? "unknown",
     },
   };
 

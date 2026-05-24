@@ -9,9 +9,12 @@ import {
   reportAuthEvent,
   reportOnboardingEvent,
   resolveRuntimeEnvironmentTag,
+  resolveBrowserContextTag,
 } from "../../../lib/server/auth-observability";
 
-export async function POST() {
+export async function POST(request: Request) {
+  const browserContext = resolveBrowserContextTag(request.headers.get("user-agent"));
+
   try {
     const session = await resolveCurrentBetterAuthSessionContext();
 
@@ -28,6 +31,7 @@ export async function POST() {
           recoveryState: "none",
           flowStage: "staging-validation",
           environmentTag: resolveRuntimeEnvironmentTag(),
+          browserContext,
         },
       });
       reportOnboardingEvent("ONBOARDING_FAILED", {
@@ -38,6 +42,7 @@ export async function POST() {
         retryState: "blocked",
         recoveryState: "none",
         environmentTag: resolveRuntimeEnvironmentTag(),
+        browserContext,
       });
       return NextResponse.json(
         { ok: false, error: "unauthenticated" },
@@ -55,6 +60,7 @@ export async function POST() {
         retryState: "retryable",
         recoveryState: "none",
         environmentTag: resolveRuntimeEnvironmentTag(),
+        browserContext,
       });
       return NextResponse.json(
         { ok: false, error: "missing_email" },
@@ -78,6 +84,7 @@ export async function POST() {
         recoveryState:
           currentState === "partial" ? "partial-provision" : "none",
         flowStage: "staging-validation",
+          browserContext,
       },
     });
 
@@ -91,6 +98,7 @@ export async function POST() {
       retryState: currentState === "partial" ? "retryable" : "fresh",
       recoveryState: currentState === "partial" ? "partial-provision" : "none",
       environmentTag: resolveRuntimeEnvironmentTag(),
+      browserContext,
     });
 
     if (currentState === "ready") {
@@ -104,6 +112,7 @@ export async function POST() {
         retryState: "duplicate-prevented",
         recoveryState: "already-ready",
         environmentTag: resolveRuntimeEnvironmentTag(),
+        browserContext,
       });
 
       return NextResponse.json({
@@ -148,6 +157,7 @@ export async function POST() {
         retryState: "completed",
         recoveryState: currentState === "partial" ? "recovered" : "none",
         environmentTag: resolveRuntimeEnvironmentTag(),
+        browserContext,
       });
       return NextResponse.json({
         ok: true,
@@ -173,6 +183,7 @@ export async function POST() {
           recoveryState:
             currentState === "partial" ? "partial-provision" : "none",
           error: errorMessage,
+          browserContext,
         },
       });
       reportOnboardingEvent("ONBOARDING_FAILED", {
@@ -187,6 +198,7 @@ export async function POST() {
         recoveryState:
           currentState === "partial" ? "partial-provision" : "none",
         environmentTag: resolveRuntimeEnvironmentTag(),
+        browserContext,
       });
       return NextResponse.json(
         {
@@ -213,6 +225,7 @@ export async function POST() {
         retryState: "retryable",
         recoveryState: "unknown",
         error: errorMessage,
+        browserContext,
       },
     });
     reportOnboardingEvent("ONBOARDING_FAILED", {
@@ -225,6 +238,7 @@ export async function POST() {
       retryState: "retryable",
       recoveryState: "unknown",
       environmentTag: resolveRuntimeEnvironmentTag(),
+      browserContext,
     });
     return NextResponse.json(
       { ok: false, error: "unexpected", flowStage: "runtime" },

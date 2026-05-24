@@ -69,6 +69,13 @@ Fase 2.2-J: AI Governance Versioning
 - Consolidar checklist pré-deploy controlado para primeiros usuários de teste.
 - Não alterar infraestrutura, deploy, middleware, billing ou arquitetura nova.
 
+## 2.4-A — Controlled Real Staging Rollout
+
+- Executar rollout controlado real com usuário de teste, validando Google OAuth, callback, sessão, logout, refresh e onboarding.
+- Observar runtime OAuth com browser context, environment tag, retry/recovery state e duplicate prevention.
+- Consolidar checklist do primeiro deploy controlado e observar hotspots antes de ampliar acesso.
+- Evitar qualquer mudança estrutural em deploy, infraestrutura, middleware ou auth rewrite.
+
 Atualização 1.3.14:
 
 - Consolidação do motor FIFO puro/in-memory em `lib/services/movements.ts` com testes unitários em `lib/services/__tests__/movements.test.ts`.

@@ -263,6 +263,27 @@ Próxima etapa recomendada:
 
 1. Executar o checklist de staging real com Google OAuth, callback, sessão persistida, logout, refresh e retry onboarding.
 
+## 2026-05-24 — Fase 2.4-A — Controlled Real Staging Rollout
+
+Objetivo:
+
+- Preparar o rollout controlado real a partir do audit de staging e do runtime OAuth já endurecido.
+
+Resultado desta etapa:
+
+- O endpoint de onboarding passou a carregar metadata operacional mais rica para browser context, environment tag, retry stage e recovery stage.
+- A observabilidade de auth/onboarding foi ampliada sem expor payload sensível, cobrindo melhor callback failures, redirect loops e duplicate prevention.
+- A documentação operacional passou a refletir checklist de staging, classificação de readiness e próximos passos para o primeiro deploy controlado.
+
+Decisões registradas:
+
+- O rollout segue incremental, staging-first e rollback-safe.
+- Better Auth continua dominante e fallback segue recovery-only.
+
+Próxima etapa recomendada:
+
+1. Executar a validação real controlada com usuários de teste e observar hotspots, callback failures e onboarding_failed antes do primeiro deploy ampliado.
+
 Próximos passos recomendados:
 
 1. Implementar criação automática de conta pessoal no callback/login handler (server-side), com transação segura e idempotência.

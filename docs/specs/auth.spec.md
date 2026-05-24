@@ -56,6 +56,12 @@ Decisao alvo:
 - OAuth readiness: stable when callback, session persistence, logout and refresh are observed in staging without loop or duplicate onboarding.
 - Observability readiness: stable when callback failures, redirect loops, recovery and dedupe events are visible without sensitive data.
 - Deploy readiness remains transitional until the first controlled rollout with test users is validated.
+
+## Onboarding 2.4-A — Controlled Real Staging Rollout
+
+- OAuth readiness: transitional until a controlled rollout validates login, callback, session persistence, logout and refresh with a real test user.
+- Runtime readiness: stable only when recovery-only fallback stays in effect and callback failures do not introduce loops.
+- Deploy readiness: transitional until the first control group of users completes the checklist without regression.
 ## Readiness Summary (2026-05-24)
 
 - O que foi estabilizado: boundary de leitura hardened por padrão; matriz operacional e `auth-observability` registram fallback e readiness score.

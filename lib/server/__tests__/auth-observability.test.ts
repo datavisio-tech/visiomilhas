@@ -7,6 +7,7 @@ import {
   getOnboardingMetricSnapshot,
   recordAuthFallbackUsage,
   reportOnboardingEvent,
+  resolveBrowserContextTag,
   resetAuthObservabilityState,
 } from "../auth-observability";
 
@@ -146,5 +147,13 @@ describe("auth-observability", () => {
       onboarding_recovery: 1,
       onboarding_duplicate_prevented: 1,
     });
+  });
+
+  it("derives a browser context tag from user agent hints", () => {
+    expect(resolveBrowserContextTag(null)).toBe("unknown");
+    expect(resolveBrowserContextTag("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)")).toBe("mobile");
+    expect(resolveBrowserContextTag("Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X)")).toBe("tablet");
+    expect(resolveBrowserContextTag("Googlebot/2.1 (+http://www.google.com/bot.html)")).toBe("bot");
+    expect(resolveBrowserContextTag("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")).toBe("desktop");
   });
 });

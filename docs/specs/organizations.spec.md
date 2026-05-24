@@ -47,6 +47,12 @@ Objetivo:
 - Readiness runtime: stable quando a recuperação parcial e a prevenção de duplicidade estiverem observadas sem regressão.
 - Readiness deploy: transitional até o checklist operacional de staging ser concluído.
 
+## Onboarding 2.4-A — Controlled Real Staging Rollout
+
+- Readiness onboarding: stable only after o primeiro usuário real de teste completar login, onboarding e recovery sem duplicidade.
+- Readiness recovery: stable quando usuários parcialmente provisionados forem recuperados sem criar organização ou conta duplicada.
+- Readiness deploy: transitional enquanto o rollout permanecer pequeno e reversível.
+
 Decisao alvo:
 
 - Experiencia principal de conta/pessoa.
