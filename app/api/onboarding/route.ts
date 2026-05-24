@@ -5,7 +5,11 @@ import {
   ensureInitialOrganizationAndAccount,
   getOnboardingStateByEmail,
 } from "../../../lib/server/onboarding";
-import { reportAuthEvent, reportOnboardingEvent } from "../../../lib/server/auth-observability";
+import {
+  reportAuthEvent,
+  reportOnboardingEvent,
+  resolveRuntimeEnvironmentTag,
+} from "../../../lib/server/auth-observability";
 
 export async function POST() {
   try {
@@ -19,16 +23,43 @@ export async function POST() {
         details: {
           source: "api.onboarding",
           stage: "auth-missing",
+          runtimeState: "auth-missing",
+          retryState: "blocked",
+          recoveryState: "none",
+          flowStage: "staging-validation",
+          environmentTag: resolveRuntimeEnvironmentTag(),
         },
       });
-      reportOnboardingEvent("ONBOARDING_FAILED", { source: "api.onboarding", stage: "auth-missing" });
-      return NextResponse.json({ ok: false, error: "unauthenticated" }, { status: 401 });
+      reportOnboardingEvent("ONBOARDING_FAILED", {
+        source: "api.onboarding",
+        stage: "auth-missing",
+        severity: "warn",
+        runtimeState: "auth-missing",
+        retryState: "blocked",
+        recoveryState: "none",
+        environmentTag: resolveRuntimeEnvironmentTag(),
+      });
+      return NextResponse.json(
+        { ok: false, error: "unauthenticated" },
+        { status: 401 },
+      );
     }
 
     const email = session.auth.email ?? null;
     if (!email) {
-      reportOnboardingEvent("ONBOARDING_FAILED", { source: "api.onboarding", stage: "missing-email" });
-      return NextResponse.json({ ok: false, error: "missing_email" }, { status: 400 });
+      reportOnboardingEvent("ONBOARDING_FAILED", {
+        source: "api.onboarding",
+        stage: "missing-email",
+        severity: "warn",
+        runtimeState: "session-incomplete",
+        retryState: "retryable",
+        recoveryState: "none",
+        environmentTag: resolveRuntimeEnvironmentTag(),
+      });
+      return NextResponse.json(
+        { ok: false, error: "missing_email" },
+        { status: 400 },
+      );
     }
 
     const currentState = await getOnboardingStateByEmail(email);
@@ -41,6 +72,12 @@ export async function POST() {
         source: "api.onboarding",
         stage: "session-validated",
         state: currentState,
+        environmentTag: resolveRuntimeEnvironmentTag(),
+        runtimeState: currentState,
+        retryState: currentState === "partial" ? "retryable" : "fresh",
+        recoveryState:
+          currentState === "partial" ? "partial-provision" : "none",
+        flowStage: "staging-validation",
       },
     });
 
@@ -49,6 +86,11 @@ export async function POST() {
       stage: "start",
       state: currentState,
       flowStage: "staging-validation",
+      severity: "info",
+      runtimeState: "staging-audit",
+      retryState: currentState === "partial" ? "retryable" : "fresh",
+      recoveryState: currentState === "partial" ? "partial-provision" : "none",
+      environmentTag: resolveRuntimeEnvironmentTag(),
     });
 
     if (currentState === "ready") {
@@ -57,6 +99,11 @@ export async function POST() {
         stage: "dedupe",
         state: currentState,
         flowStage: "staging-validation",
+        severity: "warn",
+        runtimeState: "staging-audit",
+        retryState: "duplicate-prevented",
+        recoveryState: "already-ready",
+        environmentTag: resolveRuntimeEnvironmentTag(),
       });
 
       return NextResponse.json({
@@ -71,7 +118,10 @@ export async function POST() {
       const globalUserId = await ensureGlobalUser(email, null, null);
 
       if (globalUserId) {
-        const result = await ensureInitialOrganizationAndAccount(globalUserId, email);
+        const result = await ensureInitialOrganizationAndAccount(
+          globalUserId,
+          email,
+        );
 
         if (result?.status === "recovered") {
           reportOnboardingEvent("ONBOARDING_RECOVERY", {
@@ -79,6 +129,11 @@ export async function POST() {
             stage: "recovery",
             state: currentState,
             flowStage: "staging-validation",
+            severity: "info",
+            runtimeState: "staging-audit",
+            retryState: "retry-safe",
+            recoveryState: "recovered",
+            environmentTag: resolveRuntimeEnvironmentTag(),
           });
         }
       }
@@ -88,6 +143,11 @@ export async function POST() {
         stage: "completed",
         state: currentState,
         flowStage: "staging-validation",
+        severity: "info",
+        runtimeState: currentState === "partial" ? "recovered" : "stable",
+        retryState: "completed",
+        recoveryState: currentState === "partial" ? "recovered" : "none",
+        environmentTag: resolveRuntimeEnvironmentTag(),
       });
       return NextResponse.json({
         ok: true,
@@ -107,6 +167,11 @@ export async function POST() {
           stage: "provision",
           state: currentState,
           flowStage: "staging-validation",
+          environmentTag: resolveRuntimeEnvironmentTag(),
+          runtimeState: "failure",
+          retryState: "retryable",
+          recoveryState:
+            currentState === "partial" ? "partial-provision" : "none",
           error: errorMessage,
         },
       });
@@ -116,13 +181,22 @@ export async function POST() {
         reason: errorMessage,
         state: currentState,
         flowStage: "staging-validation",
+        severity: "error",
+        runtimeState: "failure",
+        retryState: "retryable",
+        recoveryState:
+          currentState === "partial" ? "partial-provision" : "none",
+        environmentTag: resolveRuntimeEnvironmentTag(),
       });
-      return NextResponse.json({
-        ok: false,
-        error: "provision_failed",
-        onboardingState: currentState,
-        flowStage: "failed",
-      }, { status: 500 });
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "provision_failed",
+          onboardingState: currentState,
+          flowStage: "failed",
+        },
+        { status: 500 },
+      );
     }
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : String(err);
@@ -134,10 +208,27 @@ export async function POST() {
       details: {
         source: "api.onboarding",
         stage: "unexpected",
+        environmentTag: resolveRuntimeEnvironmentTag(),
+        runtimeState: "failure",
+        retryState: "retryable",
+        recoveryState: "unknown",
         error: errorMessage,
       },
     });
-    reportOnboardingEvent("ONBOARDING_FAILED", { source: "api.onboarding", stage: "unexpected", reason: errorMessage, flowStage: "runtime" });
-    return NextResponse.json({ ok: false, error: "unexpected", flowStage: "runtime" }, { status: 500 });
+    reportOnboardingEvent("ONBOARDING_FAILED", {
+      source: "api.onboarding",
+      stage: "unexpected",
+      reason: errorMessage,
+      flowStage: "runtime",
+      severity: "error",
+      runtimeState: "failure",
+      retryState: "retryable",
+      recoveryState: "unknown",
+      environmentTag: resolveRuntimeEnvironmentTag(),
+    });
+    return NextResponse.json(
+      { ok: false, error: "unexpected", flowStage: "runtime" },
+      { status: 500 },
+    );
   }
 }

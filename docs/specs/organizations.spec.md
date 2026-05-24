@@ -41,6 +41,12 @@ Objetivo:
 - slug determinístico por usuário reduz colisão durante retry e staging validation.
 - Retentativas e provisionamento parcial devem continuar idempotentes e server-side first.
 
+## Onboarding 2.3-G — First Real Staging Validation & OAuth Operational Audit
+
+- Readiness onboarding: transitional até a validação com usuários de teste reais em staging.
+- Readiness runtime: stable quando a recuperação parcial e a prevenção de duplicidade estiverem observadas sem regressão.
+- Readiness deploy: transitional até o checklist operacional de staging ser concluído.
+
 Decisao alvo:
 
 - Experiencia principal de conta/pessoa.

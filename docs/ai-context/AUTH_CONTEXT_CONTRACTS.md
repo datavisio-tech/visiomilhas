@@ -196,6 +196,12 @@ Regra obrigatória desta fase:
 - A validação de staging deve observar callback, sessão persistida, logout, refresh e retry onboarding.
 - A telemetria deve registrar `OAUTH_CALLBACK_FAILED`, `OAUTH_REDIRECT_LOOP` e `OAUTH_RUNTIME_STAGING_CHECK` sem expor payload sensível.
 - O estado parcial do onboarding deve ser recuperável por server-side guards simples, sem locking complexo.
+
+## First real staging audit
+
+- A auditoria de staging deve classificar OAuth, onboarding, runtime, recovery, observability e deploy como stable, transitional ou recovery-only.
+- O checklist de staging deve confirmar callback real, sessão persistida, logout, refresh, retry onboarding e ausência de loop/duplicidade.
+- Mudanças de boundary não são esperadas; esta etapa apenas consolida readiness operacional.
 ## Estrategia de repositories futura
 
 - Repositories devem operar com contexto autorizado, nao com parametros de UX.

@@ -170,6 +170,13 @@ Decisões registradas:
 - Manter fallback recovery-only e registrar hotspots residuais antes do primeiro grupo de usuários.
 - Evitar qualquer mudança de deploy, Docker, middleware global ou arquitetura nova.
 
+## 2.3-G — First Real Staging Validation & OAuth Operational Audit
+
+- Validar staging real e registrar checklist operacional antes do rollout controlado.
+- Monitorar callback failures, redirect loops, onboarding recovery e duplicate prevention.
+- Separar readiness em stable, transitional e recovery-only para OAuth, onboarding, runtime, recovery, observability e deploy.
+- Evitar qualquer mudança de arquitetura, deploy ou infraestrutura.
+
 ## 2.1-B — auth helpers reais e provider-agnostic
 
 - Implementar helpers reais para AuthContext, OwnershipContext e SessionContext.

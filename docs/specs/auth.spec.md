@@ -50,6 +50,12 @@ Decisao alvo:
 - OAuth staging validation must cover callback, session persistence, logout, refresh and onboarding retry.
 - Observability should include callback failures, redirect loops, duplicate prevention and recovery flows without sensitive payloads.
 - Runtime remains recovery-only on fallback and Better Auth remains dominant.
+
+## Onboarding 2.3-G — First Real Staging Validation & OAuth Operational Audit
+
+- OAuth readiness: stable when callback, session persistence, logout and refresh are observed in staging without loop or duplicate onboarding.
+- Observability readiness: stable when callback failures, redirect loops, recovery and dedupe events are visible without sensitive data.
+- Deploy readiness remains transitional until the first controlled rollout with test users is validated.
 ## Readiness Summary (2026-05-24)
 
 - O que foi estabilizado: boundary de leitura hardened por padrão; matriz operacional e `auth-observability` registram fallback e readiness score.

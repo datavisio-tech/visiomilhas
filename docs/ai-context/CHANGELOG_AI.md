@@ -242,6 +242,27 @@ Próxima etapa recomendada:
 
 1. Executar validação real em staging com Google OAuth e observar os hotspots antes do primeiro grupo de usuários de teste.
 
+## 2026-05-24 — Fase 2.3-G — First Real Staging Validation & OAuth Operational Audit
+
+Objetivo:
+
+- Consolidar a auditoria operacional do primeiro staging real, sem alterar a arquitetura de auth nem adicionar features novas.
+
+Resultado desta etapa:
+
+- O fluxo de onboarding e OAuth passou a registrar estados operacionais mais explícitos para staging audit: `runtimeState`, `retryState`, `recoveryState`, `flowStage` e `environmentTag`.
+- O endpoint de onboarding passou a diferenciar melhor `missing-session`, `not-started`, `partial` e `ready`, reduzindo duplicidade e tornando recovery mais previsível.
+- A UX operacional passou a expor mensagens de recovery e retry com feedback mínimo apropriado ao primeiro grupo de usuários de teste.
+
+Decisões registradas:
+
+- The runtime audit remains staging-first, rollback-safe and recovery-only on fallback.
+- Slug determinístico e guards idempotentes continuam sendo o mecanismo de deduplicação.
+
+Próxima etapa recomendada:
+
+1. Executar o checklist de staging real com Google OAuth, callback, sessão persistida, logout, refresh e retry onboarding.
+
 Próximos passos recomendados:
 
 1. Implementar criação automática de conta pessoal no callback/login handler (server-side), com transação segura e idempotência.

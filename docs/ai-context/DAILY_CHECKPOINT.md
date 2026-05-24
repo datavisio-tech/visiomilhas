@@ -167,6 +167,25 @@ Próximos passos:
 1. Validar staging real com Google OAuth e monitorar `onboarding_failed`, `OAUTH_CALLBACK_FAILED` e `OAUTH_REDIRECT_LOOP`.
 2. Registrar hotspots residuais antes do primeiro grupo de usuários de teste.
 
+## CHECKPOINT - 2.3-G — First Real Staging Validation & OAuth Operational Audit
+
+Data: 2026-05-24
+
+- Branch atual: `2.3-c-initial-onboarding-flow`.
+- Objetivo: registrar a auditoria operacional do primeiro staging real sem mudar arquitetura.
+- Ações tomadas: aprofundada a telemetria de onboarding/OAuth com `runtimeState`, `retryState`, `recoveryState`, `flowStage` e `environmentTag`; o endpoint de onboarding passou a consolidar estados de recovery e dedupe; docs de readiness foram atualizados.
+- Validações executadas: `npm run lint`, `npm run typecheck`, `npm run test` — todas OK.
+
+Estado atual resumido:
+
+- OAuth e onboarding estão com trilha de auditoria mais clara para staging real.
+- Duplicidade e provisionamento parcial seguem tratados por guards idempotentes e recovery-aware.
+
+Próximos passos:
+
+1. Validar Google OAuth em staging real e confirmar ausência de loop, duplicidade e regressão.
+2. Registrar hotspots residuais e fallback residual antes do primeiro deploy controlado.
+
 # CHECKPOINT - 2.2-D — Better Auth Operational Consolidation
 
 Data: 2026-05-24

@@ -17,6 +17,8 @@ export type OnboardingEventCode =
   | "ONBOARDING_RECOVERY"
   | "ONBOARDING_DUPLICATE_PREVENTED";
 
+export type RuntimeEnvironmentTag = "development" | "staging" | "production" | "test" | "unknown";
+
 export type AuthEvent = {
   level: AuthEventLevel;
   code: AuthEventCode;
@@ -104,6 +106,21 @@ export function incrementAuthMetric(metricName: AuthMetricName): void {
 
 export function getAuthMetricSnapshot(): Record<AuthMetricName, number> {
   return { ...authMetricCounts };
+}
+
+export function resolveRuntimeEnvironmentTag(): RuntimeEnvironmentTag {
+  const explicit = process.env.VERCEL_ENV?.trim().toLowerCase();
+
+  if (explicit === "production" || explicit === "preview" || explicit === "development") {
+    return explicit === "preview" ? "staging" : explicit;
+  }
+
+  const nodeEnv = process.env.NODE_ENV?.trim().toLowerCase();
+  if (nodeEnv === "production" || nodeEnv === "development" || nodeEnv === "test") {
+    return nodeEnv;
+  }
+
+  return "unknown";
 }
 
 export function incrementOnboardingMetric(metricName: OnboardingMetricName): void {
@@ -261,6 +278,11 @@ export function reportOnboardingEvent(
     reason?: string;
     state?: string;
     flowStage?: string;
+    severity?: AuthEventLevel;
+    runtimeState?: string;
+    retryState?: string;
+    recoveryState?: string;
+    environmentTag?: RuntimeEnvironmentTag;
   },
 ): void {
   // increment lightweight metrics
@@ -291,6 +313,11 @@ export function reportOnboardingEvent(
       reason: details.reason ?? null,
       state: details.state ?? null,
       flowStage: details.flowStage ?? null,
+      severity: details.severity ?? null,
+      runtimeState: details.runtimeState ?? null,
+      retryState: details.retryState ?? null,
+      recoveryState: details.recoveryState ?? null,
+      environmentTag: details.environmentTag ?? resolveRuntimeEnvironmentTag(),
     },
   };
 
