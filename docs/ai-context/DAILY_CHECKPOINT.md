@@ -129,6 +129,25 @@ Próximos passos:
 1. Validar fluxo com Google OAuth em staging e monitorar `auth-observability` para erros.
 2. Atualizar `auth.spec.md` e `organizations.spec.md` com comportamento de redirect e provisionamento.
 
+## CHECKPOINT - 2.3-D — Onboarding Telemetry & Auth Flow Stabilization
+
+Data: 2026-05-24
+
+- Branch atual: `2.3-c-initial-onboarding-flow`.
+- Objetivo: estabilizar onboarding com telemetria mínima, UX operacional simples e readiness para staging real.
+- Ações tomadas: adicionados eventos de onboarding em `lib/server/auth-observability.ts`; criado `POST /api/onboarding` com retries seguros; `app/app/onboarding/OnboardingForm.client.tsx` ganhou loading/erro/retry; docs e specs atualizados.
+- Validações executadas: `npm run lint`, `npm run typecheck`, `npm run test` — todas OK.
+
+Estado atual resumido:
+
+- Onboarding está observável com eventos mínimos e sem payload sensível.
+- UX operacional está estabilizada para primeiro uso e retry seguro.
+
+Próximos passos:
+
+1. Testar staging com Google OAuth real.
+2. Monitorar `auth-observability` para `onboarding_failed` e hotspots residuais.
+
 # CHECKPOINT - 2.2-D — Better Auth Operational Consolidation
 
 Data: 2026-05-24

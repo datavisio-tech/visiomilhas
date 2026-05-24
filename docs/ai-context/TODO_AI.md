@@ -156,6 +156,13 @@ Decisões registradas:
 - Integrar provisionamento não-blocking na resolução de sessão e redirecionamento server-side para onboarding quando apropriado.
 - Validar em staging com Google OAuth e monitorar `auth-observability` para erros de provisionamento.
 
+## 2.3-D — Onboarding Telemetry & Auth Flow Stabilization
+
+- Instrumentar `onboarding_started`, `onboarding_completed` e `onboarding_failed` em `auth-observability`.
+- Garantir retry seguro e UX mínima com loading/erro/sucesso na página `/onboarding`.
+- Atualizar readiness para staging real: onboarding, auth, OAuth, observability e deploy.
+- Auditar duplicidade, slug collision e race conditions sem introduzir locking complexo.
+
 ## 2.1-B — auth helpers reais e provider-agnostic
 
 - Implementar helpers reais para AuthContext, OwnershipContext e SessionContext.

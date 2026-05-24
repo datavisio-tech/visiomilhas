@@ -29,6 +29,12 @@ Objetivo:
 - O fluxo cria uma `organization` administratively e um programa + conta no app DB, mantendo ownership vinculada ao `global_user`.
 - Risco operacional: validar em staging para assegurar que não haja duplicação de slug ou conflitos de FK entre adm/app DBs.
 
+## Onboarding 2.3-D — Telemetry & Auth Flow Stabilization
+
+- O risco de duplicidade deve ser tratado com guards simples e deduplicação incremental, não com locking complexo.
+- Rotas e retries devem continuar server-side first.
+- Readiness de staging deve considerar slug collision, race conditions e provisionamento parcial.
+
 Decisao alvo:
 
 - Experiencia principal de conta/pessoa.

@@ -1,6 +1,11 @@
 import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
 import { redirect } from "next/navigation";
-import { isUserOnboardedByEmail, ensureInitialOrganizationAndAccount } from "../../../lib/server/onboarding";
+import { isUserOnboardedByEmail } from "../../../lib/server/onboarding";
+import dynamic from "next/dynamic";
+
+const OnboardingFormClient = dynamic(() => import("./OnboardingForm.client"), {
+  ssr: false,
+});
 
 export default async function OnboardingPage() {
   const sessionContext = await resolveControlledSessionContext({
@@ -20,31 +25,11 @@ export default async function OnboardingPage() {
     if (onboarded) redirect("/app/dashboard");
   }
 
-  async function startOnboarding() {
-    'use server';
-    // perform idempotent creation
-    const emailLocal = (sessionContext?.auth.email as string) ?? null;
-    if (!emailLocal) {
-      redirect("/api/auth?provider=google");
-    }
-
-    const { ensureGlobalUser } = await import("../../../lib/server/onboarding");
-    const globalUserId = await ensureGlobalUser(emailLocal, null, null);
-
-    if (globalUserId) {
-      await ensureInitialOrganizationAndAccount(globalUserId, emailLocal);
-    }
-
-    redirect("/app/dashboard");
-  }
-
   return (
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-semibold mb-4">Seja bem-vindo</h1>
       <p className="mb-4">Obrigado por se cadastrar. Vamos configurar sua conta pessoal rapidamente.</p>
-      <form action={startOnboarding}>
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Começar</button>
-      </form>
+      <OnboardingFormClient />
     </div>
   );
 }

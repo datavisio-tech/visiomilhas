@@ -199,6 +199,28 @@ Decisões registradas:
 - Onboarding B2C será simples e incremental: criação automática de conta pessoal no primeiro login será implementada por fluxo separado (próximo passo).
 - Não haverá RBAC, middleware global, nem alterações de infraestrutura nesta fase.
 
+## 2026-05-24 — Fase 2.3-D — Onboarding Telemetry & Auth Flow Stabilization
+
+Objetivo:
+
+- Estabilizar o onboarding B2C com telemetria mínima, UX operacional simples e leitura clara de readiness para staging real.
+
+Resultado desta etapa:
+
+- `auth-observability.ts` passou a registrar métricas/eventos mínimos de onboarding (`onboarding_started`, `onboarding_completed`, `onboarding_failed`).
+- Criado endpoint server-side `POST /api/onboarding` para retries seguros e provisionamento idempotente sem expor payload sensível.
+- A página `/onboarding` passou a usar UI mínima com loading, erro amigável e retry operacional.
+- O fluxo continua hardened: Better Auth dominante, fallback recovery-only preservado e redirecionamentos server-side mantidos.
+
+Decisões registradas:
+
+- Observabilidade de onboarding deve permanecer sem email completo, tokens, cookies ou sessão bruta.
+- O fluxo é B2C-first, staging-oriented e rollback-safe.
+
+Próxima etapa recomendada:
+
+1. Validar o fluxo em staging com Google OAuth real e observar hotspots/residual fallback antes do primeiro grupo de usuários.
+
 Próximos passos recomendados:
 
 1. Implementar criação automática de conta pessoal no callback/login handler (server-side), com transação segura e idempotência.

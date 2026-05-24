@@ -48,6 +48,13 @@ Fase 2.2-J: AI Governance Versioning
 - Integrar provisionamento não-blocking na resolução de sessão e redirecionamentos server-side quando usuário autenticado não possui organização.
 - Não aplicar migrations nem alterar infra; tudo deve usar tabelas existentes e ser idempotente.
 
+## 2.3-D — Onboarding Telemetry & Auth Flow Stabilization
+
+- Instrumentar `auth-observability` com eventos mínimos de onboarding (`started`, `completed`, `failed`).
+- Consolidar UX operacional de onboarding com loading, erro amigável e retry seguro.
+- Reduzir risco operacional: guards simples, deduplicação incremental e validações server-side.
+- Preparar staging real documentando readiness onboarding/auth/OAuth/observability/deploy sem alterar infraestrutura.
+
 Atualização 1.3.14:
 
 - Consolidação do motor FIFO puro/in-memory em `lib/services/movements.ts` com testes unitários em `lib/services/__tests__/movements.test.ts`.

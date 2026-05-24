@@ -39,6 +39,12 @@ Decisao alvo:
 - Comportamento: ao primeiro login o sistema cria uma `organization` no DB administrativo e um `loyalty_program` + `program_account` no app DB; usuários sem organização são direcionados ao `/onboarding`.
 - Observabilidade mínima: registrar eventos `onboarding_started`, `onboarding_completed` e `onboarding_failed` via `auth-observability`/logs.
 
+## Onboarding 2.3-D — Telemetry & Auth Flow Stabilization
+
+- Telemetria mínima deve incluir `source`, `timestamp`, `fallback state`, `onboarding state` e `flow stage`.
+- A UX deve manter loading, erro amigável e retry seguro sem wizard complexo.
+- Readiness para staging real deve ser documentada antes do primeiro grupo de usuários.
+
 ## Readiness Summary (2026-05-24)
 
 - O que foi estabilizado: boundary de leitura hardened por padrão; matriz operacional e `auth-observability` registram fallback e readiness score.

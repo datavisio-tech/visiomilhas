@@ -184,6 +184,12 @@ Regra obrigatória desta fase:
 - A resolução de sessão pode acionar um provisionamento idempotente não-blocking (criação de `global_user`, `organization` e recursos iniciais do app) quando detectado primeiro login.
 - O provisionamento não deve bloquear a experiência de login; erros devem ser logados e tratados como observabilidade (não lançar para o usuário).
 - Rotas protegidas devem redirecionar server-side para `/onboarding` quando o usuário estiver autenticado, mas não possuir organização pessoal criada.
+
+## Telemetria e estabilização do onboarding
+
+- Eventos de onboarding devem expor apenas `source`, `timestamp`, `fallback state`, `onboarding state` e `flow stage`.
+- A telemetria não deve registrar email completo, tokens, cookies ou sessão bruta.
+- O fluxo deve suportar retry seguro e idempotência completa, inclusive para usuários parcialmente provisionados.
 ## Estrategia de repositories futura
 
 - Repositories devem operar com contexto autorizado, nao com parametros de UX.

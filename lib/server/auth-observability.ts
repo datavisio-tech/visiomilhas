@@ -7,6 +7,11 @@ export type AuthEventCode =
   | "UNAUTHENTICATED"
   | "FORBIDDEN";
 
+export type OnboardingEventCode =
+  | "ONBOARDING_STARTED"
+  | "ONBOARDING_COMPLETED"
+  | "ONBOARDING_FAILED";
+
 export type AuthEvent = {
   level: AuthEventLevel;
   code: AuthEventCode;
@@ -19,6 +24,11 @@ export type AuthMetricName =
   | "session_fallback_used"
   | "unauthorized"
   | "forbidden";
+
+export type OnboardingMetricName =
+  | "onboarding_started"
+  | "onboarding_completed"
+  | "onboarding_failed";
 
 export type AuthFallbackReason = "session-empty" | "session-error" | "fallback-disabled";
 
@@ -67,6 +77,12 @@ const authMetricCounts: Record<AuthMetricName, number> = {
   forbidden: 0,
 };
 
+const onboardingMetricCounts: Record<OnboardingMetricName, number> = {
+  onboarding_started: 0,
+  onboarding_completed: 0,
+  onboarding_failed: 0,
+};
+
 const fallbackUsageCountsBySource = new Map<string, number>();
 const fallbackUsageCountsByReason = new Map<AuthFallbackReason, number>();
 const fallbackUsageCountsBySourceAndReason = new Map<string, number>();
@@ -79,6 +95,14 @@ export function incrementAuthMetric(metricName: AuthMetricName): void {
 
 export function getAuthMetricSnapshot(): Record<AuthMetricName, number> {
   return { ...authMetricCounts };
+}
+
+export function incrementOnboardingMetric(metricName: OnboardingMetricName): void {
+  onboardingMetricCounts[metricName] += 1;
+}
+
+export function getOnboardingMetricSnapshot(): Record<OnboardingMetricName, number> {
+  return { ...onboardingMetricCounts };
 }
 
 export function recordAuthFallbackUsage(usage: AuthFallbackUsage): void {
@@ -193,6 +217,9 @@ export function resetAuthObservabilityState(): void {
   fallbackUsageCountsBySourceAndReason.clear();
   fallbackUsageFirstSeenBySource.clear();
   fallbackUsageLastSeenBySource.clear();
+  onboardingMetricCounts.onboarding_started = 0;
+  onboardingMetricCounts.onboarding_completed = 0;
+  onboardingMetricCounts.onboarding_failed = 0;
 }
 
 export function reportAuthEvent(event: AuthEvent): void {
@@ -212,4 +239,40 @@ export function reportAuthEvent(event: AuthEvent): void {
   }
 
   console.info(`[auth:${event.code}] ${event.message}`, payload);
+}
+
+export function reportOnboardingEvent(
+  code: OnboardingEventCode,
+  details: { source: string; stage?: string; fallback?: boolean; reason?: string },
+): void {
+  // increment lightweight metrics
+  switch (code) {
+    case "ONBOARDING_STARTED":
+      incrementOnboardingMetric("onboarding_started");
+      break;
+    case "ONBOARDING_COMPLETED":
+      incrementOnboardingMetric("onboarding_completed");
+      break;
+    case "ONBOARDING_FAILED":
+      incrementOnboardingMetric("onboarding_failed");
+      break;
+  }
+
+  const payload = {
+    code,
+    details: {
+      source: details.source,
+      stage: details.stage ?? null,
+      fallback: details.fallback ?? false,
+      reason: details.reason ?? null,
+    },
+  };
+
+  // Log at appropriate level
+  if (code === "ONBOARDING_FAILED") {
+    console.error(`[auth:${code}] Onboarding failed`, payload);
+    return;
+  }
+
+  console.info(`[auth:${code}] Onboarding event`, payload);
 }
