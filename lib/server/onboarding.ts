@@ -29,3 +29,115 @@ export async function ensureGlobalUser(
     client.release();
   }
 }
+
+export async function isUserOnboardedByEmail(
+  email: string | null | undefined,
+): Promise<boolean> {
+  if (!email) return false;
+
+  const pool = admPool();
+  const client = await pool.connect();
+  try {
+    const res = await client.query(
+      `SELECT id FROM global_users WHERE email = $1 LIMIT 1`,
+      [email.trim()],
+    );
+
+    if (res.rows.length === 0) return false;
+
+    const globalUserId = Number(res.rows[0].id);
+
+    const org = await client.query(
+      `SELECT id FROM organizations WHERE owner_user_id = $1 LIMIT 1`,
+      [globalUserId],
+    );
+
+    return org.rows.length > 0;
+  } finally {
+    client.release();
+  }
+}
+
+export async function ensureInitialOrganizationAndAccount(
+  globalUserId: number,
+  email: string | null | undefined,
+): Promise<{ organizationId: number; programId?: number; accountId?: number } | null> {
+  if (!globalUserId) return null;
+
+  const adm = admPool();
+  const admClient = await adm.connect();
+
+  let organizationId: number | null = null;
+
+  try {
+    const orgRes = await admClient.query(
+      `SELECT id FROM organizations WHERE owner_user_id = $1 LIMIT 1`,
+      [globalUserId],
+    );
+
+    if (orgRes.rows.length > 0) {
+      organizationId = Number(orgRes.rows[0].id);
+    } else {
+      const name = (email ?? "").split("@")[0] || `user-${globalUserId}`;
+      const slugBase = name.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+      const slug = `${slugBase}-${Date.now().toString(36)}`;
+
+      const insert = await admClient.query(
+        `INSERT INTO organizations (name, slug, owner_user_id, status, created_at, updated_at) VALUES ($1, $2, $3, $4, NOW(), NOW()) RETURNING id`,
+        [name, slug, globalUserId, "active"],
+      );
+
+      organizationId = Number(insert.rows[0].id);
+    }
+  } finally {
+    admClient.release();
+  }
+
+  if (!organizationId) return null;
+
+  // Ensure app-level default program and account
+  const { appPool } = await import("../../db/app/client");
+  const app = appPool();
+  const appClient = await app.connect();
+
+  try {
+    // Ensure a default program exists for this organization
+    const programRes = await appClient.query(
+      `SELECT id FROM loyalty_programs WHERE organization_id = $1 LIMIT 1`,
+      [organizationId],
+    );
+
+    let programId: number | null = null;
+    if (programRes.rows.length > 0) {
+      programId = Number(programRes.rows[0].id);
+    } else {
+      const insertProgram = await appClient.query(
+        `INSERT INTO loyalty_programs (organization_id, name, slug, type, is_system_default, is_active, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW()) RETURNING id`,
+        [organizationId, "Default Program", "default-program", "default", true, true],
+      );
+      programId = Number(insertProgram.rows[0].id);
+    }
+
+    // Ensure a program account exists for this organization+program
+    const accRes = await appClient.query(
+      `SELECT id FROM program_accounts WHERE organization_id = $1 AND program_id = $2 LIMIT 1`,
+      [organizationId, programId],
+    );
+
+    let accountId: number | null = null;
+    if (accRes.rows.length > 0) {
+      accountId = Number(accRes.rows[0].id);
+    } else {
+      const holderName = (email ?? "").split("@")[0] || `user-${globalUserId}`;
+      const insertAcc = await appClient.query(
+        `INSERT INTO program_accounts (organization_id, program_id, nickname, holder_name, current_points_balance, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW()) RETURNING id`,
+        [organizationId, programId, "Minha conta", holderName, 0, "active"],
+      );
+      accountId = Number(insertAcc.rows[0].id);
+    }
+
+    return { organizationId, programId: programId ?? undefined, accountId: accountId ?? undefined };
+  } finally {
+    appClient.release();
+  }
+}

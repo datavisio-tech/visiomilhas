@@ -110,6 +110,25 @@ Próxima etapa recomendada:
 
 1. Manter Better Auth como caminho primário e reduzir os caminhos transitional restantes com rollback simples preservado.
 
+## CHECKPOINT - 2.3-C — Initial User Onboarding Flow
+
+Data: 2026-05-24
+
+- Branch atual: `2.3-c-initial-onboarding-flow`.
+- Objetivo: implementar /onboarding, provisionamento idempotente de organização pessoal e conta app, e redirecionamentos server-side.
+- Ações tomadas: adicionado `app/app/onboarding/page.tsx`, helpers em `lib/server/onboarding.ts` e integração na resolução de sessão (`lib/server/better-auth-session.ts`) para provisionamento não-blocking.
+- Validações executadas: `npm run lint`, `npm run typecheck`, `npm run test` — todas OK.
+
+Estado atual resumido:
+
+- Onboarding básico implementado: página `/onboarding` com server action que cria organização e conta aplicativo idempotentemente.
+- Resolução de sessão agora tenta provisionamento inicial sem bloquear a sessão (erros silenciados com logs).
+
+Próximos passos:
+
+1. Validar fluxo com Google OAuth em staging e monitorar `auth-observability` para erros.
+2. Atualizar `auth.spec.md` e `organizations.spec.md` com comportamento de redirect e provisionamento.
+
 # CHECKPOINT - 2.2-D — Better Auth Operational Consolidation
 
 Data: 2026-05-24

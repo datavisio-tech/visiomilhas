@@ -33,6 +33,12 @@ Decisao alvo:
 - Continuar a redução incremental das superfícies de leitura e registrar readiness para remoção futura somente com fallback near-zero.
 - Tratar o fake adapter como candidato a dev/test-only apenas após a confirmação de near-zero no runtime.
 
+## Onboarding 2.3-C — Initial User Onboarding Flow
+
+- Adicionado: página `/onboarding` e server action para provisionamento inicial idempotente (organization + default program + program_account).
+- Comportamento: ao primeiro login o sistema cria uma `organization` no DB administrativo e um `loyalty_program` + `program_account` no app DB; usuários sem organização são direcionados ao `/onboarding`.
+- Observabilidade mínima: registrar eventos `onboarding_started`, `onboarding_completed` e `onboarding_failed` via `auth-observability`/logs.
+
 ## Readiness Summary (2026-05-24)
 
 - O que foi estabilizado: boundary de leitura hardened por padrão; matriz operacional e `auth-observability` registram fallback e readiness score.

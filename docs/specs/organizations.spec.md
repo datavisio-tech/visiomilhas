@@ -23,6 +23,12 @@ Objetivo:
 - Próximos passos: consolidar contrato de account/ownership, remover `orgSlug` das mutações restantes e medir fallback por superfície antes de retirar o fake adapter.
 - Seguir reduzindo organizationId apenas em caminhos já hardened, sem abrir novos contratos.
 
+## Onboarding 2.3-C — Initial User Onboarding Flow
+
+- Readiness onboarding: implementado provisionamento idempotente de organização pessoal e conta app para novos usuários.
+- O fluxo cria uma `organization` administratively e um programa + conta no app DB, mantendo ownership vinculada ao `global_user`.
+- Risco operacional: validar em staging para assegurar que não haja duplicação de slug ou conflitos de FK entre adm/app DBs.
+
 Decisao alvo:
 
 - Experiencia principal de conta/pessoa.

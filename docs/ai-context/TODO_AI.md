@@ -150,6 +150,12 @@ Decisões registradas:
 - O fake adapter não vira dev/test-only oficialmente antes de o runtime estabilizar.
 - A saída é incremental e reversível por superfície.
 
+## 2.3-C — Initial User Onboarding Flow
+
+- Implementar `/onboarding` com server action para criação idempotente de organização pessoal e conta app.
+- Integrar provisionamento não-blocking na resolução de sessão e redirecionamento server-side para onboarding quando apropriado.
+- Validar em staging com Google OAuth e monitorar `auth-observability` para erros de provisionamento.
+
 ## 2.1-B — auth helpers reais e provider-agnostic
 
 - Implementar helpers reais para AuthContext, OwnershipContext e SessionContext.

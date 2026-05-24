@@ -179,6 +179,11 @@ Regra obrigatória desta fase:
 - Server Actions devem chamar helpers de auth/ownership no inicio.
 - Actions devem ser pequenas e sem conhecimento de auth provider.
 
+## Onboarding e provisionamento inicial
+
+- A resolução de sessão pode acionar um provisionamento idempotente não-blocking (criação de `global_user`, `organization` e recursos iniciais do app) quando detectado primeiro login.
+- O provisionamento não deve bloquear a experiência de login; erros devem ser logados e tratados como observabilidade (não lançar para o usuário).
+- Rotas protegidas devem redirecionar server-side para `/onboarding` quando o usuário estiver autenticado, mas não possuir organização pessoal criada.
 ## Estrategia de repositories futura
 
 - Repositories devem operar com contexto autorizado, nao com parametros de UX.

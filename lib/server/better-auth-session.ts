@@ -80,7 +80,23 @@ export async function resolveBetterAuthSessionContext(
   try {
     const email = session?.user?.email;
     if (email) {
-      await ensureGlobalUser(email, session.user?.id ?? null, session.user?.provider ?? null);
+      const globalUserId = await ensureGlobalUser(
+        email,
+        session.user?.id ?? null,
+        session.user?.provider ?? null,
+      );
+
+      // Ensure initial organization and app account exist for new users.
+      if (globalUserId) {
+        const { ensureInitialOrganizationAndAccount } = await import("./onboarding");
+        try {
+          await ensureInitialOrganizationAndAccount(globalUserId, email);
+        } catch (innerErr) {
+          // Swallow to keep auth resilient; observability elsewhere.
+          // eslint-disable-next-line no-console
+          console.warn("ensureInitialOrganizationAndAccount failed:", innerErr instanceof Error ? innerErr.message : String(innerErr));
+        }
+      }
     }
   } catch (err) {
     // Swallow errors to keep auth resilient; observability should record this elsewhere.

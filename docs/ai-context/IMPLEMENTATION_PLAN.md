@@ -42,6 +42,12 @@ Fase 2.2-J: AI Governance Versioning
 - A estratégia de tag atual foi preservada para evitar complexidade desnecessária.
 - Próximo passo: publicar a correção em PR e somente depois considerar o primeiro dispatch controlado.
 
+## 2.3-C — Initial User Onboarding Flow
+
+- Implementar `/onboarding` com server action para provisionamento idempotente de organização pessoal (adm DB) e recursos iniciais no app DB (program + account).
+- Integrar provisionamento não-blocking na resolução de sessão e redirecionamentos server-side quando usuário autenticado não possui organização.
+- Não aplicar migrations nem alterar infra; tudo deve usar tabelas existentes e ser idempotente.
+
 Atualização 1.3.14:
 
 - Consolidação do motor FIFO puro/in-memory em `lib/services/movements.ts` com testes unitários em `lib/services/__tests__/movements.test.ts`.
