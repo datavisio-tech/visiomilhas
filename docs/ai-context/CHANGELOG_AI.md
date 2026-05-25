@@ -141,25 +141,31 @@ Próxima etapa recomendada:
 
 Objetivo:
 
-- Consolidar Better Auth como caminho primário de sessão, mantendo fallback transitional observável e rollback simples.
 
 Resultado desta etapa:
 
-- `resolveControlledSessionContext()` passou a priorizar Better Auth como fonte operacional principal e registrar fallback com origem, motivo e timestamp.
-- As mutações migradas passam a enviar rótulos explícitos de origem para a telemetria de fallback.
-- O fallback continua disponível para desenvolvimento local, testes e recovery controlado, sem remoção total imediata.
-- A documentação da fase foi alinhada para registrar critérios futuros de remoção do fallback.
 
 Decisões registradas:
 
-- Better Auth é primário operacional, mas o rollback precisa continuar simples.
-- O fake adapter permanece transitional até a estabilidade e a observabilidade indicarem que a redução final é segura.
-- Não houve mudança de schema, deploy ou middleware global.
 
 Próxima etapa recomendada:
 
 1. Continuar a migração das rotas restantes uma por vez e manter a telemetria de fallback perto de zero.
+## 2026-05-24 — Fase 2.4-D — Bootstrap Guard Better Auth (2.4-D)
 
+Objetivo:
+
+- Implementar um guard resiliente no bootstrap do Better Auth para evitar crash runtime e 500 vazio quando variaveis de ambiente faltam ou sao invalidas.
+
+Resultado desta etapa:
+
+- `lib/auth.ts` captura falhas de bootstrap e exporta um placeholder operacional sem lançar ao ser importado.
+- `app/api/auth/[...all]/route.ts` responde com JSON 503 controlado quando o auth esta indisponivel.
+- `lib/server/auth-observability.ts` passou a expor novos códigos de evento relacionados ao bootstrap e runtime OAuth.
+
+Proxima etapa recomendada:
+
+1. Provisionar variaveis de ambiente em staging e validar o fluxo OAuth ponta-a-ponta (login, callback, session persistida, logout, reopen, refresh).
 ## 2026-05-24 — Fase 2.2-C — Ownership Hardening
 
 Objetivo:

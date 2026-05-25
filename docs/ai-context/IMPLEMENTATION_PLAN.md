@@ -83,6 +83,19 @@ Fase 2.2-J: AI Governance Versioning
 - Manter Better Auth dominante e o fallback recovery-only preservado.
 - Evitar redesign, middleware global, infraestrutura, RBAC e mudanças de contrato além da entrada pública de sign-in.
 
+## 2.4-D — Better Auth Bootstrap Guard & Operational Recovery
+
+- Implementar guard mínimo em `lib/auth.ts` para capturar falhas de bootstrap sem lançar durante import.
+- Ajustar `app/api/auth/[...all]/route.ts` para responder JSON 503 controlado quando o auth estiver indisponivel.
+- Expandir `lib/server/auth-observability.ts` com códigos de evento: `AUTH_BOOTSTRAP_FAILED`, `AUTH_ENV_INVALID`, `OAUTH_RUNTIME_ERROR`.
+- Validar browser flows localmente e em staging após provisionar variaveis de ambiente.
+
+Critérios de aceite:
+
+- Runtime não gera mais 500 vazio.
+- Falhas de bootstrap viram estado operacional explícito e evento de telemetria.
+- Better Auth continua dominante quando envs corretos estiverem presentes.
+
 Atualização 1.3.14:
 
 - Consolidação do motor FIFO puro/in-memory em `lib/services/movements.ts` com testes unitários em `lib/services/__tests__/movements.test.ts`.

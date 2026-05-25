@@ -71,6 +71,16 @@ Próxima etapa recomendada:
 
 Data: 2026-05-24
 
+
+### 2026-05-24 — 2.4-D
+
+- Implementado bootstrap guard no `lib/auth.ts` para evitar crashes por env ausente.
+- Ajustada rota `app/api/auth/[...all]/route.ts` para responder 503 JSON quando auth estiver indisponivel.
+- Telemetria atualizada com novos códigos de evento (AUTH_BOOTSTRAP_FAILED, AUTH_ENV_INVALID, OAUTH_RUNTIME_ERROR).
+
+Próximos passos:
+
+1. Provisionar env em staging e validar fluxo OAuth ponta-a-ponta.
 - Branch atual: `main`.
 - Objetivo: consolidar o versionamento oficial do operating model, skills e agents.
 - Ações tomadas: `AI_OPERATING_MODEL.md` passou a declarar `AI_OPERATING_MODEL_VERSION=2.2-I`, baseline ativa, matriz de compatibilidade e regras de drift; docs centrais passaram a referenciar essa baseline.

@@ -13,6 +13,12 @@ Concluído nesta etapa:
 
 - O workflow foi renomeado para forçar reindexação pelo GitHub Actions.
 
+## 2.4-D — Better Auth Bootstrap Guard & Operational Recovery
+
+- Implementar guard mínimo em `lib/auth.ts` para evitar crash runtime quando variaveis de ambiente estiverem ausentes.
+- Ajustar `app/api/auth/[...all]/route.ts` para retornar JSON 503 controlado enquanto o auth estiver indisponivel.
+- Validar browser flows localmente e em staging apos provisionar envs.
+
 ## 1.3.35 — alinhamento arquitetural IA-First
 
 - Registrar as respostas arquiteturais de produto no contexto operacional.
