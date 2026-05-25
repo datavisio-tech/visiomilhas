@@ -97,10 +97,12 @@ Próximos passos:
 - Migration ADM criada para as tabelas Better Auth (ba_users, ba_sessions, ba_accounts, ba_verification).
 - Schema runtime alinhado aos campos do Better Auth (ids em string, tokens, timestamps, verified flags).
 - Observabilidade estendida com eventos de tabela/migration/persistência.
+- Migration aplicada manualmente no banco ADM local; tabelas confirmadas via `information_schema`.
+- Bloqueio atual: `redirect_uri_mismatch` no Google OAuth ao validar login em browser.
 
 Próximos passos:
 
-1. Aplicar a migration no banco ADM e validar o fluxo OAuth ponta-a-ponta no browser.
+1. Ajustar URIs de callback no Google Console para o host atual e repetir o fluxo OAuth ponta-a-ponta no browser.
 - Branch atual: `main`.
 - Objetivo: consolidar o versionamento oficial do operating model, skills e agents.
 - Ações tomadas: `AI_OPERATING_MODEL.md` passou a declarar `AI_OPERATING_MODEL_VERSION=2.2-I`, baseline ativa, matriz de compatibilidade e regras de drift; docs centrais passaram a referenciar essa baseline.

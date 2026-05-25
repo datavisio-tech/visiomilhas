@@ -114,6 +114,10 @@ Critérios de aceite:
 - Expandir observabilidade para eventos de tabela/migration/persistência.
 - Validar login, callback, sessão persistida, logout, refresh e reopen em staging após aplicar migration.
 
+Observação operacional:
+
+- Se o OAuth falhar com `redirect_uri_mismatch`, ajustar os URIs de callback no Google Console antes de repetir a validação.
+
 Critérios de aceite:
 
 - Tabelas Better Auth provisionadas no ADM.

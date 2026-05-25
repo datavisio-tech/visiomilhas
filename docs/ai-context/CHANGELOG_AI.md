@@ -193,12 +193,17 @@ Objetivo:
 Resultado desta etapa:
 
 - Migration ADM criada com tabelas `ba_users`, `ba_sessions`, `ba_accounts`, `ba_verification`.
+- Migration aplicada manualmente no banco ADM local e tabelas confirmadas via `information_schema`.
 - `lib/server/better-auth-schema.ts` alinhado aos campos reais do schema Better Auth.
 - Observabilidade expandida para eventos de tabela/migration/persistência.
 
+Bloqueio atual:
+
+- OAuth não completou no browser por `redirect_uri_mismatch` no Google Console (necessário ajustar URIs de callback para o host atual).
+
 Próxima etapa recomendada:
 
-1. Aplicar a migration em staging e validar login, callback, sessão persistida, logout, refresh e reopen browser.
+1. Ajustar URIs de callback no Google Console, aplicar migration em staging e validar login, callback, sessão persistida, logout, refresh e reopen browser.
 ## 2026-05-24 — Fase 2.2-C — Ownership Hardening
 
 Objetivo:

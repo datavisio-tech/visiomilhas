@@ -30,6 +30,7 @@ Concluído nesta etapa:
 - Criar migration ADM para `ba_users`, `ba_sessions`, `ba_accounts`, `ba_verification`.
 - Aplicar a migration em staging (sem tocar produção) e validar persistência real do OAuth.
 - Confirmar login, callback, logout, refresh e reopen no browser sem loops.
+- Ajustar URIs de callback no Google Console para evitar `redirect_uri_mismatch` no host atual.
 
 ## 1.3.35 — alinhamento arquitetural IA-First
 
