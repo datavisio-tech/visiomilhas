@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
+import betterAuthSchema from "./server/better-auth-schema";
 
 import { admDb } from "../db/adm/client";
 import { resolveBetterAuthEnvironment } from "./server/better-auth-config";
@@ -12,6 +13,11 @@ export const auth: any = (() => {
     return betterAuth({
       database: drizzleAdapter(admDb(), {
         provider: "pg",
+        // Pass explicit schema mapping to avoid runtime errors where the
+        // adapter cannot find expected models (e.g. `verification`). This is
+        // a minimal, isolated mapping that prevents 'model not found' errors
+        // while preserving the existing DB and migrations.
+        schema: betterAuthSchema as any,
       }),
       baseURL: betterAuthEnvironment.baseURL,
       secret: betterAuthEnvironment.secret,

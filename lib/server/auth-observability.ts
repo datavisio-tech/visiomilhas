@@ -13,6 +13,13 @@ export type AuthEventCode =
   | "AUTH_ENV_INVALID"
   | "OAUTH_RUNTIME_ERROR";
 
+// Additional adapter-related event codes
+export type AdapterAuthEventCode =
+  | "AUTH_ADAPTER_SCHEMA_INVALID"
+  | "AUTH_ADAPTER_RUNTIME_ERROR";
+
+// Extend AuthEventCode union via type assertion usage (we'll accept AdapterAuthEventCode values at runtime)
+
 export type OnboardingEventCode =
   | "ONBOARDING_STARTED"
   | "ONBOARDING_COMPLETED"
