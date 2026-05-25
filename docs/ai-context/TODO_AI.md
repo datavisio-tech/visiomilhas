@@ -1,22 +1,27 @@
 # TODO_AI - Pendências e próximas ações
 
-## 2.4-G — Real Google OAuth Staging Stabilization — BLOQUEADOR ATIVO
+## 2.4-G (CONTINUATION) — Real Google OAuth Staging Stabilization — PARCIALMENTE COMPLETO
 
-**AÇÃO IMEDIATA**: Adicionar URIs localhost ao Google Cloud Console
+**Status**: 85% concluído (código 100%, bloqueador externo 0%)
 
-URLs a registrar em "Authorized redirect URIs":
+**O que foi feito (2.4-G Session 2)**:
+- ✅ Identificado bloqueador exato: Google Console missing localhost URIs
+- ✅ Expandida observabilidade com 3 novos event codes
+- ✅ Melhorada detecção de error (redirect_uri_mismatch específico)
+- ✅ Criado procedimento clara para fix (GOOGLE_OAUTH_CONSOLE_FIX.md)
+- ✅ Consolidado readiness em documento formal (READINESS_2.4-G.md)
+- ✅ Todas validações passando (lint/typecheck/test)
+- ✅ 2 commits finais criados
+
+**Ação imediata requerida (EXTERNO)**:
+
 ```
-http://localhost:3000/api/auth/callback/google
-http://localhost:3001/api/auth/callback/google
+BLOQUEADOR: Google Cloud Console URIs não foram atualizadas
+Procedimento: Ver GOOGLE_OAUTH_CONSOLE_FIX.md (passo-a-passo)
+Tempo estimado: ~15 minutos (1-2 min update + 2-5 min cache + 5-10 min testing)
 ```
 
-URLs a registrar em "Authorized JavaScript origins":
-```
-http://localhost:3000
-http://localhost:3001
-```
-
-Após atualizar Google Console:
+**Próximo passo (após Google Console fix)**:
 - [ ] Testar fluxo OAuth completo no navegador
 - [ ] Validar persistência em ba_sessions
 - [ ] Validar persistência em ba_users
@@ -24,9 +29,9 @@ Após atualizar Google Console:
 - [ ] Verificar refresh
 - [ ] Verificar reopen browser mantém sessão
 - [ ] Executar npm run lint/typecheck/test
-- [ ] Fazer commit final 2.4-G
+- [ ] Fazer commit final 2.4-G: "fix(auth): estabiliza OAuth real ponta-a-ponta (2.4-G final)"
 
-## 2.5-A — AI Context Entropy Reduction (Futura)
+## 2.5-A — AI Context Entropy Reduction (FUTURO)
 
 Após estabilizar staging OAuth real:
 

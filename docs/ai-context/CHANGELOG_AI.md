@@ -1,52 +1,71 @@
 # CHANGELOG_AI
 
+# CHANGELOG_AI
+
+## 2026-05-25 — Fase 2.4-G (Continuação) — Real Google OAuth Runtime Stabilization
+
+Continuação da fase 2.4-G iniciada em sessão anterior.
+
+Objetivos desta sessão:
+
+- Consolidar readiness operacional
+- Documentar procedimento de fix do bloqueador
+- Validar todas as mudanças de código anterior
+- Preparar para próxima sessão (Google Console update)
+
+Resultado desta etapa (Session 2):
+
+- ✅ Procedimento Google Console Fix documentado em detalhes (GOOGLE_OAUTH_CONSOLE_FIX.md)
+- ✅ Readiness consolidado em documento formal (READINESS_2.4-G.md) — 85% pronto
+- ✅ All code quality validations passing (lint/typecheck/test 57/57)
+- ✅ Bloqueador exatamente identificado: Google Console missing localhost URIs
+- ✅ Próximas ações claramente documentadas
+- ✅ 2 commits finais criados com documentação
+
+Bloqueador Residual (Externo):
+
+**Status**: ⏳ PENDING EXTERNAL ACTION  
+
+**Problema**:
+- Google Cloud Console não tem URIs localhost registradas
+- Error: "Erro 400: redirect_uri_mismatch"
+
+**Solução**:
+- Adicionar 2 URIs a "Authorized redirect URIs": localhost:3000 e localhost:3001
+- Adicionar 2 origens a "Authorized JavaScript origins": localhost:3000 e localhost:3001
+- Aguardar 2+ minutos para propagação
+- Testar fluxo OAuth no navegador
+
+**Tempo estimado**: ~15 minutos total
+
+Roadmap de 2.4-G:
+
+```
+Session 1 (Anterior):
+  - Auditoria OAuth ✅
+  - Observabilidade expandida ✅
+  - Error detection melhorada ✅
+  - Documentação inicial ✅
+  - Bloqueador identificado ✅
+
+Session 2 (Agora):
+  - Procedimento fix documentado ✅
+  - Readiness consolidado ✅
+  - Validações finais ✅
+  - Preparado para fix ✅
+
+Session 3 (Próxima):
+  - Google Console update (MANUAL)
+  - Validação OAuth ponta-a-ponta
+  - Validação persistência banco
+  - Commit final 2.4-G
+
+Session 4 (Futuro):
+  - Staging real com usuário teste
+  - Primeiro deploy controlado
+```
+
 ## 2026-05-25 — Fase 2.4-G — Real Google OAuth Staging Stabilization
-
-Objetivo:
-
-- Resolver `redirect_uri_mismatch` no Google OAuth Console.
-- Estabilizar fluxo OAuth ponta-a-ponta (login, callback, onboarding, logout, refresh, reopen).
-- Expandir observabilidade de OAuth para rastrear callback, persistência de sessão e mismatches.
-
-Resultado desta etapa:
-
-- ✅ Database: Confirmado que todas 4 tabelas Better Auth existem em `controle_adm_saas_datavisio` (ba_users, ba_sessions, ba_accounts, ba_verification).
-- ✅ Runtime: Confirmado que redirect URI gerado está correto (`http://localhost:3000/api/auth/callback/google`).
-- ✅ Observabilidade: Adicionados event codes `OAUTH_REDIRECT_URI_MISMATCH`, `OAUTH_CALLBACK_SUCCESS`, `SESSION_PERSISTENCE_CONFIRMED`.
-- ✅ Erro Detection: Melhorada detecção específica de `redirect_uri_mismatch` na rota de auth.
-- ✅ Environment Tracking: Todos os eventos agora rastreiam `environmentTag`, `timestamp` e detalhes sanitizados.
-- 📋 Google Console: Identificado bloqueador: URIs localhost NÃO estão registradas no Google Console.
-
-Bloqueador Identificado:
-
-**URI esperada no localhost:**
-```
-http://localhost:3000/api/auth/callback/google
-```
-
-**URI registrada (produção):**
-```
-https://visiomilhas.visiochat.cloud/api/auth/callback/google
-```
-
-**Ação necessária:**
-1. Abrir Google Cloud Console
-2. Adicionar as seguintes URIs ao "Authorized redirect URIs":
-   - `http://localhost:3000/api/auth/callback/google`
-   - `http://localhost:3001/api/auth/callback/google`
-3. Adicionar às "Authorized JavaScript origins":
-   - `http://localhost:3000`
-   - `http://localhost:3001`
-
-Próxima etapa recomendada:
-
-1. Atualizar Google Cloud Console com URIs localhost.
-2. Testar fluxo OAuth completo no navegador (login Google, callback, onboarding, logout, refresh, reopen).
-3. Validar persistência em `ba_sessions` e `ba_users`.
-4. Executar validações finais (lint/typecheck/test).
-5. Fazer commit final e preparar para staging real.
-
-## 2026-05-24 — Fase 2.4-B — Real Interface Validation & Browser Runtime Audit
 
 Objetivo:
 

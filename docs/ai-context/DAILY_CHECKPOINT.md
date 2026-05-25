@@ -77,16 +77,28 @@ Status Git final:
 - Staged: (nada, já commitado)
 - Untracked: `.claude/` (como esperado)
 
-Pendências:
+Pendências Resolvidas:
 
-1. ✋ **BLOQUEADOR**: Atualizar Google Cloud Console com URIs localhost
-2. ⏳ Testar fluxo OAuth completo no navegador após fix do Google Console
-3. ⏳ Validar persistência em ba_sessions e ba_users
-4. ⏳ Fazer commit final com sucesso OAuth real
+1. ✅ Documentação procedimento Google Console fix criada
+2. ✅ Readiness consolidado em documento formal
+3. ✅ Commits finais criados e validados
+4. ✅ Todas validações passando (lint/typecheck/test)
+
+Bloqueador Residual:
+
+1. ⏳ **EXTERNO**: Google Cloud Console URIs não foram atualizadas (requer acesso manual)
+   - Esperado: Adicionar http://localhost:3000/api/auth/callback/google e http://localhost:3001/api/auth/callback/google
+   - Resultado: Ainda recebendo erro 400 redirect_uri_mismatch do Google
 
 Próxima etapa recomendada:
 
-- Na próxima sessão: adicionar URIs localhost ao Google Cloud Console, testar fluxo OAuth ponta-a-ponta, e validar persistência de sessão no banco antes de avançar para staging real.
+**Próxima sessão**:
+1. Executar procedimento em `GOOGLE_OAUTH_CONSOLE_FIX.md`
+2. Esperar 2+ minutos para propagação
+3. Testar fluxo OAuth ponta-a-ponta no navegador
+4. Validar persistência em ba_sessions e ba_users
+5. Fazer commit final: `git commit -m "fix(auth): estabiliza OAuth real ponta-a-ponta (2.4-G final)"`
+6. Preparar staging com usuário real de teste
 
 Etapa executada:
 
