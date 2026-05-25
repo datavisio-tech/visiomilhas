@@ -1,5 +1,51 @@
 # CHANGELOG_AI
 
+## 2026-05-25 — Fase 2.4-G — Real Google OAuth Staging Stabilization
+
+Objetivo:
+
+- Resolver `redirect_uri_mismatch` no Google OAuth Console.
+- Estabilizar fluxo OAuth ponta-a-ponta (login, callback, onboarding, logout, refresh, reopen).
+- Expandir observabilidade de OAuth para rastrear callback, persistência de sessão e mismatches.
+
+Resultado desta etapa:
+
+- ✅ Database: Confirmado que todas 4 tabelas Better Auth existem em `controle_adm_saas_datavisio` (ba_users, ba_sessions, ba_accounts, ba_verification).
+- ✅ Runtime: Confirmado que redirect URI gerado está correto (`http://localhost:3000/api/auth/callback/google`).
+- ✅ Observabilidade: Adicionados event codes `OAUTH_REDIRECT_URI_MISMATCH`, `OAUTH_CALLBACK_SUCCESS`, `SESSION_PERSISTENCE_CONFIRMED`.
+- ✅ Erro Detection: Melhorada detecção específica de `redirect_uri_mismatch` na rota de auth.
+- ✅ Environment Tracking: Todos os eventos agora rastreiam `environmentTag`, `timestamp` e detalhes sanitizados.
+- 📋 Google Console: Identificado bloqueador: URIs localhost NÃO estão registradas no Google Console.
+
+Bloqueador Identificado:
+
+**URI esperada no localhost:**
+```
+http://localhost:3000/api/auth/callback/google
+```
+
+**URI registrada (produção):**
+```
+https://visiomilhas.visiochat.cloud/api/auth/callback/google
+```
+
+**Ação necessária:**
+1. Abrir Google Cloud Console
+2. Adicionar as seguintes URIs ao "Authorized redirect URIs":
+   - `http://localhost:3000/api/auth/callback/google`
+   - `http://localhost:3001/api/auth/callback/google`
+3. Adicionar às "Authorized JavaScript origins":
+   - `http://localhost:3000`
+   - `http://localhost:3001`
+
+Próxima etapa recomendada:
+
+1. Atualizar Google Cloud Console com URIs localhost.
+2. Testar fluxo OAuth completo no navegador (login Google, callback, onboarding, logout, refresh, reopen).
+3. Validar persistência em `ba_sessions` e `ba_users`.
+4. Executar validações finais (lint/typecheck/test).
+5. Fazer commit final e preparar para staging real.
+
 ## 2026-05-24 — Fase 2.4-B — Real Interface Validation & Browser Runtime Audit
 
 Objetivo:

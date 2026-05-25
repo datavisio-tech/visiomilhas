@@ -1,4 +1,92 @@
-# DAILY_CHECKPOINT — 2026-05-24 — 2.4-B Real Interface Validation & Browser Runtime Audit
+# DAILY_CHECKPOINT — 2026-05-25 — 2.4-G Real Google OAuth Staging Stabilization
+
+Etapa executada:
+
+- Auditoria completa da configuração Google OAuth.
+- Confirmação de tabelas Better Auth no banco ADM.
+- Expansão da observabilidade de OAuth com novos event codes.
+- Identificação e documentação de bloqueador (redirect_uri_mismatch).
+
+Branch atual:
+
+- `2.3-c-initial-onboarding-flow`
+
+Commits criados:
+
+- `8552c83` — feat(auth): expande observabilidade OAuth e detecta redirect_uri_mismatch (2.4-G)
+
+Arquivos alterados nesta etapa:
+
+- `lib/server/auth-observability.ts` (expandiu event codes e reportAuthEvent)
+- `app/api/auth/[...all]/route.ts` (melhorou detecção de OAUTH_REDIRECT_URI_MISMATCH)
+- `docs/ai-context/OAUTH_AUDIT_2.4-G.md` (novo arquivo de auditoria)
+- `docs/ai-context/CHANGELOG_AI.md` (registrou 2.4-G)
+- `apply-ba-migration.ts` (script auxiliar para verificação)
+- `check-ba-tables.ts` (script auxiliar para verificação)
+
+Validações executadas:
+
+- ✅ `npm run lint` — 0 errors/warnings
+- ✅ `npm run typecheck` — 0 errors
+- ✅ `npm run test` — 57/57 tests passing
+- ✅ `git diff --check` — apenas line ending warnings (Windows)
+
+Estado da Aplicação:
+
+- **localhost:3000** — ✅ Servidor Next.js rodando
+- **Sign-in page** — ✅ Carregando corretamente
+- **Google OAuth button** — ✅ Funcional e redirecionando
+- **Callback URI** — ✅ Correto: `http://localhost:3000/api/auth/callback/google`
+- **Better Auth tables** — ✅ Todas 4 tabelas existem no banco ADM
+
+Bloqueador Identificado:
+
+**Google Cloud Console não tem URIs localhost registradas**
+
+Esperado:
+```
+Authorized redirect URIs:
+- http://localhost:3000/api/auth/callback/google
+- http://localhost:3001/api/auth/callback/google
+- https://visiomilhas.visiochat.cloud/api/auth/callback/google
+```
+
+Registrado atualmente (apenas produção):
+```
+- https://visiomilhas.visiochat.cloud/api/auth/callback/google
+```
+
+Comandos executados:
+
+- `npm run db:preflight:test` (verificou banco de teste OK)
+- `npx tsx apply-ba-migration.ts` (confirmou tabelas Better Auth)
+- Browser: navegação para localhost:3000/sign-in e click no botão Google
+- `npm run lint && npm run typecheck && npm run test && git diff --check`
+- `git commit -m "feat(auth): expande observabilidade OAuth e detecta redirect_uri_mismatch (2.4-G)"`
+
+Comandos perigosos não executados:
+
+- Nenhuma migração de banco
+- Nenhuma seed de banco
+- Nenhum push/PR
+- Nenhum deploy
+
+Status Git final:
+
+- Working directory: CLEAN (após commit)
+- Staged: (nada, já commitado)
+- Untracked: `.claude/` (como esperado)
+
+Pendências:
+
+1. ✋ **BLOQUEADOR**: Atualizar Google Cloud Console com URIs localhost
+2. ⏳ Testar fluxo OAuth completo no navegador após fix do Google Console
+3. ⏳ Validar persistência em ba_sessions e ba_users
+4. ⏳ Fazer commit final com sucesso OAuth real
+
+Próxima etapa recomendada:
+
+- Na próxima sessão: adicionar URIs localhost ao Google Cloud Console, testar fluxo OAuth ponta-a-ponta, e validar persistência de sessão no banco antes de avançar para staging real.
 
 Etapa executada:
 

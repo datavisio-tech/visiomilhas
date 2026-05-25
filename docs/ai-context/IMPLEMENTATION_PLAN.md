@@ -98,6 +98,66 @@ Critérios de aceite:
 
 ## 2.4-E — Better Auth Drizzle Adapter Runtime Fix
 
+- Implementar schema mínimo para o adapter Drizzle e anexá-lo ao cliente admin.
+- Validar que o adapter não lança `model "verification" not found`.
+- Passar schema explicitamente ao `drizzleAdapter` como medida redundante.
+- Executar validação ponta-a-ponta de OAuth em staging real após migrations.
+
+## 2.4-F — Better Auth Database Provisioning & OAuth Persistence
+
+- Criar migration ADM para tabelas `ba_users`, `ba_sessions`, `ba_accounts`, `ba_verification`.
+- Aplicar migration em staging e validar persistência real do OAuth.
+- Confirmar login, callback, logout, refresh e reopen no browser sem loops.
+- Ajustar Google Console se necessário evitar `redirect_uri_mismatch`.
+
+## 2.4-G — Real Google OAuth Staging Stabilization & Observability Expansion
+
+Objetivo: Resolver bloqueador de OAuth e estabilizar callback ponta-a-ponta.
+
+Status: ✅ Parcialmente Completo (bloqueador identificado, em espera de Google Console update)
+
+Itens Concluídos:
+
+- ✅ Database: Confirmado 4 tabelas Better Auth em ADM
+- ✅ Runtime: Callback URI gerado corretamente (`http://localhost:3000/api/auth/callback/google`)
+- ✅ Observabilidade: 3 novos event codes (OAUTH_REDIRECT_URI_MISMATCH, OAUTH_CALLBACK_SUCCESS, SESSION_PERSISTENCE_CONFIRMED)
+- ✅ Error Detection: Melhorada detecção de `redirect_uri_mismatch` na rota
+- ✅ Environment Tracking: Todos eventos rastreiam environment tag e timestamp
+
+Bloqueador Identificado:
+
+Google Cloud Console não tem URIs localhost registradas. Necessário adicionar:
+
+```
+Authorized redirect URIs:
+- http://localhost:3000/api/auth/callback/google
+- http://localhost:3001/api/auth/callback/google
+
+Authorized JavaScript origins:
+- http://localhost:3000
+- http://localhost:3001
+```
+
+Próxima Etapa:
+
+1. Atualizar Google Cloud Console com URIs localhost
+2. Testar fluxo OAuth completo no navegador
+3. Validar persistência em ba_sessions
+4. Fazer commit final com sucesso OAuth real
+5. Avançar para staging real com usuário de teste
+
+Critérios de aceite 2.4-G:
+
+- [ ] Google Console URIs atualizadas
+- [ ] Fluxo OAuth completo funcional (login → callback → onboarding → dashboard)
+- [ ] Logout funcional
+- [ ] Refresh funcional
+- [ ] Reopen browser mantém sessão
+- [ ] ba_sessions com dados reais
+- [ ] ba_users com dados reais
+- [ ] Sem 500 errors
+- [ ] Observabilidade rastreando eventos corretos
+
 - Adicionar mapeamento mínimo do schema esperado pelo adapter (`users`, `sessions`, `accounts`, `verification`) sem alterar o domínio.
 - Anexar o schema ao cliente Drizzle admin (`drizzle(pool, { schema })`) e passar o schema explicitamente ao `drizzleAdapter`.
 - Validar browser-first flows localmente e em staging após provisionar migrations/tabelas.

@@ -1,5 +1,52 @@
 # TODO_AI - Pendências e próximas ações
 
+## 2.4-G — Real Google OAuth Staging Stabilization — BLOQUEADOR ATIVO
+
+**AÇÃO IMEDIATA**: Adicionar URIs localhost ao Google Cloud Console
+
+URLs a registrar em "Authorized redirect URIs":
+```
+http://localhost:3000/api/auth/callback/google
+http://localhost:3001/api/auth/callback/google
+```
+
+URLs a registrar em "Authorized JavaScript origins":
+```
+http://localhost:3000
+http://localhost:3001
+```
+
+Após atualizar Google Console:
+- [ ] Testar fluxo OAuth completo no navegador
+- [ ] Validar persistência em ba_sessions
+- [ ] Validar persistência em ba_users
+- [ ] Verificar logout
+- [ ] Verificar refresh
+- [ ] Verificar reopen browser mantém sessão
+- [ ] Executar npm run lint/typecheck/test
+- [ ] Fazer commit final 2.4-G
+
+## 2.5-A — AI Context Entropy Reduction (Futura)
+
+Após estabilizar staging OAuth real:
+
+- [ ] Criar `/docs/ai-archive/`
+- [ ] Mover changelogs antigos para arquivo
+- [ ] Mover checkpoints antigos para arquivo
+- [ ] Arquivar decisões estabilizadas
+- [ ] Manter "quente": últimas fases, hotspots atuais, runtime atual
+
+## 3.x — Formalização de Use Cases (Futura)
+
+Não iniciar agora. Padrão futuro:
+
+```
+Server Action → UseCase → Repository
+API Route → UseCase → Repository
+```
+
+Pré-requisito: OAuth real estável em produção
+
 ## 1.3.34.3 — reindex do workflow manual por novo filename
 
 - Confirmar que `production-deploy-manual.yml` é o novo arquivo fonte do workflow de produção.
