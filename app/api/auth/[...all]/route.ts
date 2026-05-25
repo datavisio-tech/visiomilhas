@@ -57,14 +57,24 @@ if ((auth as any)?.__authOperationalDisabled) {
 			const message = err instanceof Error ? err.message : String(err);
 			const normalized = message.toLowerCase();
 			const isMissingTable = normalized.includes("relation") && normalized.includes("does not exist");
-			const errorCode = isMissingTable ? "AUTH_DB_TABLE_MISSING" : "OAUTH_RUNTIME_ERROR";
+			const isRedirectUriMismatch = normalized.includes("redirect_uri_mismatch") || normalized.includes("redirect uri");
+
+			let errorCode: "AUTH_DB_TABLE_MISSING" | "OAUTH_REDIRECT_URI_MISMATCH" | "OAUTH_RUNTIME_ERROR";
+			if (isMissingTable) {
+				errorCode = "AUTH_DB_TABLE_MISSING";
+			} else if (isRedirectUriMismatch) {
+				errorCode = "OAUTH_REDIRECT_URI_MISMATCH";
+			} else {
+				errorCode = "OAUTH_RUNTIME_ERROR";
+			}
 
 			reportAuthEvent({
 				level: "error",
 				code: errorCode,
-				message: isMissingTable
-					? "Auth database table missing during OAuth runtime"
-					: "Runtime error in OAuth handler",
+				message:
+					isMissingTable ? "Auth database table missing during OAuth runtime" :
+					isRedirectUriMismatch ? "OAuth redirect URI mismatch - check Google Console configuration" :
+					"Runtime error in OAuth handler",
 				details: { message },
 			});
 

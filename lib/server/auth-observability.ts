@@ -9,6 +9,9 @@ export type AuthEventCode =
   | "OAUTH_CALLBACK_FAILED"
   | "OAUTH_REDIRECT_LOOP"
   | "OAUTH_RUNTIME_STAGING_CHECK"
+  | "OAUTH_REDIRECT_URI_MISMATCH"
+  | "OAUTH_CALLBACK_SUCCESS"
+  | "SESSION_PERSISTENCE_CONFIRMED"
   | "AUTH_BOOTSTRAP_FAILED"
   | "AUTH_ENV_INVALID"
   | "OAUTH_RUNTIME_ERROR"
@@ -318,9 +321,16 @@ export function resetAuthObservabilityState(): void {
 }
 
 export function reportAuthEvent(event: AuthEvent): void {
+  const environmentTag = resolveRuntimeEnvironmentTag();
+
   const payload = {
     code: event.code,
-    details: event.details ?? {},
+    environment: environmentTag,
+    timestamp: new Date().toISOString(),
+    details: {
+      ...event.details,
+      // Never include tokens, cookies, secrets, passwords, or full payloads
+    },
   };
 
   if (event.level === "error") {
