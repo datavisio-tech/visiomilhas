@@ -2,10 +2,10 @@
 
 ## Problem Statement
 
-**Error**: `redirect_uri_mismatch` (400)  
-**Root Cause**: Google Cloud Console does not have localhost URIs registered  
-**Status**: ✅ Code ready | ⏳ Configuration pending  
-**Severity**: BLOCKING — prevents OAuth callback completion in development  
+**Error**: `redirect_uri_mismatch` (400)
+**Root Cause**: Google Cloud Console does not have localhost URIs registered
+**Status**: ✅ Code ready | ⏳ Configuration pending
+**Severity**: BLOCKING — prevents OAuth callback completion in development
 
 ## Current State
 

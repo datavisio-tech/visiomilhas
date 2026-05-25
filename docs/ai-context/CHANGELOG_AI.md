@@ -24,7 +24,7 @@ Resultado desta etapa (Session 2):
 
 Bloqueador Residual (Externo):
 
-**Status**: ⏳ PENDING EXTERNAL ACTION  
+**Status**: ⏳ PENDING EXTERNAL ACTION
 
 **Problema**:
 - Google Cloud Console não tem URIs localhost registradas

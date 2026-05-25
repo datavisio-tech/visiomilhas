@@ -1,8 +1,8 @@
 # 2.4-G Readiness Consolidation — Operational Status Report
 
-Generated: 2026-05-25  
-Phase: 2.4-G — Real Google OAuth Runtime Stabilization  
-Branch: 2.3-c-initial-onboarding-flow  
+Generated: 2026-05-25
+Phase: 2.4-G — Real Google OAuth Runtime Stabilization
+Branch: 2.3-c-initial-onboarding-flow
 
 ## 1. Readiness Assessment Matrix
 
@@ -26,7 +26,7 @@ Branch: 2.3-c-initial-onboarding-flow
 
 ### 2.1 Google OAuth Runtime
 
-**Status**: 🟡 Transitional  
+**Status**: 🟡 Transitional
 
 **What's Working**:
 - ✅ Client ID configured correctly
@@ -38,10 +38,10 @@ Branch: 2.3-c-initial-onboarding-flow
 - ✅ State parameter included for CSRF protection
 - ✅ Scope: email, profile, openid (correct)
 
-**Blocker**: 
+**Blocker**:
 - ❌ Google Cloud Console has NO localhost URIs registered
   - Expected: `http://localhost:3000/api/auth/callback/google`
-  - Expected: `http://localhost:3001/api/auth/callback/google`  
+  - Expected: `http://localhost:3001/api/auth/callback/google`
   - Registered: `https://visiomilhas.visiochat.cloud/api/auth/callback/google` (only)
   - Result: Google returns 400 redirect_uri_mismatch
 
@@ -55,7 +55,7 @@ Branch: 2.3-c-initial-onboarding-flow
 
 ### 2.2 Better Auth Database
 
-**Status**: 🟢 Stable  
+**Status**: 🟢 Stable
 
 **Verified**:
 - ✅ `ba_users` table exists, accessible
@@ -71,7 +71,7 @@ Branch: 2.3-c-initial-onboarding-flow
 
 ### 2.3 Onboarding Flow
 
-**Status**: 🟡 Transitional | Recovery-aware  
+**Status**: 🟡 Transitional | Recovery-aware
 
 **Workflow**:
 1. User authenticates via Google OAuth
@@ -96,7 +96,7 @@ Branch: 2.3-c-initial-onboarding-flow
 
 ### 2.4 Session Persistence
 
-**Status**: 🟢 Stable  
+**Status**: 🟢 Stable
 
 **Mechanism**:
 - Better Auth token stored in `ba_sessions` table
@@ -114,7 +114,7 @@ Branch: 2.3-c-initial-onboarding-flow
 
 ### 2.5 Runtime Hardening
 
-**Status**: 🟢 Stable  
+**Status**: 🟢 Stable
 
 **Protections**:
 - ✅ Bootstrap guard catches initialization errors
@@ -135,7 +135,7 @@ Branch: 2.3-c-initial-onboarding-flow
 
 ### 2.6 Observability
 
-**Status**: 🟢 Expanded  
+**Status**: 🟢 Expanded
 
 **New Event Codes** (2.4-G):
 - `OAUTH_REDIRECT_URI_MISMATCH` — Google console mismatch
@@ -168,12 +168,12 @@ Branch: 2.3-c-initial-onboarding-flow
 
 ### 2.7 Code Quality
 
-**Status**: 🟢 Stable  
+**Status**: 🟢 Stable
 
 **Validation Results**:
 ```
 npm run lint      ✅ 0 errors, 0 warnings
-npm run typecheck ✅ 0 errors  
+npm run typecheck ✅ 0 errors
 npm run test      ✅ 57 tests passing (11 files)
 git diff --check  ⚠️  LF/CRLF (Windows platform, non-blocking)
 ```
@@ -190,9 +190,9 @@ git diff --check  ⚠️  LF/CRLF (Windows platform, non-blocking)
 
 ### 2.8 Fallback State
 
-**Status**: 🟢 Recovery-only preserved  
+**Status**: 🟢 Recovery-only preserved
 
-**Current Mode**: 
+**Current Mode**:
 - Better Auth dominant (when available)
 - Fallback disabled in normal runtime
 - Fallback enabled only in recovery scenarios
@@ -222,10 +222,10 @@ git diff --check  ⚠️  LF/CRLF (Windows platform, non-blocking)
 
 ## 4. Blocking Issue Summary
 
-**Issue**: `redirect_uri_mismatch` from Google OAuth  
-**Cause**: Google Cloud Console missing localhost URIs  
-**Severity**: BLOCKING for OAuth callback completion  
-**Resolution Time**: ~15 minutes (1-2 min Google Console update + 2-5 min cache + 5-10 min testing)  
+**Issue**: `redirect_uri_mismatch` from Google OAuth
+**Cause**: Google Cloud Console missing localhost URIs
+**Severity**: BLOCKING for OAuth callback completion
+**Resolution Time**: ~15 minutes (1-2 min Google Console update + 2-5 min cache + 5-10 min testing)
 
 **Procedure**: See `GOOGLE_OAUTH_CONSOLE_FIX.md`
 
@@ -251,14 +251,14 @@ git diff --check  ⚠️  LF/CRLF (Windows platform, non-blocking)
 
 ## 6. Deployment Readiness
 
-**Current Status**: 🟡 Transitional  
-**Production Ready**: ⏳ After Google OAuth validation  
-**Staging Ready**: ⏳ After OAuth fix validation  
+**Current Status**: 🟡 Transitional
+**Production Ready**: ⏳ After Google OAuth validation
+**Staging Ready**: ⏳ After OAuth fix validation
 
-**Blocking**: External configuration (Google Console)  
-**Code Readiness**: ✅ 100%  
-**DB Readiness**: ✅ 100%  
-**Test Coverage**: ✅ 100% (57/57 passing)  
+**Blocking**: External configuration (Google Console)
+**Code Readiness**: ✅ 100%
+**DB Readiness**: ✅ 100%
+**Test Coverage**: ✅ 100% (57/57 passing)
 
 ## 7. Risk Assessment
 
@@ -274,7 +274,7 @@ git diff --check  ⚠️  LF/CRLF (Windows platform, non-blocking)
 
 ### Step 1: Google Console Fix (MANUAL)
 - Add http://localhost:3000/api/auth/callback/google
-- Add http://localhost:3001/api/auth/callback/google  
+- Add http://localhost:3001/api/auth/callback/google
 - Add http://localhost:3000 and http://localhost:3001 origins
 - Wait 2+ minutes
 
@@ -298,7 +298,7 @@ npm run dev
 ### Step 4: Final Validations
 ```bash
 npm run lint      # Should pass
-npm run typecheck # Should pass  
+npm run typecheck # Should pass
 npm run test      # Should have 57/57 passing
 ```
 
@@ -325,12 +325,12 @@ git commit -m "feat(auth): estabiliza OAuth real ponta-a-ponta (2.4-G final)"
 
 ## 10. Status Summary
 
-**Code**: ✅ READY  
-**Database**: ✅ READY  
-**Tests**: ✅ PASSING  
-**Environment**: ✅ CONFIGURED  
-**Documentation**: ✅ COMPLETE  
-**Observability**: ✅ EXPANDED  
-**Google Console**: ⏳ PENDING MANUAL UPDATE  
+**Code**: ✅ READY
+**Database**: ✅ READY
+**Tests**: ✅ PASSING
+**Environment**: ✅ CONFIGURED
+**Documentation**: ✅ COMPLETE
+**Observability**: ✅ EXPANDED
+**Google Console**: ⏳ PENDING MANUAL UPDATE
 
 **Overall Readiness**: 85% (blocked only by external configuration)
