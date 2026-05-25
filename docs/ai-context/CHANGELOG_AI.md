@@ -183,6 +183,22 @@ Resultado desta etapa:
 Próxima etapa recomendada:
 
 1. Provisionar e validar o banco (migrations) em staging e executar o fluxo OAuth real para confirmar callbacks e persistência de sessão.
+
+## 2026-05-25 — Fase 2.4-F — Better Auth Database Provisioning (2.4-F)
+
+Objetivo:
+
+- Provisionar as tabelas físicas do Better Auth e preparar a persistência real do OAuth.
+
+Resultado desta etapa:
+
+- Migration ADM criada com tabelas `ba_users`, `ba_sessions`, `ba_accounts`, `ba_verification`.
+- `lib/server/better-auth-schema.ts` alinhado aos campos reais do schema Better Auth.
+- Observabilidade expandida para eventos de tabela/migration/persistência.
+
+Próxima etapa recomendada:
+
+1. Aplicar a migration em staging e validar login, callback, sessão persistida, logout, refresh e reopen browser.
 ## 2026-05-24 — Fase 2.2-C — Ownership Hardening
 
 Objetivo:

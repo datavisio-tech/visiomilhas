@@ -107,6 +107,18 @@ Critérios de aceite:
 - Adapter Better Auth funcional sem erro de "model not found".
 - OAuth Google funcionando com callback e persistência de sessão.
 
+## 2.4-F — Better Auth Database Provisioning & OAuth Persistence
+
+- Criar migration ADM com as tabelas do Better Auth (`ba_users`, `ba_sessions`, `ba_accounts`, `ba_verification`).
+- Garantir que o schema runtime reflita os campos reais do Better Auth (ids string, tokens, timestamps, verification).
+- Expandir observabilidade para eventos de tabela/migration/persistência.
+- Validar login, callback, sessão persistida, logout, refresh e reopen em staging após aplicar migration.
+
+Critérios de aceite:
+
+- Tabelas Better Auth provisionadas no ADM.
+- OAuth Google funcional com persistência de sessão.
+
 Atualização 1.3.14:
 
 - Consolidação do motor FIFO puro/in-memory em `lib/services/movements.ts` com testes unitários em `lib/services/__tests__/movements.test.ts`.

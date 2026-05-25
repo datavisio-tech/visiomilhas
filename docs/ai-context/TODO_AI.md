@@ -25,6 +25,12 @@ Concluído nesta etapa:
 - Validar que o adapter não lança `model "verification" not found`.
 - Executar validação ponta-a-ponta de OAuth em staging real após migrations.
 
+## 2.4-F — Better Auth Database Provisioning & Real OAuth Persistence
+
+- Criar migration ADM para `ba_users`, `ba_sessions`, `ba_accounts`, `ba_verification`.
+- Aplicar a migration em staging (sem tocar produção) e validar persistência real do OAuth.
+- Confirmar login, callback, logout, refresh e reopen no browser sem loops.
+
 ## 1.3.35 — alinhamento arquitetural IA-First
 
 - Registrar as respostas arquiteturais de produto no contexto operacional.

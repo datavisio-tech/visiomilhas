@@ -1,9 +1,8 @@
 import {
   pgTable,
-  serial,
-  varchar,
+  text,
   timestamp,
-  integer,
+  boolean,
 } from "drizzle-orm/pg-core";
 
 // Minimal tables expected by @better-auth/drizzle-adapter.
@@ -11,31 +10,49 @@ import {
 // shapes required at runtime to avoid adapter schema lookup errors.
 
 export const ba_users = pgTable("ba_users", {
-  id: serial("id").primaryKey(),
-  email: varchar("email", { length: 255 }).notNull(),
-  name: varchar("name", { length: 255 }),
-  createdAt: timestamp("created_at"),
+  id: text("id").primaryKey(),
+  email: text("email").notNull(),
+  emailVerified: boolean("email_verified").notNull().default(false),
+  name: text("name").notNull(),
+  image: text("image"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
 });
 
 export const ba_sessions = pgTable("ba_sessions", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  expiresAt: timestamp("expires_at"),
-  createdAt: timestamp("created_at"),
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  token: text("token").notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
 });
 
 export const ba_accounts = pgTable("ba_accounts", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  provider: varchar("provider", { length: 255 }),
-  providerAccountId: varchar("provider_account_id", { length: 255 }),
+  id: text("id").primaryKey(),
+  providerId: text("provider_id").notNull(),
+  accountId: text("account_id").notNull(),
+  userId: text("user_id").notNull(),
+  accessToken: text("access_token"),
+  refreshToken: text("refresh_token"),
+  idToken: text("id_token"),
+  accessTokenExpiresAt: timestamp("access_token_expires_at"),
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+  scope: text("scope"),
+  password: text("password"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
 });
 
 export const ba_verification = pgTable("ba_verification", {
-  id: serial("id").primaryKey(),
-  token: varchar("token", { length: 255 }).notNull(),
-  expiresAt: timestamp("expires_at"),
-  identifier: varchar("identifier", { length: 255 }),
+  id: text("id").primaryKey(),
+  value: text("value").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  identifier: text("identifier").notNull(),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
 });
 
 // Export a schema object mapping model names to the table objects. The

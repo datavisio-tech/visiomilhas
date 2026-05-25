@@ -11,14 +11,12 @@ export type AuthEventCode =
   | "OAUTH_RUNTIME_STAGING_CHECK"
   | "AUTH_BOOTSTRAP_FAILED"
   | "AUTH_ENV_INVALID"
-  | "OAUTH_RUNTIME_ERROR";
-
-// Additional adapter-related event codes
-export type AdapterAuthEventCode =
+  | "OAUTH_RUNTIME_ERROR"
   | "AUTH_ADAPTER_SCHEMA_INVALID"
-  | "AUTH_ADAPTER_RUNTIME_ERROR";
-
-// Extend AuthEventCode union via type assertion usage (we'll accept AdapterAuthEventCode values at runtime)
+  | "AUTH_ADAPTER_RUNTIME_ERROR"
+  | "AUTH_DB_MIGRATION_REQUIRED"
+  | "AUTH_DB_TABLE_MISSING"
+  | "AUTH_SESSION_PERSISTENCE_FAILED";
 
 export type OnboardingEventCode =
   | "ONBOARDING_STARTED"
@@ -27,9 +25,19 @@ export type OnboardingEventCode =
   | "ONBOARDING_RECOVERY"
   | "ONBOARDING_DUPLICATE_PREVENTED";
 
-export type RuntimeEnvironmentTag = "development" | "staging" | "production" | "test" | "unknown";
+export type RuntimeEnvironmentTag =
+  | "development"
+  | "staging"
+  | "production"
+  | "test"
+  | "unknown";
 
-export type BrowserContextTag = "desktop" | "mobile" | "tablet" | "bot" | "unknown";
+export type BrowserContextTag =
+  | "desktop"
+  | "mobile"
+  | "tablet"
+  | "bot"
+  | "unknown";
 
 export type AuthEvent = {
   level: AuthEventLevel;
@@ -51,7 +59,10 @@ export type OnboardingMetricName =
   | "onboarding_recovery"
   | "onboarding_duplicate_prevented";
 
-export type AuthFallbackReason = "session-empty" | "session-error" | "fallback-disabled";
+export type AuthFallbackReason =
+  | "session-empty"
+  | "session-error"
+  | "fallback-disabled";
 
 export type AuthFallbackUsage = {
   source: string;
@@ -123,40 +134,63 @@ export function getAuthMetricSnapshot(): Record<AuthMetricName, number> {
 export function resolveRuntimeEnvironmentTag(): RuntimeEnvironmentTag {
   const explicit = process.env.VERCEL_ENV?.trim().toLowerCase();
 
-  if (explicit === "production" || explicit === "preview" || explicit === "development") {
+  if (
+    explicit === "production" ||
+    explicit === "preview" ||
+    explicit === "development"
+  ) {
     return explicit === "preview" ? "staging" : explicit;
   }
 
   const nodeEnv = process.env.NODE_ENV?.trim().toLowerCase();
-  if (nodeEnv === "production" || nodeEnv === "development" || nodeEnv === "test") {
+  if (
+    nodeEnv === "production" ||
+    nodeEnv === "development" ||
+    nodeEnv === "test"
+  ) {
     return nodeEnv;
   }
 
   return "unknown";
 }
 
-export function resolveBrowserContextTag(userAgent?: string | null): BrowserContextTag {
+export function resolveBrowserContextTag(
+  userAgent?: string | null,
+): BrowserContextTag {
   const normalized = userAgent?.trim().toLowerCase();
 
   if (!normalized) return "unknown";
-  if (normalized.includes("bot") || normalized.includes("crawler") || normalized.includes("spider")) {
+  if (
+    normalized.includes("bot") ||
+    normalized.includes("crawler") ||
+    normalized.includes("spider")
+  ) {
     return "bot";
   }
   if (normalized.includes("ipad") || normalized.includes("tablet")) {
     return "tablet";
   }
-  if (normalized.includes("mobi") || normalized.includes("android") || normalized.includes("iphone")) {
+  if (
+    normalized.includes("mobi") ||
+    normalized.includes("android") ||
+    normalized.includes("iphone")
+  ) {
     return "mobile";
   }
 
   return "desktop";
 }
 
-export function incrementOnboardingMetric(metricName: OnboardingMetricName): void {
+export function incrementOnboardingMetric(
+  metricName: OnboardingMetricName,
+): void {
   onboardingMetricCounts[metricName] += 1;
 }
 
-export function getOnboardingMetricSnapshot(): Record<OnboardingMetricName, number> {
+export function getOnboardingMetricSnapshot(): Record<
+  OnboardingMetricName,
+  number
+> {
   return { ...onboardingMetricCounts };
 }
 
@@ -210,13 +244,13 @@ export function getAuthFallbackSnapshot(): AuthFallbackSnapshot {
     firstSeenBySource: Object.fromEntries(
       fallbackUsageFirstSeenBySource.entries(),
     ),
-    lastSeenBySource: Object.fromEntries(fallbackUsageLastSeenBySource.entries()),
+    lastSeenBySource: Object.fromEntries(
+      fallbackUsageLastSeenBySource.entries(),
+    ),
   };
 }
 
-export function getAuthFallbackHotspots(
-  limit = 5,
-): AuthFallbackHotspot[] {
+export function getAuthFallbackHotspots(limit = 5): AuthFallbackHotspot[] {
   const snapshot = getAuthFallbackSnapshot();
 
   return Object.entries(snapshot.bySource)
@@ -226,7 +260,10 @@ export function getAuthFallbackHotspots(
       firstSeenAt: snapshot.firstSeenBySource[source] ?? "",
       lastSeenAt: snapshot.lastSeenBySource[source] ?? "",
     }))
-    .sort((left, right) => right.count - left.count || left.source.localeCompare(right.source))
+    .sort(
+      (left, right) =>
+        right.count - left.count || left.source.localeCompare(right.source),
+    )
     .slice(0, limit);
 }
 
@@ -238,7 +275,10 @@ export function getAuthOperationalMatrix(): AuthOperationalMatrix {
   const fallbackRate = totalObserved > 0 ? fallbackCount / totalObserved : 0;
   const readinessScore =
     totalObserved > 0
-      ? Math.max(0, Math.min(100, Math.round((validSessionCount / totalObserved) * 100)))
+      ? Math.max(
+          0,
+          Math.min(100, Math.round((validSessionCount / totalObserved) * 100)),
+        )
       : 0;
   const stabilizationLevel: AuthOperationalStabilizationLevel =
     totalObserved === 0
@@ -253,10 +293,8 @@ export function getAuthOperationalMatrix(): AuthOperationalMatrix {
     readinessScore,
     fallbackRate,
     fallbackCount,
-    stabilizedCoverage:
-      totalObserved > 0 ? 1 - fallbackRate : 0,
-    hardenedCoverage:
-      totalObserved > 0 && fallbackCount === 0 ? 1 : 0,
+    stabilizedCoverage: totalObserved > 0 ? 1 - fallbackRate : 0,
+    hardenedCoverage: totalObserved > 0 && fallbackCount === 0 ? 1 : 0,
     stabilizationLevel,
     hotspots: getAuthFallbackHotspots(5),
   };

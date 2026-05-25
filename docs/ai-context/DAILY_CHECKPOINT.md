@@ -91,6 +91,16 @@ Próximos passos:
 Próximos passos:
 
 1. Provisionar migrations/tabelas esperadas em staging e testar login Google real e callback.
+
+### 2026-05-25 — 2.4-F
+
+- Migration ADM criada para as tabelas Better Auth (ba_users, ba_sessions, ba_accounts, ba_verification).
+- Schema runtime alinhado aos campos do Better Auth (ids em string, tokens, timestamps, verified flags).
+- Observabilidade estendida com eventos de tabela/migration/persistência.
+
+Próximos passos:
+
+1. Aplicar a migration no banco ADM e validar o fluxo OAuth ponta-a-ponta no browser.
 - Branch atual: `main`.
 - Objetivo: consolidar o versionamento oficial do operating model, skills e agents.
 - Ações tomadas: `AI_OPERATING_MODEL.md` passou a declarar `AI_OPERATING_MODEL_VERSION=2.2-I`, baseline ativa, matriz de compatibilidade e regras de drift; docs centrais passaram a referenciar essa baseline.
