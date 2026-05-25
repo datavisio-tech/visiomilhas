@@ -166,6 +166,23 @@ Resultado desta etapa:
 Proxima etapa recomendada:
 
 1. Provisionar variaveis de ambiente em staging e validar o fluxo OAuth ponta-a-ponta (login, callback, session persistida, logout, reopen, refresh).
+
+## 2026-05-25 — Fase 2.4-E — Drizzle Adapter Schema Fix (2.4-E)
+
+Objetivo:
+
+- Corrigir o mismatch entre o adapter Drizzle do Better Auth e o schema esperado em runtime.
+
+Resultado desta etapa:
+
+- Adicionado `lib/server/better-auth-schema.ts` com mapeamento mínimo de modelos esperados (`users`, `sessions`, `accounts`, `verification`).
+- O cliente Drizzle admin (`db/adm/client.ts`) agora instala esse schema no `drizzle()` para permitir que o adapter resolva `db._.fullSchema`.
+- `lib/auth.ts` passa explicitamente o `schema` ao `drizzleAdapter` como medida redundante de segurança.
+- `lib/server/auth-observability.ts` ganhou códigos adicionais para eventos relacionados ao adapter.
+
+Próxima etapa recomendada:
+
+1. Provisionar e validar o banco (migrations) em staging e executar o fluxo OAuth real para confirmar callbacks e persistência de sessão.
 ## 2026-05-24 — Fase 2.2-C — Ownership Hardening
 
 Objetivo:

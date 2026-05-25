@@ -19,6 +19,12 @@ Concluído nesta etapa:
 - Ajustar `app/api/auth/[...all]/route.ts` para retornar JSON 503 controlado enquanto o auth estiver indisponivel.
 - Validar browser flows localmente e em staging apos provisionar envs.
 
+## 2.4-E — Better Auth Drizzle Adapter Runtime Fix
+
+- Implementar schema mínimo para o adapter e anexá-lo ao cliente Drizzle admin.
+- Validar que o adapter não lança `model "verification" not found`.
+- Executar validação ponta-a-ponta de OAuth em staging real após migrations.
+
 ## 1.3.35 — alinhamento arquitetural IA-First
 
 - Registrar as respostas arquiteturais de produto no contexto operacional.

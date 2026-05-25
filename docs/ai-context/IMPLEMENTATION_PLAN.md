@@ -96,6 +96,17 @@ Critérios de aceite:
 - Falhas de bootstrap viram estado operacional explícito e evento de telemetria.
 - Better Auth continua dominante quando envs corretos estiverem presentes.
 
+## 2.4-E — Better Auth Drizzle Adapter Runtime Fix
+
+- Adicionar mapeamento mínimo do schema esperado pelo adapter (`users`, `sessions`, `accounts`, `verification`) sem alterar o domínio.
+- Anexar o schema ao cliente Drizzle admin (`drizzle(pool, { schema })`) e passar o schema explicitamente ao `drizzleAdapter`.
+- Validar browser-first flows localmente e em staging após provisionar migrations/tabelas.
+
+Critérios de aceite:
+
+- Adapter Better Auth funcional sem erro de "model not found".
+- OAuth Google funcionando com callback e persistência de sessão.
+
 Atualização 1.3.14:
 
 - Consolidação do motor FIFO puro/in-memory em `lib/services/movements.ts` com testes unitários em `lib/services/__tests__/movements.test.ts`.

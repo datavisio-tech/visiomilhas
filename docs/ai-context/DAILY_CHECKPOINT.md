@@ -81,6 +81,16 @@ Data: 2026-05-24
 Próximos passos:
 
 1. Provisionar env em staging e validar fluxo OAuth ponta-a-ponta.
+
+### 2026-05-25 — 2.4-E
+
+- Corrigido mismatch do adapter Drizzle com Better Auth adicionando um schema mínimo em `lib/server/better-auth-schema.ts`.
+- Anexado o schema ao cliente Drizzle admin em `db/adm/client.ts` e passado explicitamente ao `drizzleAdapter` em `lib/auth.ts`.
+- Validações locais (lint/typecheck/test) passaram; testes unitários e de integração OK.
+
+Próximos passos:
+
+1. Provisionar migrations/tabelas esperadas em staging e testar login Google real e callback.
 - Branch atual: `main`.
 - Objetivo: consolidar o versionamento oficial do operating model, skills e agents.
 - Ações tomadas: `AI_OPERATING_MODEL.md` passou a declarar `AI_OPERATING_MODEL_VERSION=2.2-I`, baseline ativa, matriz de compatibilidade e regras de drift; docs centrais passaram a referenciar essa baseline.
