@@ -1,3 +1,40 @@
+# DAILY_CHECKPOINT — 2026-05-26 — 3.0-C Replay/Lineage Auditability Debugging — ✅ COMPLETE
+
+## Session 8 — FIFO Runtime Replay/Lineage Stabilization ✅ COMPLETE
+
+Etapa executada:
+
+- ✅ Removida a referência indevida a `consumedLots` de `acquireMiles()`
+- ✅ `buildFinancialTimeline()` passou a refletir a timeline materializada sem duplicar o registro de transferência
+- ✅ `buildFifoLineage()` passou a derivar lineage a partir da timeline e dos registros de transferência sem quebrar o replay
+- ✅ O teste de timeline foi alinhado ao evento de lote FIFO como parte do replay auditável
+
+Branch atual:
+
+- `2.3-c-initial-onboarding-flow`
+
+Commits criados nesta sessão:
+
+- pendente de commit local
+
+Validações executadas:
+
+- ✅ `npm exec vitest run lib/server/__tests__/financial-integrity.test.ts lib/services/__tests__/movements.test.ts lib/services/__tests__/movements.use-cases.test.ts app/app/purchases/__tests__/actions.purchase.test.ts app/app/sales/__tests__/actions.sale.test.ts app/app/transfers/__tests__/actions.transfer.test.ts`
+
+Estado atual:
+
+- **FIFO runtime** — ✅ acquisition, consumption e transfer funcionam novamente
+- **Replay auditável** — ✅ timeline/lineage fechados sem o bug de `consumedLots`
+- **Reports mínimos** — ✅ continuam sendo derivados do runtime persistido
+
+Pendência:
+
+- ⏳ registrar commit local quando o pacote de mudanças for fechado
+
+Próxima etapa:
+
+- Rodar validações ampliadas se necessário e consolidar o diff final
+
 # DAILY_CHECKPOINT — 2026-05-26 — 3.0-A Milhas Ledger Runtime Foundation
 
 ## Session 7 — FIFO Ledger Runtime Foundation ✅ COMPLETE

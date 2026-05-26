@@ -136,6 +136,8 @@ export type TransferRecord = {
   description?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
+  sourceEntryId?: number | null;
+  destinationEntryId?: number | null;
 };
 
 export type MovementsRepo = {
@@ -203,6 +205,9 @@ export function createMovementService(repo: MovementsRepo) {
       metadata: data.metadata,
       createdAt: new Date(),
       updatedAt: new Date(),
+      consumedLotId: null,
+      consumedPoints: null,
+      lotSnapshot: null,
     });
 
     const lot = await repo.insertLot({
@@ -318,21 +323,7 @@ export function createMovementService(repo: MovementsRepo) {
       metadata: data.metadata,
     });
 
-    const transferRecord = repo.insertTransfer
-      ? await repo.insertTransfer({
-          organizationId: data.organizationId,
-          fromAccountId: data.fromAccountId,
-          toAccountId: data.toAccountId ?? null,
-          pointsSent: data.amount,
-          pointsReceived: data.amount,
-          transferredAt: data.occurredAt ?? new Date(),
-          status: "posted",
-          description: data.description,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        })
-      : { id: -1 };
-
+    let destinationEntryId: number | null = null;
     if (destinationAccountId !== null) {
       const destinationEntry = await repo.insertEntry({
         organizationId: data.organizationId,
@@ -348,6 +339,8 @@ export function createMovementService(repo: MovementsRepo) {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
+
+      destinationEntryId = destinationEntry.id;
 
       await repo.insertLot({
         organizationId: data.organizationId,
@@ -365,6 +358,22 @@ export function createMovementService(repo: MovementsRepo) {
 
       await repo.updateProgramAccountBalance(destinationAccountId, data.amount);
     }
+    const transferRecord = repo.insertTransfer
+      ? await repo.insertTransfer({
+          organizationId: data.organizationId,
+          fromAccountId: data.fromAccountId,
+          toAccountId: data.toAccountId ?? null,
+          pointsSent: data.amount,
+          pointsReceived: data.amount,
+          transferredAt: data.occurredAt ?? new Date(),
+          status: "posted",
+          description: data.description,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          sourceEntryId: consumed.movementId ?? null,
+          destinationEntryId,
+        })
+      : { id: -1 };
 
     return {
       transferId: transferRecord.id,

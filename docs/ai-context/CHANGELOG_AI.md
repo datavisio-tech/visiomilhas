@@ -1,3 +1,34 @@
+# 2026-05-26 — Fase 3.0-C — FIFO Replay/Lineage Stabilization — ✅ COMPLETE
+
+### Status: runtime FIFO reparado e replay auditável alinhado ao modelo materializado
+
+**Achievements**:
+
+1. **FIFO Runtime Fix** — ✅ COMPLETE
+  - Removida a referência indevida a `consumedLots` de `acquireMiles()`
+  - A aquisição volta a operar sem `ReferenceError`
+
+2. **Audit Timeline** — ✅ COMPLETE
+  - `buildFinancialTimeline()` passa a refletir a linha materializada sem duplicar o registro de transferência
+  - O teste de replay foi alinhado para incluir o evento de lote FIFO como parte da timeline auditável
+
+3. **FIFO Lineage** — ✅ COMPLETE
+  - `buildFifoLineage()` continua derivando lineage do runtime persistido e dos registros de transferência sem romper o fluxo de leitura
+
+4. **Validation** — ✅ COMPLETE
+  - Suíte focada de runtime e actions ficou verde novamente
+
+### Runtime Readiness — 3.0-C
+
+| Capability | Status | Note |
+|-----------|--------|------|
+| FIFO purchase | ✅ | `acquireMiles()` estabilizado |
+| FIFO sale | ✅ | Continuidade preservada |
+| FIFO transfer | ✅ | Continua registrando lineage |
+| Replay timeline | ✅ | Materializada sem duplicidade conceitual |
+| FIFO lineage | ✅ | Derivada do runtime persistido |
+| Validation | ✅ | Suíte focada passou |
+
 # CHANGELOG_AI
 
 # 2026-05-26 — Fase 3.0-A — Milhas Ledger Runtime Foundation — ✅ COMPLETE

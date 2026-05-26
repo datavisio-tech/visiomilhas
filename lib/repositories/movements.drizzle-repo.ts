@@ -152,6 +152,8 @@ export function createDrizzleMovementsRepo(db = appDb()) {
         transferredAt: transfer.transferredAt ?? new Date(),
         status: transfer.status ?? "posted",
         description: transfer.description ?? undefined,
+        sourceEntryId: transfer.sourceEntryId ?? undefined,
+        destinationEntryId: transfer.destinationEntryId ?? undefined,
         createdAt: transfer.createdAt ?? new Date(),
         updatedAt: transfer.updatedAt ?? new Date(),
       } as any)
