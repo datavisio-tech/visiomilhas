@@ -1,3 +1,44 @@
+# DAILY_CHECKPOINT — 2026-05-26 — 3.2-E Financial Recovery Workflows — ✅ COMPLETE
+
+## Session 11 — Operational recovery workflows for finance
+
+Etapa executada:
+
+- ✅ `executeFinancialRecoveryWorkflow()` passou a expor recovery explícito para `reconcile`, `replay`, `fifo-reconcile` e `lineage-rebuild`
+- ✅ `humanizeWarning()` ganhou `recoveryAction` para orientar operador com ação, próximo passo e escalonamento
+- ✅ `components/inspection/inspection-panel.tsx` passou a mostrar botões e auditoria de recovery
+- ✅ `POST /api/recovery` foi adicionado com sessão controlada e validação de workflow/accountId
+- ✅ Cobertura nova para recovery guidance foi adicionada em teste dedicado
+
+Branch atual:
+
+- `3.2-e-financial-operational-recovery`
+
+Commits criados nesta sessão:
+
+- `fa234c0` — `feat(financial-runtime): implementa recovery workflows operacionais auditáveis (3.2-E)`
+
+Validações executadas:
+
+- ✅ `npm run lint`
+- ✅ `npm run typecheck`
+- ✅ `npm run test`
+- ✅ `git diff --check`
+
+Estado atual:
+
+- **Recovery operacional** — ✅ exposto de forma explícita, auditável e com guidance humano
+- **Inspection UI** — ✅ mostra workflows de recuperação e auditoria associada
+- **Browser-first** — 🟡 a rota `/app/inspection` ainda redireciona para `/sign-in?callbackUrl=/app/inspection` sem sessão ativa
+
+Bloqueador residual:
+
+- ⏳ validação visual completa do recovery workflow depende de sessão autenticada no navegador
+
+Próxima etapa:
+
+- Repetir a validação browser-first com sessão ativa e confirmar o fluxo `warnings -> recovery -> refresh`
+
 # DAILY_CHECKPOINT — 2026-05-26 — 3.2-C Legacy Replay/Inspection Schema Fallback — 🟡 IN PROGRESS
 
 ## Session 10 — Replay inspection legacy fallback
