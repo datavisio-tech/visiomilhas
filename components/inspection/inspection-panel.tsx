@@ -100,11 +100,21 @@ export default function InspectionPanel({ accounts }: Props) {
       </div>
 
       <HelpCard
-        title="Como ler o replay"
+        title="Replay e lineage"
         lines={[
-          "Antes mostra o saldo anterior ao evento.",
-          "Ação descreve o que aconteceu em linguagem operacional.",
-          "Depois mostra saldo, lote e impacto final.",
+          "Antes mostra o saldo anterior.",
+          "Ação mostra o que mudou.",
+          "Depois mostra saldo, CPM e impacto final.",
+        ]}
+      />
+
+      <HelpCard
+        title="Ajuda operacional rápida"
+        lines={[
+          "Replay: leia antes → ação → depois.",
+          "Lineage: pontos saem de um lugar e chegam em outro.",
+          "Drift: compare saldo operacional com saldo conciliado.",
+          "Reconcile: use quando saldo e lotes não fecharem.",
         ]}
       />
 
@@ -128,6 +138,13 @@ export default function InspectionPanel({ accounts }: Props) {
             {
               label: "Divergência",
               value: formatPoints(accountInspection?.summary?.divergence ?? 0),
+            },
+            {
+              label: "Risco operacional",
+              value: riskFromStatus(
+                accountInspection?.summary?.integrityStatus ?? "consistent",
+                accountWarnings.length,
+              ),
             },
             { label: "Warnings ativos", value: String(accountWarnings.length) },
           ]}
@@ -153,6 +170,14 @@ export default function InspectionPanel({ accounts }: Props) {
                 fifoInspection?.summary?.invalidRemainingPoints ?? 0,
               ),
             },
+            {
+              label: "Problemas críticos",
+              value: String(
+                (fifoInspection?.summary?.orphanLots ?? 0) +
+                  (fifoInspection?.summary?.inconsistentLots ?? 0) +
+                  (fifoInspection?.summary?.invalidRemainingPoints ?? 0),
+              ),
+            },
             { label: "Warnings ativos", value: String(fifoWarnings.length) },
           ]}
         />
@@ -176,6 +201,13 @@ export default function InspectionPanel({ accounts }: Props) {
                 replayInspection?.summary?.inconsistentEntries ?? 0,
               ),
             },
+            {
+              label: "Risco operacional",
+              value: riskFromStatus(
+                replayInspection?.summary?.ledgerStatus ?? "consistent",
+                replayWarnings.length,
+              ),
+            },
             { label: "Warnings ativos", value: String(replayWarnings.length) },
           ]}
         />
@@ -183,6 +215,9 @@ export default function InspectionPanel({ accounts }: Props) {
 
       <section className="space-y-3 rounded border border-dashed p-3">
         <div className="text-sm font-semibold">Troubleshooting guiado</div>
+        <div className="text-xs uppercase tracking-wide text-gray-500">
+          VER → ENTENDER → AGIR → ESCALAR
+        </div>
         <TroubleshootingList
           warnings={[...accountWarnings, ...fifoWarnings, ...replayWarnings]}
         />
@@ -203,26 +238,9 @@ export default function InspectionPanel({ accounts }: Props) {
                 key={`${event.kind}-${event.id}`}
                 className="rounded border bg-gray-50 p-3 text-sm"
               >
-                <div className="font-medium">
-                  {event.kind === "purchase"
-                    ? "Compra"
-                    : event.kind === "sale"
-                      ? "Venda"
-                      : event.kind === "transfer"
-                        ? "Transferência"
-                        : event.kind === "lot"
-                          ? "Lote"
-                          : "Evento"}
-                </div>
-                <div className="text-gray-700">
-                  Quando: {new Date(event.occurredAt).toLocaleString("pt-BR")}
-                </div>
-                <div className="text-gray-700">
-                  Pontos: {formatPoints(event.points ?? 0)}
-                </div>
-                <div className="text-gray-700">
-                  Linha: {renderLineage(event)}
-                </div>
+                <div className="font-medium">{renderEventHeadline(event)}</div>
+                <div className="mt-1 text-gray-700">{renderEventNarrative(event)}</div>
+                <div className="mt-1 text-gray-700">{renderLineage(event)}</div>
               </div>
             ))}
           </div>
@@ -290,11 +308,20 @@ function TroubleshootingList({ warnings }: { warnings: string[] }) {
         const guidance = humanizeWarning(warning);
         return (
           <div key={warning} className="rounded border bg-white p-3 text-sm">
-            <div className="font-medium">{guidance.problem}</div>
+            <div className="flex items-center justify-between gap-2">
+              <div className="font-medium">{guidance.problem}</div>
+              <div className="text-xs uppercase tracking-wide text-gray-500">
+                {guidance.severity} • prioridade {guidance.priority}
+              </div>
+            </div>
+            <div className="mt-1 text-gray-700">Impacto: {guidance.impactArea}</div>
             <div className="mt-1 text-gray-700">Impacto: {guidance.impact}</div>
             <div className="mt-1 text-gray-700">Ação: {guidance.action}</div>
             <div className="mt-1 text-gray-700">
               Quando escalar: {guidance.escalate}
+            </div>
+            <div className="mt-2 text-xs uppercase tracking-wide text-gray-500">
+              Ver: warning localizado no painel. Entender: leia impacto e ação.
             </div>
           </div>
         );
@@ -321,4 +348,26 @@ function renderLineage(event: any): string {
   }
 
   return "evento operacional registrado";
+}
+
+function renderEventHeadline(event: any): string {
+  if (event.kind === "purchase") return "Compra processada";
+  if (event.kind === "sale") return "Venda consumida";
+  if (event.kind === "transfer") return "Transferência concluída";
+  if (event.kind === "lot") return "Lote operacional";
+  return "Evento operacional";
+}
+
+function renderEventNarrative(event: any): string {
+  if (event.kind === "purchase") return `Saldo anterior e saldo atualizado: ${formatPoints(event.points ?? 0)}.`;
+  if (event.kind === "sale") return `Consumo FIFO e custo real aplicados sobre ${formatPoints(event.points ?? 0)}.`;
+  if (event.kind === "transfer") return `Origem e destino ajustados com impacto operacional preservado.`;
+  if (event.kind === "lot") return `Lote criado com rastreabilidade preservada.`;
+  return "Evento registrado para auditoria operacional.";
+}
+
+function riskFromStatus(status: string, warningCount: number): string {
+  if (status === "broken" || warningCount > 1) return "alto";
+  if (status === "warning" || warningCount === 1) return "médio";
+  return "baixo";
 }

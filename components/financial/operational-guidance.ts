@@ -1,4 +1,7 @@
 export type WarningGuide = {
+  severity: "INFO" | "WARNING" | "CRITICAL";
+  priority: "baixa" | "média" | "alta";
+  impactArea: string;
   problem: string;
   impact: string;
   action: string;
@@ -38,6 +41,9 @@ export function humanizeWarning(message: string): WarningGuide {
     normalized.includes("saldo impossível")
   ) {
     return {
+      severity: "CRITICAL",
+      priority: "alta",
+      impactArea: "saldo, replay e reconciliation",
       problem: "Divergência detectada entre saldo e lotes.",
       impact: "O saldo pode não fechar com o histórico operacional.",
       action:
@@ -51,6 +57,9 @@ export function humanizeWarning(message: string): WarningGuide {
     normalized.includes("account orfã")
   ) {
     return {
+      severity: "WARNING",
+      priority: "média",
+      impactArea: "lineage e replay",
       problem: "Lote sem rastreabilidade detectado.",
       impact: "O replay pode ficar incompleto ou difícil de interpretar.",
       action: "Abra a inspeção da conta e confirme a origem do lote.",
@@ -64,6 +73,9 @@ export function humanizeWarning(message: string): WarningGuide {
     normalized.includes("remaining points inválido")
   ) {
     return {
+      severity: "WARNING",
+      priority: "média",
+      impactArea: "FIFO e lineage",
       problem: "Consumo FIFO inválido detectado.",
       impact: "O lote consumido pode não refletir o estoque real.",
       action: "Revise a sequência de consumo e valide os lotes recentes.",
@@ -78,6 +90,9 @@ export function humanizeWarning(message: string): WarningGuide {
     normalized.includes("replay divergente")
   ) {
     return {
+      severity: "CRITICAL",
+      priority: "alta",
+      impactArea: "replay e reconciliation",
       problem: "Replay inconsistente detectado.",
       impact:
         "A sequência operacional pode ter eventos fora de ordem ou duplicados.",
@@ -89,6 +104,9 @@ export function humanizeWarning(message: string): WarningGuide {
   }
 
   return {
+    severity: "INFO",
+    priority: "baixa",
+    impactArea: "operacional",
     problem: message,
     impact: "Este aviso pode afetar a leitura operacional do fluxo financeiro.",
     action: "Abra a inspeção da conta e revise os últimos eventos.",

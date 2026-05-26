@@ -252,9 +252,16 @@ function WarningStack({ warnings }: { warnings: string[] }) {
         const guidance = humanizeWarning(warning);
         return (
           <div key={warning} className="rounded border bg-white p-3 text-sm">
-            <div className="font-medium">{guidance.problem}</div>
+            <div className="flex items-center justify-between gap-2">
+              <div className="font-medium">{guidance.problem}</div>
+              <div className="text-xs uppercase tracking-wide text-gray-500">
+                {guidance.severity} • prioridade {guidance.priority}
+              </div>
+            </div>
+            <div className="mt-1 text-gray-700">Impacto: {guidance.impactArea}</div>
             <div className="mt-1 text-gray-700">Impacto: {guidance.impact}</div>
             <div className="mt-1 text-gray-700">Ação: {guidance.action}</div>
+            <div className="mt-1 text-gray-700">Escalar: {guidance.escalate}</div>
           </div>
         );
       })}

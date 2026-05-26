@@ -22,6 +22,9 @@ Validar replay, lineage, warnings e summaries sem depender de SQL ou leitura de 
 
 ## Como interpretar warnings
 
+- Severidade `INFO`: observação operacional com baixa urgência.
+- Severidade `WARNING`: atenção; pode afetar lineage, FIFO ou replay.
+- Severidade `CRITICAL`: risco alto; exige ação imediata.
 - Divergência de saldo: o saldo não fecha com os lotes. Recomendado reconciliar.
 - Lote órfão: há perda de rastreabilidade. O replay pode ficar inconsistente.
 - Consumo inválido: um lote pode ter sido consumido fora da sequência esperada.
@@ -35,10 +38,10 @@ Validar replay, lineage, warnings e summaries sem depender de SQL ou leitura de 
 
 ## Troubleshooting operacional
 
-1. Localize o warning na inspeção.
-2. Entenda o impacto e a operação afetada.
-3. Aplique a ação sugerida: reconciliar, validar replay ou revisar lineage.
-4. Escale para engenharia quando o warning persistir após a verificação local.
+1. Ver: localize o warning na inspeção.
+2. Entender: leia impacto, prioridade e ação sugerida.
+3. Agir: reconciliar, validar replay ou revisar lineage.
+4. Escalar: acione engenharia se o warning persistir ou bloquear operação.
 
 ## Quando acionar recovery
 
