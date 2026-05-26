@@ -169,7 +169,13 @@ export async function createSaleAction(formData: FormData, deps: Deps = {}) {
       return {
         success: true,
         saleId: insertSale.rows[0].id,
+        previousBalance: Number(acc.current_points_balance || 0),
         newBalance: impact.newBalance,
+        pointsSold: Number(input.points),
+        totalAmountCents: Number(input.totalAmountCents),
+        costBaseCents: impact.costBaseCents,
+        profitCents: impact.profitCents,
+        currentCpmCents: Number(acc.current_avg_cost_per_thousand_cents || 0),
       };
     } catch (error) {
       await client.query("ROLLBACK");

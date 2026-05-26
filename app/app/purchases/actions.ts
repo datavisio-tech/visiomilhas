@@ -181,7 +181,13 @@ export async function createPurchaseAction(
       return {
         success: true,
         purchaseId: insertPurchase.rows[0].id,
+        previousBalance: Number(acc.current_points_balance || 0),
         newBalance: impact.newBalance,
+        pointsBought: Number(input.points),
+        totalCostCents: Number(input.totalCostCents),
+        previousCpmCents: Number(acc.current_avg_cost_per_thousand_cents || 0),
+        newCpmCents: impact.newCpmCents,
+        newCostBasisCents: impact.newTotalCostCents,
       };
     } catch (error) {
       await client.query("ROLLBACK");

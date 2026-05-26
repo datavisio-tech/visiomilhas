@@ -225,7 +225,20 @@ export async function createTransferAction(
       (deps.revalidatePath ?? revalidatePath)("/app/entries");
       (deps.revalidatePath ?? revalidatePath)("/app/transfers");
 
-      return { success: true, transferId: insertTransfer.rows[0].id };
+      return {
+        success: true,
+        transferId: insertTransfer.rows[0].id,
+        previousOriginBalance: Number(fromAcc.current_points_balance || 0),
+        previousDestinationBalance: Number(toAcc.current_points_balance || 0),
+        newOriginBalance: impact.newOriginBalance,
+        newDestinationBalance: impact.newDestinationBalance,
+        pointsSent: Number(input.pointsSent),
+        pointsReceived: impact.pointsReceived,
+        bonusPercent: Number(input.bonusPercent || 0),
+        feeCents: Number(input.feeCents || 0),
+        originCpmCents: Number(fromAcc.current_avg_cost_per_thousand_cents || 0),
+        destinationCpmCents: Number(toAcc.current_avg_cost_per_thousand_cents || 0),
+      };
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
