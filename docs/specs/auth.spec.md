@@ -36,6 +36,7 @@ Decisao alvo:
 - Continuar a redução incremental das superfícies de leitura e registrar readiness para remoção futura somente com fallback near-zero.
 - Tratar o fake adapter como candidato a dev/test-only apenas após a confirmação de near-zero no runtime.
 - Readiness de subscription agora faz parte do readiness de auth: active, trial, no subscription, canceled e suspended precisam ser classificados explicitamente.
+- Trial expirado deve bloquear server-side e redirecionar para `/subscribe`.
 
 ## Onboarding 2.3-C — Initial User Onboarding Flow
 

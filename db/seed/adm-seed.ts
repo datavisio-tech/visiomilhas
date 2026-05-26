@@ -1,5 +1,5 @@
 import { admPool } from "../../db/adm/client";
-import { DEMO_ADMIN } from "./demo-data";
+import { DEMO_ADMIN, DEMO_SUBSCRIBER } from "./demo-data";
 
 export async function seedAdm(): Promise<number> {
   const pool = admPool();
@@ -93,6 +93,91 @@ export async function seedAdm(): Promise<number> {
       await client.query(
         `INSERT INTO subscriptions (organization_id, plan_id, status, trial_starts_at, trial_ends_at, cancel_at_period_end, created_at, updated_at) VALUES ($1, (SELECT id FROM plans WHERE code = $2 LIMIT 1), $3, $4, $5, $6, NOW(), NOW())`,
         [orgId, trialPlanCode, "trialing", trialStart, trialEnd, false],
+      );
+    }
+
+    // trial subscriber seed (operational test user)
+    const subscriberUserRes = await client.query(
+      `SELECT id FROM global_users WHERE email = $1 LIMIT 1`,
+      [DEMO_SUBSCRIBER.user.email],
+    );
+    let subscriberUserId: number;
+    if (subscriberUserRes.rows.length) {
+      subscriberUserId = subscriberUserRes.rows[0].id;
+    } else {
+      const insertSubscriber = await client.query(
+        `INSERT INTO global_users (name, email, created_at, updated_at) VALUES ($1, $2, NOW(), NOW()) RETURNING id`,
+        [DEMO_SUBSCRIBER.user.name, DEMO_SUBSCRIBER.user.email],
+      );
+      subscriberUserId = insertSubscriber.rows[0].id;
+    }
+
+    const subscriberOrgRes = await client.query(
+      `SELECT id FROM organizations WHERE slug = $1 LIMIT 1`,
+      [DEMO_SUBSCRIBER.organization.slug],
+    );
+    let subscriberOrgId: number;
+    if (subscriberOrgRes.rows.length) {
+      subscriberOrgId = subscriberOrgRes.rows[0].id;
+    } else {
+      const insertSubscriberOrg = await client.query(
+        `INSERT INTO organizations (name, slug, owner_user_id, status, created_at, updated_at) VALUES ($1, $2, $3, $4, NOW(), NOW()) RETURNING id`,
+        [
+          DEMO_SUBSCRIBER.organization.name,
+          DEMO_SUBSCRIBER.organization.slug,
+          subscriberUserId,
+          "active",
+        ],
+      );
+      subscriberOrgId = insertSubscriberOrg.rows[0].id;
+    }
+
+    const subscriberMembershipRes = await client.query(
+      `SELECT id FROM organization_memberships WHERE organization_id = $1 AND user_id = $2 LIMIT 1`,
+      [subscriberOrgId, subscriberUserId],
+    );
+    if (!subscriberMembershipRes.rows.length) {
+      await client.query(
+        `INSERT INTO organization_memberships (organization_id, user_id, role, status, created_at, updated_at) VALUES ($1, $2, $3, $4, NOW(), NOW())`,
+        [subscriberOrgId, subscriberUserId, "owner", "active"],
+      );
+    }
+
+    const trialPlanRes = await client.query(
+      `SELECT id FROM plans WHERE code = $1 LIMIT 1`,
+      [DEMO_SUBSCRIBER.planCode],
+    );
+    const trialPlanId = trialPlanRes.rows.length
+      ? trialPlanRes.rows[0].id
+      : null;
+
+    const subscriberSubRes = await client.query(
+      `SELECT id FROM subscriptions WHERE organization_id = $1 ORDER BY updated_at DESC LIMIT 1`,
+      [subscriberOrgId],
+    );
+
+    if (!subscriberSubRes.rows.length && trialPlanId) {
+      const trialStart = new Date();
+      const trialEnd = new Date(
+        trialStart.getTime() +
+          1000 * 60 * 60 * 24 * (DEMO_SUBSCRIBER.trialDays ?? 15),
+      );
+      await client.query(
+        `INSERT INTO subscriptions (organization_id, plan_id, status, trial_starts_at, trial_ends_at, trial_started_at, trial_expires_at, activated_at, access_state, plan_type, tenant_state, cancel_at_period_end, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW())`,
+        [
+          subscriberOrgId,
+          trialPlanId,
+          "trialing",
+          trialStart,
+          trialEnd,
+          trialStart,
+          trialEnd,
+          trialStart,
+          "TRIAL",
+          DEMO_SUBSCRIBER.planCode,
+          "active",
+          false,
+        ],
       );
     }
 

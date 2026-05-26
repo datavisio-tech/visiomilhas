@@ -9,6 +9,14 @@ Fase 2.4-K: SaaS Access & Subscription Enforcement
 - Expandir observabilidade com subscription access granted/blocked/redirect, trial active e suspended.
 - Evitar Stripe real, checkout real, RBAC complexo, middleware global e breaking changes de schema operacional.
 
+Fase 2.4-L: Commercial Trial Activation Runtime
+
+- Criar `activateTrialForOrganization()` server-side com persistencia comercial.
+- Adicionar endpoint `/api/subscription/activate-trial` para ativacao de trial.
+- Persistir `access_state`, `activated_at`, `trial_started_at`, `trial_expires_at`, `plan_type` e `tenant_state` no SAAS_DB.
+- Atualizar `/subscribe` com CTA para ativar trial e redirecionar para `/app/dashboard`.
+- Manter gating server-side e observar estados `TRIAL`, `ACTIVE`, `EXPIRED`, `CANCELED`, `SUSPENDED`.
+
 
 Fase 2.2-F: Transitional Surface Cleanup
 

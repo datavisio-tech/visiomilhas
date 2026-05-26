@@ -15,12 +15,14 @@ export type SubscriptionStatus =
   | "active"
   | "trialing"
   | "new"
+  | "expired"
   | "canceled"
   | "suspended";
 
 export type SubscriptionAccessState =
   | "ACTIVE"
   | "TRIAL"
+  | "EXPIRED"
   | "NO_SUBSCRIPTION"
   | "CANCELED"
   | "SUSPENDED";
@@ -29,6 +31,7 @@ export type CommercialLifecycleState =
   | "provisioning"
   | "pending-subscribe"
   | "trial"
+  | "expired"
   | "active"
   | "canceled"
   | "suspended";
@@ -64,6 +67,12 @@ type SubscriptionRow = {
   status: string | null;
   trial_starts_at: Date | null;
   trial_ends_at: Date | null;
+  trial_started_at: Date | null;
+  trial_expires_at: Date | null;
+  activated_at: Date | null;
+  access_state: string | null;
+  plan_type: string | null;
+  tenant_state: string | null;
 };
 
 type PlanRow = {
@@ -83,6 +92,8 @@ function normalizeSubscriptionStatus(
     case "trial":
     case "trialing":
       return "trialing";
+    case "expired":
+      return "expired";
     case "canceled":
     case "cancelled":
       return "canceled";
@@ -115,14 +126,23 @@ export function evaluateSubscriptionAccess(input: {
         shouldRedirectToSubscribe: false,
       };
     case "trialing":
+      if (!trialStillValid) {
+        return {
+          accessState: "EXPIRED",
+          commercialLifecycleState: "expired",
+          shouldRedirectToSubscribe: true,
+        };
+      }
       return {
-        accessState: trialStillValid ? "TRIAL" : "NO_SUBSCRIPTION",
-        commercialLifecycleState: trialStillValid
-          ? "trial"
-          : "pending-subscribe",
-        shouldRedirectToSubscribe: input.wasProvisioned
-          ? true
-          : !trialStillValid,
+        accessState: "TRIAL",
+        commercialLifecycleState: "trial",
+        shouldRedirectToSubscribe: false,
+      };
+    case "expired":
+      return {
+        accessState: "EXPIRED",
+        commercialLifecycleState: "expired",
+        shouldRedirectToSubscribe: true,
       };
     case "canceled":
       return {
@@ -188,9 +208,11 @@ async function loadOrCreateSubscriptionRecord(
   client: Awaited<ReturnType<typeof admPool>> extends never ? never : any,
   organizationId: number,
   wasProvisioned: boolean,
+  planType: string,
+  tenantState: string,
 ): Promise<{ row: SubscriptionRow; plan: PlanRow; inserted: boolean }> {
   const current = await client.query(
-    `SELECT id, organization_id, plan_id, status, trial_starts_at, trial_ends_at FROM subscriptions WHERE organization_id = $1 ORDER BY updated_at DESC, id DESC LIMIT 1`,
+    `SELECT id, organization_id, plan_id, status, trial_starts_at, trial_ends_at, trial_started_at, trial_expires_at, activated_at, access_state, plan_type, tenant_state FROM subscriptions WHERE organization_id = $1 ORDER BY updated_at DESC, id DESC LIMIT 1`,
     [organizationId],
   );
 
@@ -215,13 +237,19 @@ async function loadOrCreateSubscriptionRecord(
 
   const plan = await ensurePlanOrFallback(client);
   const inserted = await client.query(
-    `INSERT INTO subscriptions (organization_id, plan_id, status, trial_starts_at, trial_ends_at, cancel_at_period_end, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW()) RETURNING id, organization_id, plan_id, status, trial_starts_at, trial_ends_at`,
+    `INSERT INTO subscriptions (organization_id, plan_id, status, trial_starts_at, trial_ends_at, trial_started_at, trial_expires_at, activated_at, access_state, plan_type, tenant_state, cancel_at_period_end, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW()) RETURNING id, organization_id, plan_id, status, trial_starts_at, trial_ends_at, trial_started_at, trial_expires_at, activated_at, access_state, plan_type, tenant_state`,
     [
       organizationId,
       plan.id,
       wasProvisioned ? "new" : "new",
       null,
       null,
+      null,
+      null,
+      null,
+      "NO_SUBSCRIPTION",
+      planType,
+      tenantState,
       false,
     ],
   );
@@ -289,18 +317,41 @@ export async function resolveSubscriptionAccessContext(
       return null;
     }
 
+    const planType = "trial";
+    const tenantState = "active";
     const subscriptionResult = await loadOrCreateSubscriptionRecord(
       client,
       provision.organizationId,
       !sessionContext.ownership.organizationId,
+      planType,
+      tenantState,
     );
 
     const subscriptionStatus = normalizeSubscriptionStatus(
       subscriptionResult.row.status,
     );
+    const trialStartsAt =
+      subscriptionResult.row.trial_started_at ??
+      subscriptionResult.row.trial_starts_at ??
+      null;
+    const trialEndsAt =
+      subscriptionResult.row.trial_expires_at ??
+      subscriptionResult.row.trial_ends_at ??
+      null;
+    const isTrialExpired =
+      subscriptionStatus === "trialing" &&
+      trialEndsAt instanceof Date &&
+      trialEndsAt.getTime() <= Date.now();
+
+    if (isTrialExpired) {
+      await client.query(
+        `UPDATE subscriptions SET status = $1, access_state = $2, updated_at = NOW() WHERE id = $3`,
+        ["expired", "EXPIRED", subscriptionResult.row.id],
+      );
+    }
     const lifecycle = evaluateSubscriptionAccess({
-      status: subscriptionStatus,
-      trialEndsAt: subscriptionResult.row.trial_ends_at,
+      status: isTrialExpired ? "expired" : subscriptionStatus,
+      trialEndsAt,
       wasProvisioned: subscriptionResult.inserted,
     });
 
@@ -317,8 +368,8 @@ export async function resolveSubscriptionAccessContext(
       planId: subscriptionResult.plan.id,
       planCode: subscriptionResult.plan.code,
       planName: subscriptionResult.plan.name,
-      trialStartsAt: subscriptionResult.row.trial_starts_at ?? null,
-      trialEndsAt: subscriptionResult.row.trial_ends_at ?? null,
+      trialStartsAt,
+      trialEndsAt,
       shouldRedirectToSubscribe: lifecycle.shouldRedirectToSubscribe,
       wasProvisioned: subscriptionResult.inserted,
     };
@@ -342,14 +393,73 @@ export async function resolveSubscriptionAccessContext(
       });
     }
 
+    if (accessContext.accessState === "EXPIRED") {
+      reportAuthEvent({
+        level: "warn",
+        code: "TRIAL_EXPIRED",
+        message: "Trial expired, subscription access blocked",
+        details: {
+          source: options.source ?? "subscription-access",
+          browserContext,
+          sessionLifecycle: auth.sessionId ? "persisted" : "missing",
+          onboardingStage: "ready",
+          recoveryStage: "blocked",
+          accessState: accessContext.accessState,
+          commercialLifecycleState: accessContext.commercialLifecycleState,
+          tenantState: accessContext.tenantState,
+          subscriptionState: accessContext.subscriptionStatus,
+        },
+      });
+    }
+
     if (
       accessContext.accessState === "ACTIVE" ||
       accessContext.accessState === "TRIAL"
     ) {
+      if (
+        !subscriptionResult.inserted &&
+        (subscriptionResult.row.activated_at !== null ||
+          subscriptionResult.row.trial_started_at !== null)
+      ) {
+        reportAuthEvent({
+          level: "info",
+          code: "COMMERCIAL_ACCESS_RECOVERED",
+          message: "Commercial access recovered from persisted state",
+          details: {
+            source: options.source ?? "subscription-access",
+            browserContext,
+            sessionLifecycle: auth.sessionId ? "persisted" : "missing",
+            onboardingStage: "ready",
+            recoveryStage: "stable",
+            accessState: accessContext.accessState,
+            commercialLifecycleState: accessContext.commercialLifecycleState,
+            tenantState: accessContext.tenantState,
+            subscriptionState: accessContext.subscriptionStatus,
+          },
+        });
+      }
+
       reportAuthEvent({
         level: "info",
         code: "SUBSCRIPTION_ACCESS_GRANTED",
         message: "Subscription access granted",
+        details: {
+          source: options.source ?? "subscription-access",
+          browserContext,
+          sessionLifecycle: auth.sessionId ? "persisted" : "missing",
+          onboardingStage: "ready",
+          recoveryStage: "stable",
+          accessState: accessContext.accessState,
+          commercialLifecycleState: accessContext.commercialLifecycleState,
+          tenantState: accessContext.tenantState,
+          subscriptionState: accessContext.subscriptionStatus,
+        },
+      });
+
+      reportAuthEvent({
+        level: "info",
+        code: "COMMERCIAL_ACCESS_GRANTED",
+        message: "Commercial access granted",
         details: {
           source: options.source ?? "subscription-access",
           browserContext,
@@ -370,6 +480,25 @@ export async function resolveSubscriptionAccessContext(
             ? "SUBSCRIPTION_SUSPENDED"
             : "SUBSCRIPTION_ACCESS_BLOCKED",
         message: "Subscription access blocked",
+        details: {
+          source: options.source ?? "subscription-access",
+          browserContext,
+          sessionLifecycle: auth.sessionId ? "persisted" : "missing",
+          onboardingStage: accessContext.wasProvisioned ? "required" : "ready",
+          recoveryStage: accessContext.wasProvisioned
+            ? "provisioning"
+            : "blocked",
+          accessState: accessContext.accessState,
+          commercialLifecycleState: accessContext.commercialLifecycleState,
+          tenantState: accessContext.tenantState,
+          subscriptionState: accessContext.subscriptionStatus,
+        },
+      });
+
+      reportAuthEvent({
+        level: "warn",
+        code: "COMMERCIAL_ACCESS_BLOCKED",
+        message: "Commercial access blocked",
         details: {
           source: options.source ?? "subscription-access",
           browserContext,
@@ -408,6 +537,150 @@ export async function resolveSubscriptionAccessContext(
         });
       }
     }
+
+    return accessContext;
+  } finally {
+    client.release();
+  }
+}
+
+export async function activateTrialForOrganization(input: {
+  organizationId: number;
+  globalUserId: number;
+  planCode?: string | null;
+  trialDays?: number;
+  source?: string;
+  requestHeaders?: Headers;
+}): Promise<SubscriptionAccessContext> {
+  const pool = admPool();
+  const client = await pool.connect();
+
+  try {
+    const planCode = input.planCode ?? "free_trial";
+    const trialDays = input.trialDays ?? 15;
+    const requestHeaders = input.requestHeaders ?? (await headers());
+    const browserContext = resolveBrowserContextTag(
+      requestHeaders.get("user-agent"),
+    );
+
+    const subscriptionRes = await client.query(
+      `SELECT id, organization_id, plan_id, status, trial_starts_at, trial_ends_at, trial_started_at, trial_expires_at, activated_at, access_state, plan_type, tenant_state FROM subscriptions WHERE organization_id = $1 ORDER BY updated_at DESC, id DESC LIMIT 1`,
+      [input.organizationId],
+    );
+
+    if (!subscriptionRes.rows.length) {
+      throw new Error("Subscription record not found for trial activation");
+    }
+
+    const planRes = await client.query(
+      `SELECT id, code, name FROM plans WHERE code = $1 LIMIT 1`,
+      [planCode],
+    );
+
+    if (!planRes.rows.length) {
+      throw new Error("Plan not found for trial activation");
+    }
+
+    const now = new Date();
+    const trialEndsAt = new Date(
+      now.getTime() + trialDays * 24 * 60 * 60 * 1000,
+    );
+
+    const updated = await client.query(
+      `UPDATE subscriptions SET plan_id = $1, status = $2, trial_starts_at = $3, trial_ends_at = $4, trial_started_at = $5, trial_expires_at = $6, activated_at = $7, access_state = $8, plan_type = $9, tenant_state = $10, updated_at = NOW() WHERE id = $11 RETURNING id, organization_id, plan_id, status, trial_starts_at, trial_ends_at, trial_started_at, trial_expires_at, activated_at, access_state, plan_type, tenant_state`,
+      [
+        planRes.rows[0].id,
+        "trialing",
+        now,
+        trialEndsAt,
+        now,
+        trialEndsAt,
+        now,
+        "TRIAL",
+        planCode,
+        "active",
+        subscriptionRes.rows[0].id,
+      ],
+    );
+
+    const accessContext: SubscriptionAccessContext = {
+      sessionContext: {
+        auth: {
+          userId: String(input.globalUserId),
+          authProvider: "internal",
+          isAuthenticated: true,
+        },
+        ownership: {
+          userId: String(input.globalUserId),
+          organizationId: input.organizationId,
+          ownsAccount: true,
+          ownsOrganizationScope: true,
+        },
+      },
+      globalUserId: input.globalUserId,
+      organizationId: input.organizationId,
+      subscriberState: "provisioned",
+      tenantState: "provisioned",
+      subscriptionId: updated.rows[0].id as number,
+      subscriptionStatus: "trialing",
+      accessState: "TRIAL",
+      commercialLifecycleState: "trial",
+      planId: planRes.rows[0].id as number,
+      planCode: planRes.rows[0].code as string,
+      planName: planRes.rows[0].name as string,
+      trialStartsAt: now,
+      trialEndsAt,
+      shouldRedirectToSubscribe: false,
+      wasProvisioned: false,
+    };
+
+    reportAuthEvent({
+      level: "info",
+      code: "TRIAL_ACTIVATED",
+      message: "Trial activated for subscription",
+      details: {
+        source: input.source ?? "subscription.activate-trial",
+        browserContext,
+        onboardingStage: "ready",
+        recoveryStage: "stable",
+        accessState: accessContext.accessState,
+        commercialLifecycleState: accessContext.commercialLifecycleState,
+        tenantState: accessContext.tenantState,
+        subscriptionState: accessContext.subscriptionStatus,
+      },
+    });
+
+    reportAuthEvent({
+      level: "info",
+      code: "TRIAL_ACCESS_GRANTED",
+      message: "Trial access granted",
+      details: {
+        source: input.source ?? "subscription.activate-trial",
+        browserContext,
+        onboardingStage: "ready",
+        recoveryStage: "stable",
+        accessState: accessContext.accessState,
+        commercialLifecycleState: accessContext.commercialLifecycleState,
+        tenantState: accessContext.tenantState,
+        subscriptionState: accessContext.subscriptionStatus,
+      },
+    });
+
+    reportAuthEvent({
+      level: "info",
+      code: "COMMERCIAL_ACCESS_GRANTED",
+      message: "Commercial access granted after trial activation",
+      details: {
+        source: input.source ?? "subscription.activate-trial",
+        browserContext,
+        onboardingStage: "ready",
+        recoveryStage: "stable",
+        accessState: accessContext.accessState,
+        commercialLifecycleState: accessContext.commercialLifecycleState,
+        tenantState: accessContext.tenantState,
+        subscriptionState: accessContext.subscriptionStatus,
+      },
+    });
 
     return accessContext;
   } finally {

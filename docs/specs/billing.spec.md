@@ -16,7 +16,7 @@ Decisao alvo:
 - Uma assinatura mensal principal inicialmente.
 - Trial de 15 dias.
 - Baixa complexidade operacional.
-- Estados operacionais obrigatorios: `ACTIVE`, `TRIAL`, `NO_SUBSCRIPTION`, `CANCELED` e `SUSPENDED`.
+- Estados operacionais obrigatorios: `ACTIVE`, `TRIAL`, `EXPIRED`, `NO_SUBSCRIPTION`, `CANCELED` e `SUSPENDED`.
 - A etapa `/subscribe` e o destino obrigatorio quando o acesso comercial nao esta valido.
 - Billing/subscription continuam no `SAAS_DB=controle_adm_saas_datavisio`; o `APP_DB=visiomilhas_app` continua apenas operacional.
 
@@ -29,3 +29,4 @@ Proximo passo:
 
 - Reduzir o contrato de billing ao minimo necessario para onboarding e renovacao.
 - Manter o gate SaaS observavel e server-side.
+- O trial activation runtime deve persistir `activated_at`, `trial_started_at`, `trial_expires_at` e `access_state` no SAAS_DB.

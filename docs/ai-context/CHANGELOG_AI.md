@@ -1,5 +1,39 @@
 # CHANGELOG_AI
 
+## 2026-05-26 — Fase 2.4-L — Commercial Trial Activation Runtime — ✅ COMPLETE
+
+### Status: trial activation server-side com persistencia comercial no SAAS_DB
+
+**Achievements**:
+
+1. **Trial Activation Runtime** — ✅ COMPLETE
+  - Criado `activateTrialForOrganization()` com persistencia comercial no SAAS_DB
+  - Endpoint `/api/subscription/activate-trial` agora ativa trial server-side
+  - Campos comerciais persistidos em `subscriptions`: `access_state`, `activated_at`, `trial_started_at`, `trial_expires_at`, `plan_type`, `tenant_state`
+
+2. **Commercial Lifecycle** — ✅ COMPLETE
+  - Estados `TRIAL`, `ACTIVE`, `EXPIRED`, `CANCELED`, `SUSPENDED` passam a bloquear/liberar o dashboard
+  - Trial expirado gera bloqueio e atualiza status no SAAS_DB
+
+3. **Subscribe UX** — ✅ COMPLETE
+  - Botão “Iniciar trial” com loading/success/retry
+  - Redirect automático para `/app/dashboard` após ativação
+
+4. **Validation** — 🟡 PARCIAL
+  - Teste unitário atualizado para `EXPIRED`
+  - Necessária validação browser-first com sessão Google ativa
+
+### Runtime Readiness — 2.4-L Inicial
+
+| Capability | Status | Note |
+|-----------|--------|------|
+| Trial activation | ✅ | Server-side e persistido no SAAS_DB |
+| Commercial lifecycle | ✅ | Estados bloqueiam/liberam dashboard |
+| Subscribe UX | ✅ | CTA com retry e redirect |
+| Browser lifecycle | 🟡 | Falta validação completa no browser |
+
+---
+
 ## 2026-05-25 — Fase 2.4-K — SaaS Access & Subscription Enforcement — ✅ COMPLETE
 
 ### Status: gate comercial server-side implementado com persistencia no SAAS_DB e /subscribe como etapa obrigatoria

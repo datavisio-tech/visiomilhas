@@ -1,10 +1,31 @@
 # TODO_AI - Pendências e próximas ações
 
+## 2.4-L — Commercial Trial Activation Runtime — ✅ COMPLETE
+
+**Status**: ✅ activation runtime implementado; browser ainda precisa validar E2E completo
+
+**Realizado**:
+
+- ✅ `activateTrialForOrganization()` server-side no SAAS_DB
+- ✅ Endpoint `/api/subscription/activate-trial` para ativacao de trial
+- ✅ Lifecycle comercial persistido em `subscriptions` com access_state e timestamps
+- ✅ `/subscribe` com CTA de trial e redirect pós-sucesso
+- ✅ Trial expirado agora bloqueia e atualiza status
+
+**Bloqueador Residual**:
+
+- ⏳ Validação browser-first do ciclo completo com sessão Google ativa
+
+**Próxima Ação**:
+
+- Rodar a suíte completa e repetir o browser-first
+
 ## 2.4-K — SaaS Access & Subscription Enforcement — ✅ COMPLETE
 
 **Status**: ✅ gate SaaS server-side implementado; browser ainda precisa de sessao Google válida para validar o ciclo visual completo
 
 **Realizado**:
+
 - ✅ Criado `SubscriptionAccessContext` separado de auth, ownership e read scope
 - ✅ Dashboard bloqueia usuarios sem acesso SaaS e redireciona para `/subscribe`
 - ✅ `/subscribe` foi adicionada como pagina de gate comercial
@@ -13,9 +34,11 @@
 - ✅ Teste unitário de classificação do gate SaaS validado
 
 **Bloqueador Residual**:
+
 - ⏳ A validacao visual completa de dashboard ativo x subscribe bloqueado depende de uma sessao Google ativa no navegador atual
 
 **Próxima Ação**:
+
 - Rodar a suíte completa e repetir o browser-first quando houver sessao válida
 
 ## 2.4-J — Session Lifecycle & Onboarding Hardening — ✅ COMPLETE
@@ -23,6 +46,7 @@
 **Status**: ✅ logout oficial e lifecycle auditável; browser final ficou sem sessão ativa
 
 **Realizado**:
+
 - ✅ Logout passou a usar `authClient.signOut()`
 - ✅ O handler de auth passou a registrar logout sucesso/falha e invalidação de sessão
 - ✅ `SESSION_RESTORED`, `SESSION_REFRESH_SUCCESS` e `SESSION_BROWSER_REOPEN_SUCCESS` foram adicionados ao lifecycle
@@ -30,9 +54,11 @@
 - ✅ `npm run lint`, `npm run typecheck`, `npm run test` e `git diff --check` passaram
 
 **Bloqueador Residual**:
+
 - ⏳ A validação visual final de logout/reopen/login repetido dependia de sessão Google ativa no browser atual, mas o browser observou estado deslogado ao final da rodada
 
 **Próxima Ação**:
+
 - Reexecutar o ciclo browser-first completo com sessão válida para confirmar logout, bloqueio pós-logout e reopen com persistência
 
 ## 2.4-I — Onboarding Runtime Consistency Hardening — ✅ COMPLETE
@@ -40,6 +66,7 @@
 **Status**: ✅ runtime onboarding-aware endurecido; browser real ainda depende de sessão Google válida
 
 **Realizado**:
+
 - ✅ `organizationId` agora é hidratado no `SessionContext` quando onboarding já provisionou ownership
 - ✅ `resolveReadScope()` passou a redirecionar ao onboarding quando a organização ainda não existe
 - ✅ `app/app/dashboard/page.tsx` ganhou boundary explícito com redirect onboarding-aware
@@ -47,10 +74,12 @@
 - ✅ `npm run lint`, `npm run typecheck`, `npm run test` e `git diff --check` passaram
 
 **Bloqueador Residual**:
+
 - ⏳ O navegador atual não estava autenticado no momento da validação final, então o dashboard redirecionou para sign-in
 - ⏳ Para fechar o ciclo login → onboarding → dashboard → logout → refresh → reopen, ainda é necessária uma credencial Google válida na sessão atual
 
 **Próxima Ação**:
+
 - Reexecutar o fluxo browser-first com sessão Google válida e confirmar persistência de ownership/onboarding end-to-end
 
 ## 2.4-H — Session 3 — Better Auth Drizzle Schema Alignment — ✅ COMPLETE
@@ -60,6 +89,7 @@
 **Status**: ✅ alinhamento lógico concluído; E2E real depende de credencial Google válida
 
 **Realizado (Session 3)**:
+
 - ✅ `lib/server/better-auth-schema.ts` exporta `user`, `session`, `account` e `verification`
 - ✅ Tabelas físicas `ba_users`, `ba_sessions`, `ba_accounts`, `ba_verification` mantidas intactas
 - ✅ `lib/auth.ts` e `db/adm/client.ts` passaram a consumir o namespace do schema
@@ -67,6 +97,7 @@
 - ✅ Navegador continua alcançando o Google com o callback correto
 
 **Bloqueador Externo Atual**:
+
 - ⏳ Tentativa com `test.visiomilhas@gmail.com` retornou conta não encontrada no Google
 - Impacto: impede o login real, portanto ainda não há confirmação final de `ba_users/ba_sessions/ba_accounts` com credencial válida
 - Ação: validar novamente com uma conta Google funcional quando disponível
@@ -76,6 +107,7 @@
 **Status**: ✅ 100% concluído (código + testes + documentação)
 
 **Realizado (2.4-H Session 2)**:
+
 - ✅ Reexecutado fluxo OAuth real ponta-a-ponta
 - ✅ Confirmado OAuth flow alcança Google login (sem redirect_uri_mismatch)
 - ✅ Validado banco de dados (4 tabelas Better Auth verified)
@@ -85,6 +117,7 @@
 - ✅ Commit final criado
 
 **Bloqueador Transiente (NÃO CRÍTICO)**:
+
 - ⏳ Erro 500 do Google ao processar login (sandbox/throttling)
 - Status: Esperado, será resolvido automaticamente
 - Impacto: E2E real login não pode ser testado agora
@@ -97,6 +130,7 @@
 **Objetivo**: Organizar e arquivar contexto para manter "hot" apenas informações críticas
 
 **Ações**:
+
 - [ ] Criar `/docs/ai-archive/`
 - [ ] Mover changelogs antigos para arquivo
 - [ ] Mover checkpoints antigos para arquivo
@@ -108,6 +142,7 @@
   - Bloqueadores ativos
 
 **Benefícios**:
+
 - Redução de token context
 - Melhor rastreabilidade
 - Menos poluição de contexto
@@ -117,6 +152,7 @@
 **Status**: ✅ 100% concluído
 
 **Realizado**:
+
 - ✅ Identificado bloqueador (Google Console URIs faltando)
 - ✅ Expandida observabilidade OAuth
 - ✅ Melhorada detecção de erro
@@ -126,18 +162,21 @@
 ## Futuro — Use Cases 3.x (NÃO INICIAR AGORA)
 
 Padrão futuro:
+
 ```
 Server Action → UseCase → Repository
 API Route → UseCase → Repository
 ```
 
 Depende de:
+
 - [ ] 2.4-H estabilizado (✅ DONE)
 - [ ] 2.5-A contexto limpo (pending)
 - [ ] Billing ready (NOT STARTED)
 - [ ] RBAC ready (NOT STARTED)
 
 ---
+
 ```
 
 Pré-requisito: OAuth real estável em produção
@@ -730,3 +769,4 @@ Status 1.3.20 — integração atômica da compra ao motor FIFO:
 - Implementado `createDrizzleMovementsRepoFromClient(client)` em `lib/repositories/movements.drizzle-repo.ts` para criar um repo Drizzle que usa o `pg` client existente.
 - `createPurchaseAction` em `app/app/purchases/actions.ts` foi atualizado para, quando `USE_FIFO_MOVEMENTS_ENGINE` estiver ativa, delegar ao `acquireMilesUseCase(..., txRepo)` executando o use-case dentro da mesma transação da compra.
 - Pendências: validar a migration `db/app/migrations/0001_add_mile_point_lots.sql` em ambiente isolado, executar testes de integração e validar rollback antes de ativar a flag em staging.
+```

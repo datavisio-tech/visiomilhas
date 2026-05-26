@@ -103,4 +103,27 @@ describe("buildSessionContextFromBetterAuthSession", () => {
     expect(sessionContext?.ownership.accountId).toBe(55);
     expect(sessionContext?.ownership.ownsOrganizationScope).toBe(true);
   });
+
+  it("rejects stale sessions before reuse", async () => {
+    const sessionContext = await resolveBetterAuthSessionContext(
+      {
+        api: {
+          getSession: async () => ({
+            user: {
+              id: "user-expired",
+              email: "expired@example.com",
+              provider: "google",
+            },
+            session: {
+              id: "session-expired",
+              expiresAt: new Date(Date.now() - 60 * 1000),
+            },
+          }),
+        },
+      },
+      new Headers(),
+    );
+
+    expect(sessionContext).toBeNull();
+  });
 });

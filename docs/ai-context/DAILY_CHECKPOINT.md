@@ -1,5 +1,42 @@
 # DAILY_CHECKPOINT — 2026-05-26 — 2.4-J Session Lifecycle Hardening
 
+## Session 6 — Commercial Trial Activation Runtime ✅ COMPLETE (runtime + docs)
+
+Etapa executada:
+
+- ✅ Implementado `activateTrialForOrganization()` com persistencia comercial no SAAS_DB
+- ✅ Endpoint `/api/subscription/activate-trial` ativando trial server-side
+- ✅ `subscriptions` agora persiste access_state, activated_at, trial_started_at, trial_expires_at, plan_type e tenant_state
+- ✅ Subscribe ganhou CTA de trial com loading/success/retry
+- ✅ Trial expirado agora bloqueia e atualiza status no SAAS_DB
+
+Branch atual:
+
+- `2.3-c-initial-onboarding-flow`
+
+Commits criados nesta sessão:
+
+- pendente de commit local
+
+Validações executadas:
+
+- ⏳ Aguardando lint/typecheck/test/diff-check após ajustes finais
+
+Estado atual:
+
+- **Trial activation** — ✅ server-side, persistido no SAAS_DB
+- **Commercial lifecycle** — ✅ estados bloqueiam/liberam dashboard
+- **Subscribe** — ✅ CTA de trial com retry
+- **Browser** — 🟡 ainda depende de sessão Google ativa para validação completa
+
+Bloqueador residual:
+
+- ⏳ validação visual do ciclo onboarding → subscribe → trial → dashboard
+
+Próxima etapa:
+
+- Rodar a suíte completa e validar o browser-first
+
 ## Session 5 — SaaS Access Enforcement ✅ COMPLETE (runtime + docs)
 
 Etapa executada:

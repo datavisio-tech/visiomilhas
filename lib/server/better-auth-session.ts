@@ -90,6 +90,37 @@ export async function resolveBetterAuthSessionContext(
     resolvedHeaders.get("user-agent"),
   );
 
+  const expiresAt = sessionContext.auth.expiresAt;
+  if (expiresAt && expiresAt.getTime() <= Date.now()) {
+    reportAuthEvent({
+      level: "warn",
+      code: "STALE_SESSION_DETECTED",
+      message: "Better Auth session is stale and will not be reused",
+      details: {
+        browserContext,
+        sessionLifecycle: "stale",
+        onboardingStage: "required",
+        recoveryStage: "cleanup",
+        ownershipState: "missing",
+      },
+    });
+
+    reportAuthEvent({
+      level: "info",
+      code: "SESSION_RECOVERY_CLEANUP",
+      message: "Stale session cleaned up before reuse",
+      details: {
+        browserContext,
+        sessionLifecycle: "cleaned",
+        onboardingStage: "required",
+        recoveryStage: "cleanup",
+        ownershipState: "missing",
+      },
+    });
+
+    return null;
+  }
+
   let resolvedSessionContext = sessionContext;
 
   // Ensure global user exists in admin DB (idempotent). Do not fail the request if DB is unavailable.

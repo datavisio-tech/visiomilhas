@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import TrialBanner from "../../components/layout/trial-banner";
 import { resolveControlledSessionContext } from "../../lib/server/controlled-session";
 import { resolveSubscriptionAccessContext } from "../../lib/server/subscription-access";
+import ActivateTrialButton from "./ActivateTrialButton.client";
 
 export default async function SubscribePage() {
   const sessionContext = await resolveControlledSessionContext({
@@ -28,6 +29,9 @@ export default async function SubscribePage() {
   const isAccessGranted =
     accessContext.accessState === "ACTIVE" ||
     accessContext.accessState === "TRIAL";
+  const isBlockedAccess =
+    accessContext.accessState === "CANCELED" ||
+    accessContext.accessState === "SUSPENDED";
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#eef2ff_0%,_#ffffff_42%,_#f8fafc_100%)] px-6 py-16">
@@ -106,9 +110,16 @@ export default async function SubscribePage() {
                 Ir para o dashboard
               </a>
             ) : (
-              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                O acesso comercial ainda não está ativo. O dashboard permanece
-                bloqueado até haver uma assinatura válida.
+              <div className="space-y-3">
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                  O acesso comercial ainda não está ativo. Ative o trial para liberar o dashboard.
+                </div>
+                <ActivateTrialButton disabled={isBlockedAccess} />
+                {isBlockedAccess ? (
+                  <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                    Esta assinatura esta bloqueada e nao permite ativar trial novamente.
+                  </div>
+                ) : null}
               </div>
             )}
 

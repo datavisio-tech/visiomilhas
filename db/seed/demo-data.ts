@@ -36,6 +36,21 @@ export const DEMO_ADMIN = {
   ],
 };
 
+export const DEMO_SUBSCRIBER = {
+  user: {
+    name: "Jucivan Freitas",
+    email: "jucivan.fsantos@gmail.com",
+    status: "active",
+  },
+  organization: {
+    name: "Jucivan Trial",
+    slug: "jucivan-trial",
+    status: "active",
+  },
+  trialDays: 15,
+  planCode: "free_trial",
+};
+
 export const DEMO_APP = {
   programs: [
     { slug: "livelo", name: "Livelo", type: "airline" },

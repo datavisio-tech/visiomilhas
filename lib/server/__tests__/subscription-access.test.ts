@@ -49,8 +49,16 @@ describe("evaluateSubscriptionAccess", () => {
       trialEndsAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
     });
 
-    expect(result.accessState).toBe("NO_SUBSCRIPTION");
+    expect(result.accessState).toBe("EXPIRED");
     expect(result.shouldRedirectToSubscribe).toBe(true);
-    expect(result.commercialLifecycleState).toBe("pending-subscribe");
+    expect(result.commercialLifecycleState).toBe("expired");
+  });
+
+  it("blocks expired subscriptions explicitly", () => {
+    const result = evaluateSubscriptionAccess({ status: "expired" });
+
+    expect(result.accessState).toBe("EXPIRED");
+    expect(result.shouldRedirectToSubscribe).toBe(true);
+    expect(result.commercialLifecycleState).toBe("expired");
   });
 });
