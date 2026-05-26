@@ -1,5 +1,21 @@
 # TODO_AI - Pendências e próximas ações
 
+## 2.4-H — Session 3 — Better Auth Drizzle Schema Alignment — ✅ COMPLETE
+
+**Status**: ✅ alinhamento lógico concluído; E2E real depende de credencial Google válida
+
+**Realizado (Session 3)**:
+- ✅ `lib/server/better-auth-schema.ts` exporta `user`, `session`, `account` e `verification`
+- ✅ Tabelas físicas `ba_users`, `ba_sessions`, `ba_accounts`, `ba_verification` mantidas intactas
+- ✅ `lib/auth.ts` e `db/adm/client.ts` passaram a consumir o namespace do schema
+- ✅ `npm run lint`, `npm run typecheck`, `npm run test` e `git diff --check` passaram
+- ✅ Navegador continua alcançando o Google com o callback correto
+
+**Bloqueador Externo Atual**:
+- ⏳ Tentativa com `test.visiomilhas@gmail.com` retornou conta não encontrada no Google
+- Impacto: impede o login real, portanto ainda não há confirmação final de `ba_users/ba_sessions/ba_accounts` com credencial válida
+- Ação: validar novamente com uma conta Google funcional quando disponível
+
 ## 2.4-H — Real User Runtime Validation & OAuth Stabilization — ✅ COMPLETE
 
 **Status**: ✅ 100% concluído (código + testes + documentação)

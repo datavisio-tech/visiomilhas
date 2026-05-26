@@ -1,5 +1,47 @@
 # DAILY_CHECKPOINT — 2026-05-25 — 2.4-H Real User Runtime Validation & OAuth Stabilization
 
+## Session 3 — Better Auth Drizzle Schema Alignment ✅ COMPLETE
+
+Etapa executada:
+
+- ✅ Alinhado o schema lógico exportado para Better Auth com os modelos singulares esperados (`user`, `session`, `account`, `verification`)
+- ✅ Mantidas as tabelas físicas existentes (`ba_users`, `ba_sessions`, `ba_accounts`, `ba_verification`)
+- ✅ Ajustado o wiring do adapter para consumir o namespace do schema
+- ✅ Revalidado lint/typecheck/test/git diff --check com sucesso
+- ✅ Confirmado no navegador que a rota de sign-in continua alcançando o Google com o callback correto
+
+Branch atual:
+
+- `2.3-c-initial-onboarding-flow`
+
+Commits criados nesta sessão:
+
+- pendente de commit para agrupar schema + docs
+
+Validações executadas:
+
+- ✅ `npm run lint`
+- ✅ `npm run typecheck`
+- ✅ `npm run test` — 57/57 passing
+- ✅ `git diff --check`
+
+Estado atual:
+
+- **Schema lógico Better Auth** — ✅ alinhado
+- **Tabelas físicas** — ✅ preservadas
+- **OAuth browser flow** — ✅ alcança o Google com callback correto
+- **E2E real login** — 🟡 ainda depende de credencial válida do Google
+
+Bloqueador residual:
+
+- ⏳ Login depende de credencial Google válida; a tentativa com `test.visiomilhas@gmail.com` retornou conta não encontrada
+
+Próxima etapa:
+
+- Validar novamente o fluxo real com uma conta Google válida e então persistir sessão/onboarding, se a credencial estiver disponível
+
+---
+
 ## Session 2 (Current) — E2E Validation & Database Verification ✅ COMPLETE
 
 **MAJOR VALIDATION COMPLETE**: ✅ Full OAuth runtime validation successful!

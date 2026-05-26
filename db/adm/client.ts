@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
-import betterAuthSchema from "../../lib/server/better-auth-schema";
+import * as betterAuthSchema from "../../lib/server/better-auth-schema";
 import { assertServerEnv } from "../../lib/env";
 
 let pool: Pool | null = null;

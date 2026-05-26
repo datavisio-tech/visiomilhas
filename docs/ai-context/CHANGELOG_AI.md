@@ -1,5 +1,46 @@
 # CHANGELOG_AI
 
+## 2026-05-25 — Fase 2.4-H (Session 3) — Better Auth Drizzle Schema Alignment — ✅ COMPLETE
+
+### Status: schema lógico alinhado, runtime validado localmente
+
+**Session 3 Achievements**:
+
+1. **Schema Alignment** — ✅ COMPLETE
+  - Corrigido o shape exportado por `lib/server/better-auth-schema.ts`
+  - Exports lógicos agora existem como `user`, `session`, `account` e `verification`
+  - Tabelas físicas permaneceram `ba_users`, `ba_sessions`, `ba_accounts` e `ba_verification`
+
+2. **Adapter Wiring** — ✅ COMPLETE
+  - `lib/auth.ts` passou a consumir o namespace do schema
+  - `db/adm/client.ts` permanece compatível com o mesmo namespace
+  - O ajuste é incremental e rollback-safe; nenhuma migration foi criada
+
+3. **Validation** — ✅ COMPLETE LOCALMENTE
+  - `npm run lint`: 0 errors, 0 warnings
+  - `npm run typecheck`: 0 errors
+  - `npm run test`: 57/57 tests passing
+  - `git diff --check`: limpo, com apenas avisos LF/CRLF no Windows
+
+### Runtime Readiness After Alignment
+
+| Capability | Status | Note |
+|-----------|--------|------|
+| Better Auth schema lookup | ✅ | `user/session/account/verification` agora exportados |
+| OAuth callback wiring | ✅ | Continua apontando para `/api/auth/callback/google` |
+| Session persistence | 🟡 | Pronto no runtime; E2E real depende de login Google válido |
+| Onboarding | 🟡 | Sem regressão observada; aguardando E2E completo |
+| Browser runtime | ✅ | Sign-in continua carregando normalmente |
+
+### Residual Blocker
+
+**Google account not found / credential-dependent login**
+- O fluxo chega ao Google com o callback correto.
+- A etapa de login continua dependente de credencial válida no provedor Google.
+- Não houve regressão no runtime do app após o alinhamento do schema.
+
+---
+
 ## 2026-05-25 — Fase 2.4-H (Session 2) — Real User Runtime Validation & OAuth Stabilization — ✅ COMPLETE
 
 ### Status: 100% READY FOR STAGING

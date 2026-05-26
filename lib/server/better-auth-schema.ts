@@ -1,15 +1,10 @@
-import {
-  pgTable,
-  text,
-  timestamp,
-  boolean,
-} from "drizzle-orm/pg-core";
+import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 // Minimal tables expected by @better-auth/drizzle-adapter.
-// These definitions are intentionally minimal and only provide the model
-// shapes required at runtime to avoid adapter schema lookup errors.
+// The adapter resolves logical model names from named exports, while the
+// physical tables remain the existing ba_* relations.
 
-export const ba_users = pgTable("ba_users", {
+export const user = pgTable("ba_users", {
   id: text("id").primaryKey(),
   email: text("email").notNull(),
   emailVerified: boolean("email_verified").notNull().default(false),
@@ -19,7 +14,7 @@ export const ba_users = pgTable("ba_users", {
   updatedAt: timestamp("updated_at").notNull(),
 });
 
-export const ba_sessions = pgTable("ba_sessions", {
+export const session = pgTable("ba_sessions", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
@@ -30,7 +25,7 @@ export const ba_sessions = pgTable("ba_sessions", {
   updatedAt: timestamp("updated_at").notNull(),
 });
 
-export const ba_accounts = pgTable("ba_accounts", {
+export const account = pgTable("ba_accounts", {
   id: text("id").primaryKey(),
   providerId: text("provider_id").notNull(),
   accountId: text("account_id").notNull(),
@@ -46,7 +41,7 @@ export const ba_accounts = pgTable("ba_accounts", {
   updatedAt: timestamp("updated_at").notNull(),
 });
 
-export const ba_verification = pgTable("ba_verification", {
+export const verification = pgTable("ba_verification", {
   id: text("id").primaryKey(),
   value: text("value").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
@@ -55,14 +50,18 @@ export const ba_verification = pgTable("ba_verification", {
   updatedAt: timestamp("updated_at").notNull(),
 });
 
-// Export a schema object mapping model names to the table objects. The
-// adapter will look for keys such as `verification`, `users`, `sessions`.
-// We map them to our minimal table names to satisfy the adapter's checks.
+export const ba_users = user;
+export const ba_sessions = session;
+export const ba_accounts = account;
+export const ba_verification = verification;
+
+// Export a schema object with the logical model names expected by the adapter.
+// Keep the historical ba_* aliases above for compatibility elsewhere.
 const betterAuthSchema = {
-  users: ba_users,
-  sessions: ba_sessions,
-  accounts: ba_accounts,
-  verification: ba_verification,
+  user,
+  session,
+  account,
+  verification,
 };
 
 export default betterAuthSchema;

@@ -110,6 +110,14 @@ Critérios de aceite:
 - Confirmar login, callback, logout, refresh e reopen no browser sem loops.
 - Ajustar Google Console se necessário evitar `redirect_uri_mismatch`.
 
+## 2.4-H — Session 3 — Better Auth Drizzle Schema Alignment
+
+- Alinhar o schema lógico exportado para Better Auth com os nomes esperados pelo adapter: `user`, `session`, `account`, `verification`.
+- Preservar as tabelas físicas existentes (`ba_users`, `ba_sessions`, `ba_accounts`, `ba_verification`) sem alterar migration, ownership ou arquitetura.
+- Consumir o namespace do schema diretamente em `lib/auth.ts` e manter compatibilidade no client Drizzle administrativo.
+- Revalidar lint, typecheck, testes e diff-check após o ajuste.
+- Tentar novamente o fluxo OAuth real apenas se houver credencial Google válida disponível; caso contrário, registrar o bloqueio externo sem mascarar o estado do runtime.
+
 ## 2.4-G — Real Google OAuth Staging Stabilization & Observability Expansion
 
 Objetivo: Resolver bloqueador de OAuth e estabilizar callback ponta-a-ponta.
