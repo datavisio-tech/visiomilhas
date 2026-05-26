@@ -4,6 +4,10 @@ import { redirect } from "next/navigation";
 import TrialBanner from "../../components/layout/trial-banner";
 import { resolveControlledSessionContext } from "../../lib/server/controlled-session";
 import { resolveSubscriptionAccessContext } from "../../lib/server/subscription-access";
+import {
+  evaluateRolloutSanity,
+  resolveRolloutAccess,
+} from "../../lib/server/rollout-control";
 import ActivateTrialButton from "./ActivateTrialButton.client";
 
 export default async function SubscribePage() {
@@ -17,6 +21,30 @@ export default async function SubscribePage() {
   }
 
   const requestHeaders = await headers();
+  const rolloutAccess = await resolveRolloutAccess(sessionContext, {
+    source: "subscribe.page",
+    requestHeaders,
+  });
+
+  if (!rolloutAccess.allowed) {
+    return (
+      <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#eef2ff_0%,_#ffffff_42%,_#f8fafc_100%)] px-6 py-16">
+        <section className="mx-auto flex max-w-3xl flex-col gap-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-lg shadow-slate-200/50">
+          <div className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-800">
+            Rollout control ativo
+          </div>
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
+            Acesso restrito ao grupo piloto.
+          </h1>
+          <p className="text-sm leading-7 text-slate-600">
+            Este ambiente está preparado para rollout controlado. Seu usuário
+            ainda não está liberado no grupo piloto operacional.
+          </p>
+        </section>
+      </main>
+    );
+  }
+
   const accessContext = await resolveSubscriptionAccessContext(sessionContext, {
     source: "subscribe.page",
     requestHeaders,
@@ -25,6 +53,13 @@ export default async function SubscribePage() {
   if (!accessContext) {
     redirect("/sign-in?callbackUrl=/subscribe");
   }
+
+  await evaluateRolloutSanity({
+    sessionContext,
+    accessContext,
+    source: "subscribe.page",
+    requestHeaders,
+  });
 
   const isAccessGranted =
     accessContext.accessState === "ACTIVE" ||

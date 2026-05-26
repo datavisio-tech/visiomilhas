@@ -10,6 +10,10 @@ import {
 } from "../../../lib/server/dashboard";
 import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
 import { resolveSubscriptionAccessContext } from "../../../lib/server/subscription-access";
+import {
+  evaluateRolloutSanity,
+  resolveRolloutAccess,
+} from "../../../lib/server/rollout-control";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import {
@@ -31,6 +35,15 @@ export default async function DashboardPage() {
     redirect("/sign-in?callbackUrl=/app/dashboard");
   }
 
+  const rolloutAccess = await resolveRolloutAccess(sessionContext, {
+    source: "dashboard.page",
+    requestHeaders: await headers(),
+  });
+
+  if (!rolloutAccess.allowed) {
+    redirect("/subscribe");
+  }
+
   const accessContext = await resolveSubscriptionAccessContext(sessionContext, {
     source: "dashboard.page",
     requestHeaders: await headers(),
@@ -43,6 +56,13 @@ export default async function DashboardPage() {
   if (accessContext.shouldRedirectToSubscribe) {
     redirect("/subscribe");
   }
+
+  await evaluateRolloutSanity({
+    sessionContext,
+    accessContext,
+    source: "dashboard.page",
+    requestHeaders: await headers(),
+  });
 
   const effectiveSessionContext =
     sessionContext.ownership.organizationId === accessContext.organizationId

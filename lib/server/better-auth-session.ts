@@ -118,6 +118,19 @@ export async function resolveBetterAuthSessionContext(
       },
     });
 
+    reportAuthEvent({
+      level: "info",
+      code: "STALE_SESSION_CLEANED",
+      message: "Stale session cleaned before reuse",
+      details: {
+        browserContext,
+        sessionLifecycle: "cleaned",
+        onboardingStage: "required",
+        recoveryStage: "cleanup",
+        ownershipState: "missing",
+      },
+    });
+
     return null;
   }
 
