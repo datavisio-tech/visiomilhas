@@ -1,3 +1,34 @@
+# DAILY_CHECKPOINT — 2026-05-26 — 3.2-C Legacy Replay/Inspection Schema Fallback — 🟡 IN PROGRESS
+
+## Session 10 — Replay inspection legacy fallback
+
+Etapa executada:
+
+- ✅ `loadFinancialReplayRows()` passou a degradar quando `lot_snapshot` ou `consumed_lot_id` não existem
+- ✅ Replay/inspection continuam priorizando runtime real sem exigir migration imediata
+- ✅ A falha de inspeção ligada a `lot_snapshot` foi tratada com compatibilidade legacy
+
+Branch atual:
+
+- `2.3-c-initial-onboarding-flow`
+
+Commits criados nesta sessão:
+
+- `b4ae42c` — `test(financial-runtime): valida walkthrough financeiro completo pós-hardening (3.2-C)`
+
+Validações executadas:
+
+- ✅ `npm run typecheck`
+
+Estado atual:
+
+- **Inspection replay** — 🟡 legacy fallback aplicado para `lot_snapshot`/`consumed_lot_id`
+- **Financial account inspection** — ✅ segue operacional, embora ainda possa reportar warnings de negócio do runtime real
+
+Próxima etapa:
+
+- Repetir a inspeção browser-first e confirmar que o replay não quebra mais no schema parcial
+
 # DAILY_CHECKPOINT — 2026-05-26 — 3.2-C Full Financial Operational Walkthrough — 🟡 BLOCKED BY GOOGLE CREDENTIAL
 
 ## Session 9 — Browser-first Financial Walkthrough Validation

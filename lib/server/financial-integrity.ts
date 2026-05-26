@@ -319,29 +319,90 @@ async function loadFinancialReplayRows(
   const accountFilter = accountId ? " AND account_id = $2" : "";
   const accountParams = accountId ? [organizationId, accountId] : [organizationId];
 
-  const entriesRes = await runner.query(
-    `SELECT id, organization_id, account_id, type, direction, points, amount_cents, occurred_at, description, source, status, consumed_lot_id, consumed_points, lot_snapshot, created_at
-     FROM mile_entries
-     WHERE organization_id = $1${accountFilter}
-     ORDER BY occurred_at ASC, id ASC`,
-    accountParams,
-  );
+  let entriesRes;
 
-  const lotsRes = await runner.query(
-    `SELECT id, organization_id, account_id, source_entry_id, acquired_points, remaining_points, total_cost_cents, cost_per_thousand_cents, issued_at, expires_at, status, created_at
-     FROM mile_point_lots
-     WHERE organization_id = $1${accountFilter}
-     ORDER BY issued_at ASC, id ASC`,
-    accountParams,
-  );
+  try {
+    entriesRes = await runner.query(
+      `SELECT id, organization_id, account_id, type, direction, points, amount_cents, occurred_at, description, source, status, consumed_lot_id, consumed_points, lot_snapshot, created_at
+       FROM mile_entries
+       WHERE organization_id = $1${accountFilter}
+       ORDER BY occurred_at ASC, id ASC`,
+      accountParams,
+    );
+  } catch (error: any) {
+    if (
+      error?.code === "42703" &&
+      (String(error?.message ?? "").includes("consumed_lot_id") ||
+        String(error?.message ?? "").includes("lot_snapshot"))
+    ) {
+      entriesRes = await runner.query(
+        `SELECT id, organization_id, account_id, type, direction, points, amount_cents, occurred_at, description, source, status, created_at
+         FROM mile_entries
+         WHERE organization_id = $1${accountFilter}
+         ORDER BY occurred_at ASC, id ASC`,
+        accountParams,
+      );
+    } else {
+      throw error;
+    }
+  }
 
-  const transfersRes = await runner.query(
-    `SELECT id, organization_id, from_account_id, to_account_id, points_sent, points_received, transferred_at, status, description, source_entry_id, destination_entry_id, created_at
-     FROM mile_transfers
-     WHERE organization_id = $1${accountId ? " AND (from_account_id = $2 OR to_account_id = $2)" : ""}
-     ORDER BY transferred_at ASC, id ASC`,
-    accountParams,
-  );
+  let lotsRes = { rows: [] as any[] };
+
+  try {
+    lotsRes = await runner.query(
+      `SELECT id, organization_id, account_id, source_entry_id, acquired_points, remaining_points, total_cost_cents, cost_per_thousand_cents, issued_at, expires_at, status, created_at
+       FROM mile_point_lots
+       WHERE organization_id = $1${accountFilter}
+       ORDER BY issued_at ASC, id ASC`,
+      accountParams,
+    );
+  } catch (error: any) {
+    if (
+      error?.code === "42703" &&
+      String(error?.message ?? "").includes("source_entry_id")
+    ) {
+      lotsRes = await runner.query(
+        `SELECT id, organization_id, account_id, acquired_points, remaining_points, total_cost_cents, cost_per_thousand_cents, issued_at, expires_at, status, created_at
+         FROM mile_point_lots
+         WHERE organization_id = $1${accountFilter}
+         ORDER BY issued_at ASC, id ASC`,
+        accountParams,
+      );
+    } else if (error?.code === "42P01" && String(error?.message ?? "").includes("mile_point_lots")) {
+      lotsRes = { rows: [] };
+    } else {
+      throw error;
+    }
+  }
+
+  let transfersRes;
+
+  try {
+    transfersRes = await runner.query(
+      `SELECT id, organization_id, from_account_id, to_account_id, points_sent, points_received, transferred_at, status, description, source_entry_id, destination_entry_id, created_at
+       FROM mile_transfers
+       WHERE organization_id = $1${accountId ? " AND (from_account_id = $2 OR to_account_id = $2)" : ""}
+       ORDER BY transferred_at ASC, id ASC`,
+      accountParams,
+    );
+  } catch (error: any) {
+    if (
+      error?.code === "42703" &&
+      (String(error?.message ?? "").includes("source_entry_id") ||
+        String(error?.message ?? "").includes("destination_entry_id"))
+    ) {
+      transfersRes = await runner.query(
+        `SELECT id, organization_id, from_account_id, to_account_id, points_sent, points_received, transferred_at, status, description, created_at
+         FROM mile_transfers
+         WHERE organization_id = $1${accountId ? " AND (from_account_id = $2 OR to_account_id = $2)" : ""}
+         ORDER BY transferred_at ASC, id ASC`,
+        accountParams,
+      );
+    } else {
+      throw error;
+    }
+  }
 
   return { entriesRes, lotsRes, transfersRes };
 }
@@ -570,12 +631,20 @@ async function loadAccountSummaryState(
     accountParams,
   );
 
-  const lotsRes = await runner.query(
-    `SELECT account_id, acquired_points, remaining_points
-     FROM mile_point_lots
-     WHERE organization_id = $1${input.accountId ? " AND account_id = $2" : ""}`,
-    accountParams,
-  );
+  let lotsRes = { rows: [] as any[] };
+
+  try {
+    lotsRes = await runner.query(
+      `SELECT account_id, acquired_points, remaining_points
+       FROM mile_point_lots
+       WHERE organization_id = $1${input.accountId ? " AND account_id = $2" : ""}`,
+      accountParams,
+    );
+  } catch (error: any) {
+    if (!(error?.code === "42P01" && String(error?.message ?? "").includes("mile_point_lots"))) {
+      throw error;
+    }
+  }
 
   const account = (accountsRes.rows as any[])[0] ?? null;
   const currentBalance = Number(account?.current_points_balance ?? 0);
@@ -670,7 +739,13 @@ export async function buildFifoIntegritySummary(
      FROM mile_point_lots
      WHERE organization_id = $1${input.accountId ? " AND account_id = $2" : ""}`,
     input.accountId ? [input.organizationId, input.accountId] : [input.organizationId],
-  );
+  ).catch((error: any) => {
+    if (error?.code === "42P01" && String(error?.message ?? "").includes("mile_point_lots")) {
+      return { rows: [] };
+    }
+
+    throw error;
+  });
   const warnings = collectOperationalWarnings(integrity.issues);
   const invalidRemainingPoints = integrity.issues.filter(
     (issue) => issue.code === "INVALID_CONSUMPTION_DETECTED",
