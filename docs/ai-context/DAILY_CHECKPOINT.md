@@ -1,3 +1,42 @@
+# DAILY_CHECKPOINT — 2026-05-26 — 3.0-A Milhas Ledger Runtime Foundation
+
+## Session 7 — FIFO Ledger Runtime Foundation ✅ COMPLETE
+
+Etapa executada:
+
+- ✅ Transferência FIFO agora credita a conta destino com entry, lote e saldo
+- ✅ `createSaleAction` e `createTransferAction` passaram a executar o use case FIFO dentro da mesma transação do insert inicial
+- ✅ `sale` e `transfer` agora respeitam `deps.appPool`, `deps.revalidatePath`, `deps.isFifoMovementsEngineEnabled` e os use cases injetados
+- ✅ Testes de runtime cobrindo rollback/ordem transacional foram adicionados para sale, transfer e motor FIFO
+
+Branch atual:
+
+- `2.3-c-initial-onboarding-flow`
+
+Commits criados nesta sessão:
+
+- pendente de commit local
+
+Validações executadas:
+
+- ✅ `npm exec vitest run lib/services/__tests__/movements.test.ts app/app/sales/__tests__/actions.sale.test.ts app/app/transfers/__tests__/actions.transfer.test.ts`
+- ✅ `npm run typecheck`
+- ✅ `git diff --check`
+
+Estado atual:
+
+- **Ledger FIFO** — ✅ transferência credita destino e preserva rollback
+- **Sales/Transfers actions** — ✅ commit acontece depois do use case FIFO
+- **Testability** — ✅ dependências críticas passaram a ser injetáveis
+
+Pendência:
+
+- ⏳ registrar commit local quando o pacote de mudanças for fechado
+
+Próxima etapa:
+
+- Revisar o diff final e preparar o commit local da fundação do ledger
+
 # DAILY_CHECKPOINT — 2026-05-26 — 2.4-J Session Lifecycle Hardening
 
 ## Session 6 — Commercial Trial Activation Runtime ✅ COMPLETE (runtime + docs)

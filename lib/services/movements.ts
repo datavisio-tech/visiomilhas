@@ -298,7 +298,18 @@ export function createMovementService(repo: MovementsRepo) {
   async function transferMiles(input: TransferMilesInput) {
     const data = transferMilesInputSchema.parse(input);
 
-    // For now: consume from source and create transfer record; creation of lot on destination is pending design
+    const destinationAccountId = data.toAccountId ?? null;
+
+    if (destinationAccountId !== null) {
+      const destinationAccount = await repo.findAccountById(destinationAccountId);
+      if (!destinationAccount) {
+        throw new AccountNotFoundError(
+          `account ${destinationAccountId} not found`,
+        );
+      }
+    }
+
+    // Consume from source first so the source balance and FIFO lots are updated atomically.
     const consumed = await consumeMiles({
       accountId: data.fromAccountId,
       amount: data.amount,
@@ -321,6 +332,39 @@ export function createMovementService(repo: MovementsRepo) {
           updatedAt: new Date(),
         })
       : { id: -1 };
+
+    if (destinationAccountId !== null) {
+      const destinationEntry = await repo.insertEntry({
+        organizationId: data.organizationId,
+        accountId: destinationAccountId,
+        type: "transfer",
+        direction: "credit",
+        points: data.amount,
+        occurredAt: data.occurredAt ?? new Date(),
+        description: data.description,
+        source: "transfer",
+        status: "posted",
+        metadata: data.metadata,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      await repo.insertLot({
+        organizationId: data.organizationId,
+        accountId: destinationAccountId,
+        sourceEntryId: destinationEntry.id,
+        acquiredPoints: data.amount,
+        remainingPoints: data.amount,
+        issuedAt: data.occurredAt ?? new Date(),
+        expiresAt: null,
+        status: "available",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        metadata: data.metadata,
+      });
+
+      await repo.updateProgramAccountBalance(destinationAccountId, data.amount);
+    }
 
     return {
       transferId: transferRecord.id,

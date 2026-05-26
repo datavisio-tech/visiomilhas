@@ -5,18 +5,27 @@ import { calculateTransferImpact } from "../../../lib/domain/miles-calculations"
 import { revalidatePath } from "next/cache";
 import { isFifoMovementsEngineEnabled } from "../../../lib/featureFlags";
 import { transferMilesUseCase } from "../../../lib/services/movements.use-cases";
+import { createDrizzleMovementsRepoFromClient } from "../../../lib/repositories/movements.drizzle-repo";
 import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
 import {
   AuthContextError,
   requireAuth,
 } from "../../../lib/server/auth-context";
 import { reportAuthEvent } from "../../../lib/server/auth-observability";
+import {
+  ensureNoDuplicateTransfer,
+  validateFinancialIntegrity,
+} from "../../../lib/server/financial-integrity";
 import { resolveOwnedAccount } from "../../../lib/server/ownership-resolvers";
 import { type SessionContextResolver } from "../../../lib/server/controlled-session";
 
 type Deps = {
+  appPool?: any;
   resolveSessionContext?: SessionContextResolver;
   resolveOwnedAccount?: typeof resolveOwnedAccount;
+  revalidatePath?: typeof revalidatePath;
+  isFifoMovementsEngineEnabled?: typeof isFifoMovementsEngineEnabled;
+  transferMilesUseCase?: typeof transferMilesUseCase;
 };
 
 export async function createTransferAction(
@@ -70,7 +79,7 @@ export async function createTransferAction(
       };
     }
 
-    const pool = appPool();
+    const pool = (deps.appPool ?? appPool)();
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
@@ -107,6 +116,23 @@ export async function createTransferAction(
         ? new Date(input.transferredAt)
         : new Date();
 
+      if (
+        await ensureNoDuplicateTransfer(client, {
+          organizationId: orgId,
+          fromAccountId: input.fromAccountId,
+          toAccountId: input.toAccountId,
+          pointsSent: Number(input.pointsSent),
+          pointsReceived: Number(impact.pointsReceived),
+          feeCents: Number(input.feeCents || 0),
+          bonusPercent: Number(input.bonusPercent || 0),
+          transferredAt: now,
+          description: input.description || null,
+        })
+      ) {
+        await client.query("ROLLBACK");
+        return { success: false, error: "duplicate operation blocked" };
+      }
+
       const insertTransfer = await client.query(
         `INSERT INTO mile_transfers (organization_id, from_account_id, to_account_id, points_sent, points_received, bonus_percentage, transfer_fee_cents, transferred_at, status, description, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,NOW(),NOW()) RETURNING id`,
         [
@@ -123,17 +149,19 @@ export async function createTransferAction(
         ],
       );
 
-      if (isFifoMovementsEngineEnabled()) {
-        await client.query("COMMIT");
+      if ((deps.isFifoMovementsEngineEnabled ?? isFifoMovementsEngineEnabled)()) {
+        const txRepo = createDrizzleMovementsRepoFromClient(client);
 
-        await transferMilesUseCase({
+        await (deps.transferMilesUseCase ?? transferMilesUseCase)({
           organizationId: orgId,
           fromAccountId: input.fromAccountId,
           toAccountId: input.toAccountId,
           amount: Number(input.pointsSent),
           description: input.description || undefined,
           occurredAt: now,
-        });
+        }, txRepo);
+
+        await client.query("COMMIT");
       } else {
         await client.query(
           `INSERT INTO mile_entries (organization_id, program_id, account_id, type, direction, points, occurred_at, status, description, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),NOW())`,
@@ -186,10 +214,16 @@ export async function createTransferAction(
         await client.query("COMMIT");
       }
 
-      revalidatePath("/app/dashboard");
-      revalidatePath("/app/accounts");
-      revalidatePath("/app/entries");
-      revalidatePath("/app/transfers");
+      await validateFinancialIntegrity(client, {
+        organizationId: orgId,
+        source: "transfer.action",
+        emitEvents: true,
+      });
+
+      (deps.revalidatePath ?? revalidatePath)("/app/dashboard");
+      (deps.revalidatePath ?? revalidatePath)("/app/accounts");
+      (deps.revalidatePath ?? revalidatePath)("/app/entries");
+      (deps.revalidatePath ?? revalidatePath)("/app/transfers");
 
       return { success: true, transferId: insertTransfer.rows[0].id };
     } catch (error) {

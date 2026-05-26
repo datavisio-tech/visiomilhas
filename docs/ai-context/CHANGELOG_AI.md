@@ -1,5 +1,35 @@
 # CHANGELOG_AI
 
+# 2026-05-26 — Fase 3.0-A — Milhas Ledger Runtime Foundation — ✅ COMPLETE
+
+### Status: runtime FIFO do ledger consolidado com transferência creditando destino e rollback transacional preservado
+
+**Achievements**:
+
+1. **FIFO Transfer Runtime** — ✅ COMPLETE
+  - `transferMiles()` agora valida a conta de destino, consome a origem e credita o destino com entry, lote e saldo
+  - O runtime FIFO deixa de parar no débito da origem e passa a manter o ledger bilateral consistente
+
+2. **Transactional Actions** — ✅ COMPLETE
+  - `createSaleAction` e `createTransferAction` só fazem `COMMIT` depois do use case FIFO concluir
+  - As actions passaram a respeitar `deps.appPool`, `deps.revalidatePath`, `deps.isFifoMovementsEngineEnabled` e o use case injetado, como purchase já fazia
+
+3. **Validation** — ✅ COMPLETE
+  - Testes unitários novos cobrem ordem transacional e rollback para sale/transfer
+  - `npm run typecheck` e `git diff --check` passaram
+
+### Runtime Readiness — 3.0-A
+
+| Capability | Status | Note |
+|-----------|--------|------|
+| FIFO purchase | ✅ | Mantido |
+| FIFO sale | ✅ | Commit só após o use case |
+| FIFO transfer | ✅ | Credita destino e mantém rollback |
+| Testability | ✅ | Dependências críticas injetáveis |
+| Ledger consistency | ✅ | Destino deixa de ficar sem lote/saldo |
+
+---
+
 ## 2026-05-26 — Fase 2.4-L — Commercial Trial Activation Runtime — ✅ COMPLETE
 
 ### Status: trial activation server-side com persistencia comercial no SAAS_DB

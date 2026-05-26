@@ -5,6 +5,10 @@ import { revalidatePath } from "next/cache";
 import { isFifoMovementsEngineEnabled } from "../../../lib/featureFlags";
 import { acquireMilesUseCase } from "../../../lib/services/movements.use-cases";
 import { createDrizzleMovementsRepoFromClient } from "../../../lib/repositories/movements.drizzle-repo";
+import {
+  ensureNoDuplicatePurchase,
+  validateFinancialIntegrity,
+} from "../../../lib/server/financial-integrity";
 import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
 import {
   AuthContextError,
@@ -81,6 +85,20 @@ export async function createPurchaseAction(
 
       const now = input.purchasedAt ? new Date(input.purchasedAt) : new Date();
 
+      if (
+        await ensureNoDuplicatePurchase(client, {
+          organizationId: orgId,
+          accountId: input.accountId,
+          points: Number(input.points),
+          totalCostCents: Number(input.totalCostCents),
+          purchasedAt: now,
+          description: input.description || null,
+        })
+      ) {
+        await client.query("ROLLBACK");
+        return { success: false, error: "duplicate operation blocked" };
+      }
+
       const insertPurchase = await client.query(
         `INSERT INTO mile_purchases (organization_id, program_id, account_id, points, total_cost_cents, cost_per_thousand_cents, purchased_at, status, description, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),NOW()) RETURNING id`,
         [
@@ -147,6 +165,13 @@ export async function createPurchaseAction(
       }
 
       await client.query("COMMIT");
+
+      await validateFinancialIntegrity(client, {
+        organizationId: orgId,
+        accountId: input.accountId,
+        source: "purchase.action",
+        emitEvents: true,
+      });
 
       (deps.revalidatePath ?? revalidatePath)("/app/dashboard");
       (deps.revalidatePath ?? revalidatePath)("/app/accounts");
