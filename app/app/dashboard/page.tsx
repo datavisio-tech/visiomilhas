@@ -1,10 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import MetricCard from "../../../components/dashboard/metric-card";
-import EmptyState from "../../../components/ui/empty-state";
 import PageHeader from "../../../components/ui/page-header";
 import TrialBanner from "../../../components/layout/trial-banner";
+import MetricCard from "../../../components/dashboard/metric-card";
+import DashboardChart from "../../../components/dashboard/dashboard-chart";
+import EmptyState from "../../../components/ui/empty-state";
 import { getMetrics } from "../../../lib/server/dashboard";
 import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
 import { resolveSubscriptionAccessContext } from "../../../lib/server/subscription-access";
@@ -17,65 +18,11 @@ import { redirect } from "next/navigation";
 import {
   formatMoneyCents,
   formatPoints,
-  humanizeOperationalStatus,
-  prioritizeWarnings,
-  buildNarrativeStatus,
 } from "../../../components/financial/operational-guidance";
-import {
-  reportAuthEvent,
-  resolveBrowserContextTag,
-} from "../../../lib/server/auth-observability";
-import {
-  buildOwnershipContext,
-  buildSessionContext,
-} from "../../../lib/server/auth-context";
 import { getAccountsOverview } from "../../../lib/data/accounts";
 import { getPurchasesOverview } from "../../../lib/data/purchases";
 import { getSalesOverview } from "../../../lib/data/sales";
 import { getTransfersOverview } from "../../../lib/data/transfers";
-import { appPool } from "../../../db/app/client";
-import {
-  validateFinancialIntegrity,
-  type FinancialIntegrityIssue,
-} from "../../../lib/server/financial-integrity";
-
-const criticalIntegrityCodes = new Set<FinancialIntegrityIssue["code"]>([
-  "NEGATIVE_BALANCE_DETECTED",
-  "ORPHAN_LOT_DETECTED",
-  "ACCOUNT_ORPHAN_DETECTED",
-  "OWNERSHIP_INCONSISTENT_DETECTED",
-]);
-
-function mapIssueToWarning(issue: FinancialIntegrityIssue): string {
-  switch (issue.code) {
-    case "NEGATIVE_BALANCE_DETECTED":
-      return "saldo negativo detectado";
-    case "ORPHAN_LOT_DETECTED":
-      return "lote órfão detectado";
-    case "FIFO_DIVERGENCE_DETECTED":
-      return "divergência de saldo entre lote e conta";
-    case "INVALID_CONSUMPTION_DETECTED":
-      return "consumo inválido na sequência FIFO";
-    case "DELTA_INCONSISTENT_DETECTED":
-      return "replay divergente com delta inconsistente";
-    case "BALANCE_ABOVE_ALLOWED_DETECTED":
-      return "saldo impossível acima do permitido";
-    case "ACCOUNT_ORPHAN_DETECTED":
-      return "account orfã sem vínculo operacional";
-    case "OWNERSHIP_INCONSISTENT_DETECTED":
-      return "ownership inconsistente na conta";
-    default:
-      return "aviso operacional detectado";
-  }
-}
-
-function resolveIntegrityStatus(issues: FinancialIntegrityIssue[]) {
-  if (issues.length === 0) return "consistent" as const;
-  if (issues.some((issue) => criticalIntegrityCodes.has(issue.code))) {
-    return "broken" as const;
-  }
-  return "warning" as const;
-}
 
 export default async function DashboardPage() {
   const sessionContext = await resolveControlledSessionContext({
@@ -101,11 +48,7 @@ export default async function DashboardPage() {
     requestHeaders: await headers(),
   });
 
-  if (!accessContext) {
-    redirect("/subscribe");
-  }
-
-  if (accessContext.shouldRedirectToSubscribe) {
+  if (!accessContext || accessContext.shouldRedirectToSubscribe) {
     redirect("/subscribe");
   }
 
@@ -116,112 +59,51 @@ export default async function DashboardPage() {
     requestHeaders: await headers(),
   });
 
-  const effectiveSessionContext =
-    sessionContext.ownership.organizationId === accessContext.organizationId
-      ? sessionContext
-      : buildSessionContext(
-          sessionContext.auth,
-          buildOwnershipContext({
-            userId: sessionContext.auth.userId,
-            accountId: sessionContext.ownership.accountId ?? null,
-            organizationId: accessContext.organizationId,
-            ownsAccount: sessionContext.ownership.ownsAccount,
-            ownsOrganizationScope: true,
-          }),
-        );
+  const [metrics, accounts, purchases, sales, transfers] = await Promise.all([
+    getMetrics(sessionContext),
+    getAccountsOverview(sessionContext),
+    getPurchasesOverview(sessionContext, 5),
+    getSalesOverview(sessionContext, 5),
+    getTransfersOverview(sessionContext, 5),
+  ]);
 
-  if (!effectiveSessionContext.ownership.organizationId) {
-    const requestHeaders = await headers();
-    const browserContext = resolveBrowserContextTag(
-      requestHeaders.get("user-agent"),
-    );
-
-    reportAuthEvent({
-      level: "warn",
-      code: "ONBOARDING_CONTEXT_MISSING",
-      message: "Dashboard requires onboarding before rendering data",
-      details: {
-        source: "dashboard.page",
-        onboardingStage: "required",
-        recoveryStage: "direct",
-        ownershipState: "missing",
-        browserContext,
-        sessionLifecycle: sessionContext.auth.sessionId ? "persisted" : "missing",
-      },
-    });
-
-    reportAuthEvent({
-      level: "info",
-      code: "ONBOARDING_REQUIRED_REDIRECT",
-      message: "Redirecting dashboard to onboarding",
-      details: {
-        source: "dashboard.page",
-        onboardingStage: "redirect",
-        recoveryStage: "direct",
-        ownershipState: "missing",
-        browserContext,
-        sessionLifecycle: sessionContext.auth.sessionId ? "persisted" : "missing",
-        redirectPath: "/app/onboarding",
-      },
-    });
-
-    redirect("/app/onboarding");
-  }
-
-  const organizationId = effectiveSessionContext.ownership.organizationId;
-  const pool = appPool();
-
-  const [metrics, accounts, purchases, sales, transfers, integrity] =
-    await Promise.all([
-      getMetrics(effectiveSessionContext),
-      getAccountsOverview(effectiveSessionContext),
-      getPurchasesOverview(effectiveSessionContext, 5),
-      getSalesOverview(effectiveSessionContext, 5),
-      getTransfersOverview(effectiveSessionContext, 5),
-      validateFinancialIntegrity(pool, {
-        organizationId,
-        source: "dashboard.page",
-        emitEvents: false,
-      }),
-    ]);
-
-  const purchasedMiles = purchases.reduce(
-    (sum, purchase) => sum + (purchase.points || 0),
-    0,
-  );
-  const soldMiles = sales.reduce((sum, sale) => sum + (sale.points || 0), 0);
-  const transferredMiles = transfers.reduce(
-    (sum, transfer) => sum + (transfer.pointsSent || 0),
-    0,
-  );
-  const revenueCents = sales.reduce(
+  const totalRevenueCents = sales.reduce(
     (sum, sale) => sum + (sale.revenueCents || 0),
     0,
   );
-  const profitCents = sales.reduce(
+  const totalProfitCents = sales.reduce(
     (sum, sale) => sum + (sale.profitCents || 0),
     0,
   );
-  const marginPercent = revenueCents > 0 ? (profitCents / revenueCents) * 100 : 0;
-  const warnings = prioritizeWarnings(
-    integrity.issues.map((issue) => mapIssueToWarning(issue)),
-  );
-  const integrityStatus = resolveIntegrityStatus(integrity.issues);
-  const statusMeta = humanizeOperationalStatus(integrityStatus);
-  const validationLabel = buildNarrativeStatus(
-    integrityStatus,
-    warnings.length,
-  );
-  const validatedAt = new Date().toLocaleString("pt-BR");
-  const reconcilePending = integrity.issues.length;
+  const marginPercent =
+    totalRevenueCents > 0 ? (totalProfitCents / totalRevenueCents) * 100 : 0;
+  const uniquePrograms = Array.from(
+    new Set(accounts.map((account) => account.program).filter(Boolean)),
+  ).slice(0, 3) as string[];
 
-  const quickActions = [
-    { href: "/app/purchases", label: "Nova compra", description: "Registrar uma nova aquisição de milhas." },
-    { href: "/app/sales", label: "Nova venda", description: "Abrir a tela de venda operacional." },
-    { href: "/app/transfers", label: "Nova transferência", description: "Mover saldo entre programas." },
-    { href: "/app/inspection", label: "Inspeção", description: "Abrir replay, FIFO e recovery guiado." },
-    { href: "/app/inspection", label: "Reconcile", description: "Validar e corrigir inconsistências." },
-  ];
+  const recentMovements = [
+    ...purchases.map((purchase) => ({
+      kind: "Compra",
+      title: purchase.program ?? purchase.account ?? `Compra #${purchase.id}`,
+      detail: `${purchase.points.toLocaleString()} pts · ${formatMoneyCents(purchase.valueCents)}`,
+      tone: "emerald" as const,
+    })),
+    ...sales.map((sale) => ({
+      kind: "Venda",
+      title: sale.program ?? sale.account ?? `Venda #${sale.id}`,
+      detail: `${sale.points.toLocaleString()} pts · ${formatMoneyCents(sale.revenueCents)}`,
+      tone: "blue" as const,
+    })),
+    ...transfers.map((transfer) => ({
+      kind: "Transferência",
+      title:
+        transfer.fromProgram ??
+        transfer.fromAccount ??
+        `Transferência #${transfer.id}`,
+      detail: `${transfer.pointsSent.toLocaleString()} → ${transfer.pointsReceived.toLocaleString()} pts`,
+      tone: "violet" as const,
+    })),
+  ].slice(0, 6);
 
   return (
     <div className="space-y-6">
@@ -229,13 +111,14 @@ export default async function DashboardPage() {
         <TrialBanner
           tone="warning"
           title="Seu trial SaaS está ativo"
-          description="O dashboard continua operacional enquanto o período de avaliação estiver válido."
+          description="Você pode continuar operando o painel enquanto o período de avaliação estiver válido."
         />
       ) : null}
+
       <PageHeader
-        eyebrow="MVP operacional"
-        title="Dashboard operacional"
-        subtitle="Resumo do SaaS com leitura humana: saldo, margem, integridade, warnings e ações rápidas para operar sem perder o contexto."
+        eyebrow="Painel"
+        title="Painel"
+        subtitle="Visão simples do saldo, lucro e movimentações da sua operação."
         actions={
           <>
             <Link
@@ -245,10 +128,16 @@ export default async function DashboardPage() {
               Nova compra
             </Link>
             <Link
-              href="/app/inspection"
+              href="/app/sales"
               className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:text-slate-950"
             >
-              Inspeção
+              Nova venda
+            </Link>
+            <Link
+              href="/app/transfers"
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:text-slate-950"
+            >
+              Transferência
             </Link>
           </>
         }
@@ -258,144 +147,65 @@ export default async function DashboardPage() {
         <MetricCard
           title="Saldo total"
           value={formatPoints(metrics.totalBalance)}
-          caption="Saldo operacional em todas as contas"
+          caption="Saldo consolidado das contas"
           tone="success"
-        />
-        <MetricCard
-          title="Milhas totais"
-          value={formatPoints(purchasedMiles)}
-          caption="Volume comprado no período recente"
-          tone="neutral"
         />
         <MetricCard
           title="Custo médio"
           value={formatMoneyCents(metrics.avgCpmCents)}
-          caption="CPM médio consolidado"
-          tone="neutral"
+          caption="Custo do milheiro consolidado"
         />
         <MetricCard
-          title="Margem atual"
-          value={`${marginPercent.toFixed(1)}%`}
-          caption={
-            revenueCents > 0
-              ? `Receita ${formatMoneyCents(revenueCents)} · Lucro ${formatMoneyCents(profitCents)}`
-              : "Ainda sem vendas suficientes para calcular margem"
-          }
+          title="Lucro total"
+          value={formatMoneyCents(totalProfitCents)}
+          caption={`Margem de ${marginPercent.toFixed(1)}% nas vendas recentes`}
           tone={marginPercent >= 0 ? "success" : "warning"}
+        />
+        <MetricCard
+          title="Valor em reais"
+          value={formatMoneyCents(totalRevenueCents)}
+          caption={`${sales.length} venda(s) recentes`}
         />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[1.3fr_0.9fr_0.9fr]">
+      <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-                Estado operacional
+              <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                Evolução do saldo
               </div>
               <h2 className="mt-2 text-lg font-semibold text-slate-950">
-                Confiança operacional do runtime
+                Visão simples da operação
               </h2>
               <p className="mt-1 text-sm text-slate-600">
-                {validationLabel} validado agora para a organização atual.
+                Resumo visual da rotina do produto com leitura rápida para o dia
+                a dia.
               </p>
             </div>
-            <div className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${statusMeta.tone === "ok" ? "bg-emerald-100 text-emerald-800" : statusMeta.tone === "attention" ? "bg-amber-100 text-amber-800" : "bg-rose-100 text-rose-800"}`}>
-              {statusMeta.label}
-            </div>
+            <Link
+              href="/app/inspection"
+              className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-950"
+            >
+              Diagnóstico avançado
+            </Link>
           </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <StatusFact label="Última validação" value={validatedAt} />
-            <StatusFact label="Warnings ativos" value={String(warnings.length)} />
-            <StatusFact label="Reconcile pendentes" value={String(reconcilePending)} />
-            <StatusFact label="Integridade" value={integrity.isConsistent ? "consistente" : "requer atenção"} />
-            <StatusFact
-              label="Pontos a receber"
-              value={formatPoints(metrics.pointsToReceive)}
-            />
-            <StatusFact label="Milhas vendidas" value={formatPoints(soldMiles)} />
-            <StatusFact
-              label="Milhas transferidas"
-              value={formatPoints(transferredMiles)}
-            />
-          </div>
-
-          <div className="mt-5 rounded-2xl bg-slate-50 p-4">
-            <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
-              Operar agora
-            </div>
-            <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              {quickActions.map((action) => (
-                <Link
-                  key={action.href + action.label}
-                  href={action.href}
-                  className="rounded-2xl border border-slate-200 bg-white p-3 text-left transition hover:border-slate-300 hover:shadow-sm"
-                >
-                  <div className="text-sm font-semibold text-slate-950">
-                    {action.label}
-                  </div>
-                  <div className="mt-1 text-xs leading-5 text-slate-600">
-                    {action.description}
-                  </div>
-                </Link>
-              ))}
-            </div>
+          <div className="mt-5">
+            <DashboardChart />
           </div>
         </section>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-            Alertas operacionais
-          </div>
-          <h2 className="mt-2 text-lg font-semibold text-slate-950">
-            Warnings ativos e próximos passos
-          </h2>
-          <div className="mt-4 space-y-3">
-            {warnings.length === 0 ? (
-              <EmptyState
-                title="Nenhum warning ativo"
-                description="O runtime está coerente neste momento. Continue operando com inspeção periódica para manter a estabilidade."
-                actionLabel="Abrir inspeção"
-                actionHref="/app/inspection"
-                supportingText="fluxo saudável"
-              />
-            ) : (
-              warnings.slice(0, 4).map((warning) => (
-                <div
-                  key={`${warning.problem}-${warning.impactArea}`}
-                  className="rounded-2xl border border-amber-200 bg-amber-50 p-4"
-                >
-                  <div className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">
-                    {warning.priority}
-                  </div>
-                  <div className="mt-1 text-sm font-semibold text-amber-950">
-                    {warning.problem}
-                  </div>
-                  <div className="mt-2 text-sm text-amber-900">
-                    {warning.action}
-                  </div>
-                  <div className="mt-2 text-xs text-amber-800">
-                    Recovery: {warning.recoveryAction}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </section>
-
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+          <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
             Contas principais
           </div>
-          <h2 className="mt-2 text-lg font-semibold text-slate-950">
-            Base operacional da organização
-          </h2>
-          <div className="mt-4 space-y-3">
+          <div className="mt-3 space-y-3">
             {accounts.length === 0 ? (
               <EmptyState
-                title="Sem contas ainda"
-                description="Crie a primeira conta para começar a registrar compras, vendas e transferências com contexto operacional completo."
-                actionLabel="Ir para onboarding"
+                title="Nenhuma conta ainda"
+                description="Crie a primeira conta para começar a operar compras, vendas e transferências."
+                actionLabel="Abrir onboarding"
                 actionHref="/app/onboarding"
                 supportingText="primeiro passo"
               />
@@ -405,27 +215,26 @@ export default async function DashboardPage() {
                   key={account.id}
                   className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="text-sm font-semibold text-slate-950">
-                        {account.nickname}
-                      </div>
-                      <div className="text-xs text-slate-500">
-                        {account.program ?? "Programa não identificado"}
-                      </div>
-                    </div>
-                    <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600">
-                      Conta ativa
-                    </div>
+                  <div className="text-sm font-semibold text-slate-950">
+                    {account.nickname}
                   </div>
-                  <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-slate-700">
+                  <div className="mt-1 text-xs text-slate-500">
+                    {account.program ?? "Programa não identificado"}
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
                     <div>
-                      <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Saldo</div>
-                      <div className="font-semibold text-slate-950">{formatPoints(account.balance)}</div>
+                      <div className="text-xs uppercase tracking-[0.18em] text-slate-400">
+                        Saldo
+                      </div>
+                      <div className="mt-1 font-semibold text-slate-950">
+                        {formatPoints(account.balance)}
+                      </div>
                     </div>
                     <div>
-                      <div className="text-xs uppercase tracking-[0.18em] text-slate-400">CPM</div>
-                      <div className="font-semibold text-slate-950">
+                      <div className="text-xs uppercase tracking-[0.18em] text-slate-400">
+                        CPM
+                      </div>
+                      <div className="mt-1 font-semibold text-slate-950">
                         {formatMoneyCents(account.cpmCents)}
                       </div>
                     </div>
@@ -434,69 +243,152 @@ export default async function DashboardPage() {
               ))
             )}
           </div>
+
+          {uniquePrograms.length > 0 ? (
+            <div className="mt-5 rounded-2xl border border-dashed border-slate-200 bg-white p-4">
+              <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                Programas ativos
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {uniquePrograms.map((program) => (
+                  <span
+                    key={program}
+                    className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"
+                  >
+                    {program}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </section>
       </div>
 
-      <section className="grid gap-4 xl:grid-cols-3">
-        <ActivityPanel
-          title="Compras recentes"
-          emptyTitle="Sem compras registradas"
-          emptyDescription="Registre sua primeira compra para alimentar o saldo operacional e o custo médio."
-          emptyHref="/app/purchases"
-          items={purchases.map((purchase) => ({
-            title: purchase.program ?? purchase.account ?? `Compra #${purchase.id}`,
-            lines: [
-              `${purchase.points.toLocaleString()} pts`,
-              formatMoneyCents(purchase.valueCents),
-              purchase.status,
-            ],
-          }))}
-        />
-        <ActivityPanel
-          title="Vendas recentes"
-          emptyTitle="Sem vendas registradas"
-          emptyDescription="Abra a tela de vendas quando quiser realizar a primeira liquidação operacional."
-          emptyHref="/app/sales"
-          items={sales.map((sale) => ({
-            title: sale.program ?? sale.account ?? `Venda #${sale.id}`,
-            lines: [
-              `${sale.points.toLocaleString()} pts`,
-              formatMoneyCents(sale.revenueCents),
-              sale.status,
-            ],
-          }))}
-        />
-        <ActivityPanel
-          title="Transferências recentes"
-          emptyTitle="Sem transferências registradas"
-          emptyDescription="Movimente pontos entre programas quando precisar ajustar a estratégia operacional."
-          emptyHref="/app/transfers"
-          items={transfers.map((transfer) => ({
-            title: transfer.fromProgram ?? transfer.fromAccount ?? `Transferência #${transfer.id}`,
-            lines: [
-              `${transfer.pointsSent.toLocaleString()} -> ${transfer.pointsReceived.toLocaleString()} pts`,
-              `${transfer.bonusPercent}% bônus`,
-              transfer.status,
-            ],
-          }))}
-        />
-      </section>
-    </div>
-  );
-}
+      <div className="grid gap-4 xl:grid-cols-2">
+        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+            Movimentações recentes
+          </div>
+          <div className="mt-4 space-y-3">
+            {recentMovements.length === 0 ? (
+              <EmptyState
+                title="Sem movimentações recentes"
+                description="As primeiras compras, vendas e transferências aparecerão aqui para mostrar a atividade da conta."
+                actionLabel="Ir para compras"
+                actionHref="/app/purchases"
+                supportingText="atividade inicial"
+              />
+            ) : (
+              recentMovements.map((movement, index) => (
+                <div
+                  key={`${movement.kind}-${movement.title}-${index}`}
+                  className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                >
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                      {movement.kind}
+                    </div>
+                    <div className="mt-1 text-sm font-semibold text-slate-950">
+                      {movement.title}
+                    </div>
+                    <div className="mt-1 text-sm text-slate-600">
+                      {movement.detail}
+                    </div>
+                  </div>
+                  <div
+                    className={`rounded-full px-3 py-1 text-xs font-medium ${
+                      movement.tone === "emerald"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : movement.tone === "blue"
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-violet-100 text-violet-700"
+                    }`}
+                  >
+                    Recentemente
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
 
-function StatusFact({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-3">
-      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-        {label}
+        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+            Compras e vendas
+          </div>
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <CompactList
+              title="Compras recentes"
+              emptyTitle="Nenhuma compra registrada"
+              emptyDescription="Registre sua primeira compra para alimentar o saldo e o custo médio."
+              emptyHref="/app/purchases"
+              items={purchases.map((purchase) => ({
+                label:
+                  purchase.program ??
+                  purchase.account ??
+                  `Compra #${purchase.id}`,
+                detail: `${purchase.points.toLocaleString()} pts · ${formatMoneyCents(purchase.valueCents)}`,
+              }))}
+            />
+            <CompactList
+              title="Vendas recentes"
+              emptyTitle="Nenhuma venda registrada"
+              emptyDescription="A primeira venda vai mostrar receita, lucro e movimentação no painel."
+              emptyHref="/app/sales"
+              items={sales.map((sale) => ({
+                label: sale.program ?? sale.account ?? `Venda #${sale.id}`,
+                detail: `${sale.points.toLocaleString()} pts · ${formatMoneyCents(sale.revenueCents)}`,
+              }))}
+            />
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+              Transferências recentes
+            </div>
+            <div className="mt-3 space-y-2">
+              {transfers.length === 0 ? (
+                <div className="text-sm text-slate-600">
+                  Nenhuma transferência registrada ainda.
+                </div>
+              ) : (
+                transfers.slice(0, 3).map((transfer) => (
+                  <div
+                    key={transfer.id}
+                    className="flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-2 text-sm shadow-sm"
+                  >
+                    <span className="font-medium text-slate-950">
+                      {transfer.fromProgram ?? transfer.fromAccount ?? "Origem"}
+                    </span>
+                    <span className="text-slate-500">→</span>
+                    <span className="font-medium text-slate-950">
+                      {transfer.toProgram ?? transfer.toAccount ?? "Destino"}
+                    </span>
+                    <span className="text-slate-600">
+                      {transfer.pointsSent.toLocaleString()} pts
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </section>
       </div>
-      <div className="mt-2 text-sm font-medium text-slate-950">{value}</div>
+
+      <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm">
+        <span>Visão operacional simplificada para uso diário.</span>
+        <Link
+          href="/app/inspection"
+          className="text-slate-500 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-950"
+        >
+          Diagnóstico avançado
+        </Link>
+      </div>
     </div>
   );
 }
 
-function ActivityPanel({
+function CompactList({
   title,
   emptyTitle,
   emptyDescription,
@@ -507,35 +399,34 @@ function ActivityPanel({
   emptyTitle: string;
   emptyDescription: string;
   emptyHref: string;
-  items: Array<{ title: string; lines: string[] }>;
+  items: Array<{ label: string; detail: string }>;
 }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-        {title}
-      </div>
-      <div className="mt-3 space-y-3">
+    <div className="space-y-3">
+      <div className="text-sm font-semibold text-slate-950">{title}</div>
+      <div className="space-y-2">
         {items.length === 0 ? (
           <EmptyState
             title={emptyTitle}
             description={emptyDescription}
             actionLabel="Abrir tela"
             actionHref={emptyHref}
-            supportingText="fluxo guiado"
+            supportingText="sem histórico"
           />
         ) : (
           items.slice(0, 4).map((item) => (
-            <div key={`${item.title}-${item.lines[0]}`} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <div className="text-sm font-semibold text-slate-950">{item.title}</div>
-              <div className="mt-2 space-y-1 text-sm text-slate-600">
-                {item.lines.map((line) => (
-                  <div key={line}>{line}</div>
-                ))}
+            <div
+              key={`${item.label}-${item.detail}`}
+              className="rounded-2xl border border-slate-200 bg-white p-3"
+            >
+              <div className="text-sm font-medium text-slate-950">
+                {item.label}
               </div>
+              <div className="mt-1 text-sm text-slate-600">{item.detail}</div>
             </div>
           ))
         )}
       </div>
-    </section>
+    </div>
   );
 }

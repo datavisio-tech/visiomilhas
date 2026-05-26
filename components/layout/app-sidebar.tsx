@@ -3,20 +3,22 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const operationalLinks = [
-  { href: "/app/dashboard", label: "Dashboard" },
+const analysisLinks = [
+  { href: "/app/dashboard", label: "Painel" },
+  { href: "/app/accounts", label: "Contas" },
+  { href: "/app/programs", label: "Programas" },
+];
+
+const earnLinks = [
   { href: "/app/purchases", label: "Compras" },
   { href: "/app/sales", label: "Vendas" },
   { href: "/app/transfers", label: "Transferências" },
-  { href: "/app/inspection", label: "Inspeção" },
 ];
 
-const setupLinks = [
+const toolsLinks = [
   { href: "/app/onboarding", label: "Onboarding" },
-  { href: "/app/programs", label: "Programas" },
-  { href: "/app/accounts", label: "Contas" },
-  { href: "/app/entries", label: "Lançamentos" },
   { href: "/app/settings", label: "Configurações" },
+  { href: "/app/inspection", label: "Inspeção avançada" },
 ];
 
 function NavLink({ href, label }: { href: string; label: string }) {
@@ -27,35 +29,34 @@ function NavLink({ href, label }: { href: string; label: string }) {
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`flex items-center justify-between rounded-2xl px-3 py-2 text-sm transition ${
+      className={`flex items-center justify-between rounded-xl px-3 py-2 text-sm transition ${
         active
-          ? "bg-slate-950 text-white shadow-sm"
-          : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+          ? "bg-white text-slate-950 shadow-sm ring-1 ring-slate-200"
+          : "text-slate-600 hover:bg-white hover:text-slate-950"
       }`}
     >
       <span>{label}</span>
-      {active ? <span className="text-[10px] uppercase tracking-[0.18em]">Ativo</span> : null}
     </Link>
   );
 }
 
 export default function AppSidebar() {
   return (
-    <aside className="fixed h-screen w-72 border-r border-slate-200 bg-white/90 px-4 py-5 backdrop-blur">
-      <div className="mb-6 rounded-3xl bg-slate-950 px-4 py-4 text-white shadow-lg">
-        <div className="text-lg font-semibold">VisioMilhas</div>
-        <div className="mt-1 text-sm text-slate-300">
-          MVP operacional para gestão de milhas
+    <aside className="fixed h-screen w-72 border-r border-slate-200 bg-[#f4f4f5] px-4 py-5">
+      <div className="mb-6 rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-slate-200">
+        <div className="text-lg font-semibold text-slate-950">MeuMilheiro</div>
+        <div className="mt-1 text-sm text-slate-500">
+          Gestão simples de milhas e pontos
         </div>
       </div>
 
-      <div className="space-y-6 text-sm">
+      <div className="space-y-5 text-sm">
         <section>
           <div className="mb-2 px-3 text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
             Operação
           </div>
           <nav className="space-y-1">
-            {operationalLinks.map((link) => (
+            {analysisLinks.map((link) => (
               <NavLink key={link.href} href={link.href} label={link.label} />
             ))}
           </nav>
@@ -63,21 +64,40 @@ export default function AppSidebar() {
 
         <section>
           <div className="mb-2 px-3 text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
-            Setup
+            Ganhe pontos
           </div>
           <nav className="space-y-1">
-            {setupLinks.map((link) => (
+            {earnLinks.map((link) => (
               <NavLink key={link.href} href={link.href} label={link.label} />
             ))}
           </nav>
         </section>
 
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 text-slate-600">
-          <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
-            Confiança operacional
+        <section>
+          <div className="mb-2 px-3 text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+            Ferramentas
           </div>
-          <div className="mt-2 text-sm leading-6">
-            Dashboard, inspeção e recovery continuam acessíveis com linguagem de produto.
+          <nav className="space-y-1">
+            {toolsLinks.map((link) => (
+              <NavLink key={link.href} href={link.href} label={link.label} />
+            ))}
+          </nav>
+        </section>
+
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-4 text-slate-600 shadow-sm">
+          <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+            Programas ativos
+          </div>
+          <div className="mt-3 space-y-2">
+            <div className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              Clube Livelo Helena
+            </div>
+            <div className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              Latam Pass Jucivan
+            </div>
+            <div className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              Livelo Jucivan
+            </div>
           </div>
         </div>
       </div>
