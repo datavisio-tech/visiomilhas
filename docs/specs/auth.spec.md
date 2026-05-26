@@ -11,6 +11,7 @@ Objetivo:
 - Há leitura de hotspots por source para identificar superfícies não estabilizadas.
 - O boundary de leitura normal já está hardened por padrão; fallback agora é recovery-only explícito.
 - A matriz operacional expõe readiness score, fallback rate e nível de estabilização.
+- O acesso comercial agora é resolvido server-side em um contexto separado: `SubscriptionAccessContext`.
 
 Decisao alvo:
 
@@ -24,6 +25,8 @@ Decisao alvo:
 - `orgSlug` nao deve ser boundary de escrita; `organizationId` deve vir da ownership resolvida no servidor.
 - Fake-auth adapter como transitional para desenvolvimento local, testes e recovery controlado.
 - Matrix operacional com status Better Auth, fallback usage, ownership status, rollout status e stabilization level.
+- O fluxo de login precisa encadear `resolveCurrentBetterAuthSessionContext()` com o gate comercial SaaS antes de liberar o dashboard.
+- Usuários sem assinatura válida devem ser redirecionados server-side para `/subscribe`.
 
 ## Estados operacionais
 
@@ -32,6 +35,7 @@ Decisao alvo:
 - Hardened: sem fallback operacional no runtime, fake adapter apenas para dev/test/recovery.
 - Continuar a redução incremental das superfícies de leitura e registrar readiness para remoção futura somente com fallback near-zero.
 - Tratar o fake adapter como candidato a dev/test-only apenas após a confirmação de near-zero no runtime.
+- Readiness de subscription agora faz parte do readiness de auth: active, trial, no subscription, canceled e suspended precisam ser classificados explicitamente.
 
 ## Onboarding 2.3-C — Initial User Onboarding Flow
 

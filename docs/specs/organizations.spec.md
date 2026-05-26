@@ -13,6 +13,7 @@ Objetivo:
 - O fake adapter só pode virar dev/test-only oficialmente quando a redução de fallback estiver near-zero em runtime.
 - Recovery-only segue permitido como contingência explícita enquanto a superfície hardened se consolida.
 - Acompanhar a decadência dos hotspots antes de endurecer a classificação para hardened.
+- O estado comercial SaaS não mora no APP DB e deve ser derivado do SAAS DB antes de qualquer acesso ao dashboard.
 
 ## Readiness Summary (2026-05-24)
 
@@ -67,11 +68,13 @@ Decisao alvo:
 - `organizationId` continua a existir como contexto derivado, nao como entrada confiável da UI.
 - A operação deve continuar observável com primeiro/último uso de fallback por superfície antes de qualquer retirada futura do fake adapter.
 - O fake adapter só pode virar dev/test-only oficialmente quando a redução de fallback estiver near-zero em runtime.
+- O gate comercial deve ocorrer no servidor e redirecionar usuários sem acesso para `/subscribe`.
 
 Riscos:
 
 - Vazar dependencia de multi-org na UX antes da hora.
 - Converter organization_id em boundary de autorizacao.
+- Misturar tenant operacional com entitlement comercial.
 
 Proximo passo:
 

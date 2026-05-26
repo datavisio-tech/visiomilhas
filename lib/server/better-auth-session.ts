@@ -7,6 +7,10 @@ import {
   type SessionContext,
 } from "./auth-context";
 import { ensureGlobalUser } from "./onboarding";
+import {
+  reportAuthEvent,
+  resolveBrowserContextTag,
+} from "./auth-observability";
 
 type BetterAuthSessionLike = {
   user?: {
@@ -71,8 +75,9 @@ export async function resolveBetterAuthSessionContext(
   authInstance: BetterAuthSessionResolver,
   requestHeaders?: Headers,
 ): Promise<SessionContext | null> {
+  const resolvedHeaders = requestHeaders ?? (await headers());
   const session = (await authInstance.api.getSession({
-    headers: requestHeaders ?? (await headers()),
+    headers: resolvedHeaders,
   })) as BetterAuthSessionLike | null;
 
   const sessionContext = buildSessionContextFromBetterAuthSession(session);
@@ -80,6 +85,12 @@ export async function resolveBetterAuthSessionContext(
   if (!sessionContext) {
     return null;
   }
+
+  const browserContext = resolveBrowserContextTag(
+    resolvedHeaders.get("user-agent"),
+  );
+
+  let resolvedSessionContext = sessionContext;
 
   // Ensure global user exists in admin DB (idempotent). Do not fail the request if DB is unavailable.
   try {
@@ -101,7 +112,7 @@ export async function resolveBetterAuthSessionContext(
           );
 
           if (provision?.organizationId) {
-            return buildSessionContext(
+            resolvedSessionContext = buildSessionContext(
               sessionContext.auth,
               buildOwnershipContext({
                 userId: sessionContext.auth.userId,
@@ -125,7 +136,35 @@ export async function resolveBetterAuthSessionContext(
     console.warn("ensureGlobalUser failed:", err instanceof Error ? err.message : String(err));
   }
 
-  return sessionContext;
+  reportAuthEvent({
+    level: "info",
+    code: "SESSION_RESTORED",
+    message: "Better Auth session restored successfully",
+    details: {
+      browserContext,
+      sessionLifecycle: resolvedSessionContext.auth.sessionId ? "persisted" : "missing",
+      onboardingStage: resolvedSessionContext.ownership.organizationId ? "ready" : "required",
+      recoveryStage: resolvedSessionContext.ownership.organizationId ? "stable" : "recovery-needed",
+      ownershipState: resolvedSessionContext.ownership.organizationId ? "owned" : "missing",
+    },
+  });
+
+  if (resolvedSessionContext.auth.sessionId) {
+    reportAuthEvent({
+      level: "info",
+      code: "SESSION_BROWSER_REOPEN_SUCCESS",
+      message: "Browser session reopened with persisted Better Auth session",
+      details: {
+        browserContext,
+        sessionLifecycle: "persisted",
+        onboardingStage: resolvedSessionContext.ownership.organizationId ? "ready" : "required",
+        recoveryStage: resolvedSessionContext.ownership.organizationId ? "stable" : "recovery-needed",
+        ownershipState: resolvedSessionContext.ownership.organizationId ? "owned" : "missing",
+      },
+    });
+  }
+
+  return resolvedSessionContext;
 }
 
 export async function resolveCurrentBetterAuthSessionContext(

@@ -1,4 +1,5 @@
 import { toNextJsHandler } from "better-auth/next-js";
+import { resolveBrowserContextTag } from "../../../../lib/server/auth-observability";
 
 import { auth } from "../../../../lib/auth";
 import { reportAuthEvent } from "../../../../lib/server/auth-observability";
@@ -43,6 +44,9 @@ if ((auth as any)?.__authOperationalDisabled) {
 
 	const wrap = (method: "GET" | "POST") => async (req: Request) => {
 		const handlers = initHandlers();
+		const pathname = new URL(req.url).pathname;
+		const isSignOutRequest = pathname.endsWith("/sign-out");
+		const browserContext = resolveBrowserContextTag(req.headers.get("user-agent"));
 		if (!handlers) {
 			const message = "Authentication subsystem unavailable";
 			return new Response(JSON.stringify({ ok: false, error: "OAUTH_RUNTIME_ERROR", message }), {
@@ -52,7 +56,52 @@ if ((auth as any)?.__authOperationalDisabled) {
 		}
 
 		try {
-			return await handlers[method](req);
+			const response = await handlers[method](req);
+
+			if (isSignOutRequest) {
+				if (response.ok) {
+					reportAuthEvent({
+						level: "info",
+						code: "USER_LOGOUT_SUCCESS",
+						message: "User signed out successfully",
+						details: {
+							browserContext,
+							sessionLifecycle: "invalidated",
+							onboardingStage: "not-applicable",
+							recoveryStage: "normal",
+							ownershipState: "cleared",
+						},
+					});
+					reportAuthEvent({
+						level: "info",
+						code: "SESSION_INVALIDATED",
+						message: "Session invalidated after sign-out",
+						details: {
+							browserContext,
+							sessionLifecycle: "invalidated",
+							onboardingStage: "not-applicable",
+							recoveryStage: "normal",
+							ownershipState: "cleared",
+						},
+					});
+				} else {
+					reportAuthEvent({
+						level: "error",
+						code: "USER_LOGOUT_FAILED",
+						message: "User sign-out failed",
+						details: {
+							browserContext,
+							sessionLifecycle: "unknown",
+							onboardingStage: "unknown",
+							recoveryStage: "unknown",
+							ownershipState: "unknown",
+							status: response.status,
+						},
+					});
+				}
+			}
+
+			return response;
 		} catch (err) {
 			const message = err instanceof Error ? err.message : String(err);
 			const normalized = message.toLowerCase();

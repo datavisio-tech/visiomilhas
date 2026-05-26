@@ -1,6 +1,131 @@
+# DAILY_CHECKPOINT — 2026-05-26 — 2.4-J Session Lifecycle Hardening
+
+## Session 5 — SaaS Access Enforcement ✅ COMPLETE (runtime + docs)
+
+Etapa executada:
+
+- ✅ Criado `SubscriptionAccessContext` server-side, separado de auth, ownership e read scope
+- ✅ Dashboard agora valida acesso SaaS antes de renderizar o runtime operacional
+- ✅ `/subscribe` foi criada como etapa obrigatoria de gate comercial
+- ✅ Onboarding concluído redireciona para `/subscribe`
+- ✅ Estados `ACTIVE`, `TRIAL`, `NO_SUBSCRIPTION`, `CANCELED` e `SUSPENDED` foram mapeados com observabilidade
+- ✅ A separacao entre SAAS_DB e APP_DB foi preservada sem mover dados operacionais para o banco administrativo
+
+Branch atual:
+
+- `2.3-c-initial-onboarding-flow`
+
+Commits criados nesta sessão:
+
+- pendente de commit local
+
+Validações executadas:
+
+- ✅ `npx vitest run lib/server/__tests__/subscription-access.test.ts`
+- ✅ `get_errors` nas superficies tocadas
+
+Estado atual:
+
+- **SAAS_DB** — ✅ subscriptions, plans e lifecycle comercial continuam no banco administrativo
+- **APP_DB** — ✅ permanece somente operacional
+- **Dashboard** — ✅ bloqueia quem nao tem acesso SaaS
+- **Subscribe** — ✅ nova pagina operacional para gate comercial
+- **Browser** — 🟡 ainda depende de sessao Google válida para a validacao visual completa
+
+Bloqueador residual:
+
+- ⏳ A prova visual de dashboard ativo x subscribe bloqueado ainda precisa de sessao autenticada no browser atual
+
+Próxima etapa:
+
+- Rodar a suíte completa e repetir a validacao browser-first quando houver sessao ativa
+
+## Session 4 — Session Lifecycle Hardening ✅ COMPLETE
+
+Etapa executada:
+
+- ✅ Logout trocado para o contrato oficial do Better Auth com `authClient.signOut()`
+- ✅ Handler Better Auth passou a registrar `USER_LOGOUT_SUCCESS`, `USER_LOGOUT_FAILED` e `SESSION_INVALIDATED`
+- ✅ `resolveControlledSessionContext()` passou a registrar `SESSION_REFRESH_SUCCESS`
+- ✅ `resolveBetterAuthSessionContext()` passou a emitir `SESSION_RESTORED` e `SESSION_BROWSER_REOPEN_SUCCESS` com ownership final hidratado, inclusive no caminho que provisiona onboarding
+- ✅ `resolveReadScope()` redireciona para `/app/onboarding` quando `organizationId` está ausente
+- ✅ Dashboard continua protegido e redireciona para sign-in quando não há sessão
+- ✅ Validação final executada com lint/typecheck/test/diff-check verdes
+
+Branch atual:
+
+- `2.3-c-initial-onboarding-flow`
+
+Commits criados nesta sessão:
+
+- pendente de commit local
+
+Validações executadas:
+
+- ✅ `npm run lint`
+- ✅ `npm run typecheck`
+- ✅ `npm run test` — 59/59 passing
+- ✅ `git diff --check`
+- ✅ Navegador redirecionou `/app/dashboard` para `/sign-in?callbackUrl=/app/dashboard`
+
+Estado atual:
+
+- **Logout** — ✅ usa o fluxo oficial do Better Auth
+- **Sessão** — ✅ refresh, reopen e invalidation cobertos por telemetria
+- **Onboarding** — ✅ recovery-aware e sem quebra de dashboard
+- **Browser** — 🟡 sem sessão autenticada no navegador atual, então o ciclo completo de logout/reopen não pôde ser repetido aqui
+
+Bloqueador residual:
+
+- ⏳ A repetição visual de login/logout/reopen depende de uma sessão Google válida no navegador atual
+
+Próxima etapa:
+
+- Reexecutar o ciclo browser-first com sessão válida para fechar logout → reopen → refresh de ponta a ponta
+
 # DAILY_CHECKPOINT — 2026-05-25 — 2.4-H Real User Runtime Validation & OAuth Stabilization
 
 ## Session 3 — Better Auth Drizzle Schema Alignment ✅ COMPLETE
+
+Etapa executada:
+
+- ✅ Logout trocado para `authClient.signOut()` com redirect pós-sucesso
+- ✅ Handler Better Auth passou a registrar `USER_LOGOUT_SUCCESS`, `USER_LOGOUT_FAILED` e `SESSION_INVALIDATED`
+- ✅ Lifecycle recebeu telemetria de `SESSION_RESTORED`, `SESSION_REFRESH_SUCCESS` e `SESSION_BROWSER_REOPEN_SUCCESS`
+- ✅ Lifecycle continua onboarding-aware e sem mudanças estruturais em banco/arquitetura
+- ✅ Validação final executada com lint/typecheck/test/diff-check verdes
+
+Branch atual:
+
+- `2.3-c-initial-onboarding-flow`
+
+Commits criados nesta sessão:
+
+- pendente de commit para agrupar lifecycle + docs
+
+Validações executadas:
+
+- ✅ `npm run lint`
+- ✅ `npm run typecheck`
+- ✅ `npm run test` — 59/59 passing
+- ✅ `git diff --check`
+
+Estado atual:
+
+- **Logout** — ✅ usando contrato oficial Better Auth
+- **Sessão** — ✅ invalidação e lifecycle auditáveis
+- **Onboarding** — ✅ mantido consistente com ownership/read scope
+- **Browser** — 🟡 a sessão final observada no browser estava deslogada, então o dashboard redirecionou para sign-in
+
+Bloqueador residual:
+
+- ⏳ A validação visual completa de logout/reopen/login repetido depende de uma sessão Google ativa no browser atual
+
+Próxima etapa:
+
+- Reexecutar o ciclo browser-first com sessão válida para fechar logout → reopen → refresh de ponta a ponta
+
+---
 
 Etapa executada:
 

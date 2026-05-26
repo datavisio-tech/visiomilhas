@@ -9,12 +9,17 @@ import {
   getRecentPurchases,
 } from "../../../lib/server/dashboard";
 import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
+import { resolveSubscriptionAccessContext } from "../../../lib/server/subscription-access";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   reportAuthEvent,
   resolveBrowserContextTag,
 } from "../../../lib/server/auth-observability";
+import {
+  buildOwnershipContext,
+  buildSessionContext,
+} from "../../../lib/server/auth-context";
 
 export default async function DashboardPage() {
   const sessionContext = await resolveControlledSessionContext({
@@ -26,7 +31,34 @@ export default async function DashboardPage() {
     redirect("/sign-in?callbackUrl=/app/dashboard");
   }
 
-  if (!sessionContext.ownership.organizationId) {
+  const accessContext = await resolveSubscriptionAccessContext(sessionContext, {
+    source: "dashboard.page",
+    requestHeaders: await headers(),
+  });
+
+  if (!accessContext) {
+    redirect("/subscribe");
+  }
+
+  if (accessContext.shouldRedirectToSubscribe) {
+    redirect("/subscribe");
+  }
+
+  const effectiveSessionContext =
+    sessionContext.ownership.organizationId === accessContext.organizationId
+      ? sessionContext
+      : buildSessionContext(
+          sessionContext.auth,
+          buildOwnershipContext({
+            userId: sessionContext.auth.userId,
+            accountId: sessionContext.ownership.accountId ?? null,
+            organizationId: accessContext.organizationId,
+            ownsAccount: sessionContext.ownership.ownsAccount,
+            ownsOrganizationScope: true,
+          }),
+        );
+
+  if (!effectiveSessionContext.ownership.organizationId) {
     const requestHeaders = await headers();
     const browserContext = resolveBrowserContextTag(
       requestHeaders.get("user-agent"),
@@ -63,13 +95,19 @@ export default async function DashboardPage() {
 
     redirect("/app/onboarding");
   }
-  const metrics = await getMetrics(sessionContext);
-  const recentEntries = await getRecentEntries(sessionContext);
-  const purchases = await getRecentPurchases(sessionContext);
+  const metrics = await getMetrics(effectiveSessionContext);
+  const recentEntries = await getRecentEntries(effectiveSessionContext);
+  const purchases = await getRecentPurchases(effectiveSessionContext);
 
   return (
     <div>
-      <TrialBanner />
+      {accessContext.accessState === "TRIAL" ? (
+        <TrialBanner
+          tone="warning"
+          title="Seu trial SaaS está ativo"
+          description="Você pode continuar usando o dashboard enquanto o período de avaliação estiver válido."
+        />
+      ) : null}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <MetricCard
           title="Saldo total"

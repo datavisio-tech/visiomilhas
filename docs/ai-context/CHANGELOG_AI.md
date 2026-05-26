@@ -1,5 +1,94 @@
 # CHANGELOG_AI
 
+## 2026-05-25 — Fase 2.4-K — SaaS Access & Subscription Enforcement — ✅ COMPLETE
+
+### Status: gate comercial server-side implementado com persistencia no SAAS_DB e /subscribe como etapa obrigatoria
+
+**Achievements**:
+
+1. **Subscription Access Context** — ✅ COMPLETE
+  - Criado `SubscriptionAccessContext` separado de `AuthContext`, `OwnershipContext` e `ReadScope`
+  - O runtime agora classifica `ACTIVE`, `TRIAL`, `NO_SUBSCRIPTION`, `CANCELED` e `SUSPENDED`
+  - O contexto comercial deriva do ADM DB e preserva a separacao entre SAAS_DB e APP_DB
+
+2. **Server-side Enforcement** — ✅ COMPLETE
+  - O dashboard agora valida o estado SaaS antes de carregar dados operacionais
+  - Usuários sem acesso sao redirecionados para `/subscribe`
+  - O onboarding concluído tambem segue para `/subscribe` quando a etapa comercial ainda nao esta liberada
+
+3. **Subscription Gate UI** — ✅ COMPLETE
+  - Criada a pagina `/subscribe` para explicar trial/plano/status comercial
+  - Sem Stripe real e sem checkout real nesta fase
+
+4. **Validation** — 🟡 PARCIAL
+  - `evaluateSubscriptionAccess` foi validado com testes unitários
+  - A suíte completa ainda precisa ser rerodada apos a integracao final dos docs e do browser
+
+### Runtime Readiness — 2.4-K Inicial
+
+| Capability | Status | Note |
+|-----------|--------|------|
+| SAAS_DB separation | ✅ | Billing/subscription continuam no ADM DB |
+| APP_DB separation | ✅ | Dados operacionais continuam no APP DB |
+| Subscription access | ✅ | Gating server-side implementado |
+| Subscribe page | ✅ | Nova etapa publica/autenticada de gate comercial |
+| Trial state | ✅ | Agora e um estado operacional de acesso |
+| Cancel/Suspend | ✅ | Bloqueio comercial classificado |
+| Browser runtime | 🟡 | Ainda falta rerodar o fluxo real com sessao Google válida |
+
+### Residual Caveat
+
+- A validacao visual do ciclo login → onboarding → /subscribe → dashboard ainda depende de uma sessao Google ativa no navegador atual.
+
+---
+
+## 2026-05-25 — Fase 2.4-J — Session Lifecycle & Onboarding Hardening — ✅ COMPLETE
+
+### Status: lifecycle de sessão endurecido com logout oficial, invalidação e observabilidade
+
+**Session 4 Achievements**:
+
+1. **Logout Runtime** — ✅ COMPLETE
+  - Logout saiu do `fetch` manual e passou a usar `authClient.signOut()`
+  - `app/api/auth/[...all]/route.ts` agora registra sucesso/falha e invalidação da sessão no endpoint Better Auth `/sign-out`
+  - Redirecionamento pós-logout permanece explícito e o header não depende mais de contrato frágil de request manual
+
+2. **Session Lifecycle** — ✅ COMPLETE
+  - `SESSION_RESTORED`, `SESSION_REFRESH_SUCCESS` e `SESSION_BROWSER_REOPEN_SUCCESS` passaram a ser reportados no runtime
+  - `USER_LOGOUT_SUCCESS`, `USER_LOGOUT_FAILED` e `SESSION_INVALIDATED` foram adicionados para auditar o ciclo completo
+
+3. **Onboarding Boundary** — ✅ COMPLETE
+  - O lifecycle continua onboarding-aware sem alterar arquitetura, banco ou UX estrutural
+  - O runtime mantém redirect para onboarding quando ownership não existe
+
+4. **Validation** — ✅ COMPLETE
+  - `npm run lint`: 0 errors
+  - `npm run typecheck`: 0 errors
+  - `npm run test`: 59/59 tests passing
+  - `git diff --check`: limpo
+
+### Runtime Readiness — 2.4-J Final
+
+| Capability | Status | Note |
+|-----------|--------|------|
+| Google OAuth | ✅ | Continua funcional |
+| Callback | ✅ | Continua funcional |
+| Session persistence | ✅ | Continua funcional |
+| Logout | ✅ | Agora usa signOut oficial |
+| Session invalidation | ✅ | Auditada no handler |
+| Refresh | ✅ | Instrumentado como success |
+| Browser reopen | ✅ | Instrumentado como success |
+| Onboarding | ✅ | Continua onboarding-aware |
+| Ownership | ✅ | Mantido no server |
+| Browser runtime | 🟡 | Sem sessão ativa no browser final da validação |
+
+### Residual Caveat
+
+- A validação final do browser não estava com sessão autenticada ativa no momento do fechamento, então o dashboard redirecionou para sign-in.
+- O fluxo de logout em si passou a usar o método oficial do Better Auth e ficou auditável.
+
+---
+
 ## 2026-05-25 — Fase 2.4-I — Onboarding Runtime Consistency Hardening — ✅ COMPLETE
 
 ### Status: runtime consistente, onboarding-aware e protegido contra crash por read scope

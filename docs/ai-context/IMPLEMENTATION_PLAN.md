@@ -1,5 +1,15 @@
 # IMPLEMENTATION_PLAN - MVP1 (VisioMilhas)
 
+Fase 2.4-K: SaaS Access & Subscription Enforcement
+
+- Criar `SubscriptionAccessContext` server-side separado de auth, ownership e read scope.
+- Preservar a separacao arquitetural: dados administrativos SaaS no `SAAS_DB=controle_adm_saas_datavisio` e dados operacionais no `APP_DB=visiomilhas_app`.
+- Implementar gating server-side com estados `ACTIVE`, `TRIAL`, `NO_SUBSCRIPTION`, `CANCELED` e `SUSPENDED`.
+- Criar `/subscribe` como etapa obrigatoria do fluxo para usuarios sem acesso comercial valido.
+- Expandir observabilidade com subscription access granted/blocked/redirect, trial active e suspended.
+- Evitar Stripe real, checkout real, RBAC complexo, middleware global e breaking changes de schema operacional.
+
+
 Fase 2.2-F: Transitional Surface Cleanup
 
 - Evitar middleware global, RBAC, ACL, permission framework, auth rewrite e big bang migration.
@@ -125,6 +135,14 @@ Critérios de aceite:
 - Adicionar boundary explícito no dashboard para evitar crash e registrar telemetria operacional antes do redirect.
 - Expandir observabilidade para registrar estado de onboarding, recovery, ownership, browser context e session lifecycle.
 - Revalidar browser runtime sem alterar auth, banco, Docker, deploy, RBAC ou arquitetura.
+
+## 2.4-J — Session Lifecycle & Onboarding Hardening
+
+- Substituir logout manual por `authClient.signOut()` para usar o contrato oficial do Better Auth.
+- Registrar sucesso/falha de logout e invalidação de sessão no handler de auth.
+- Instrumentar session restore, refresh e browser reopen como parte do lifecycle operacional.
+- Manter o boundary onboarding-aware e recovery-aware sem alterar banco, deploy, arquitetura ou UX estrutural.
+- Revalidar ciclo login → onboarding → dashboard → logout → refresh → reopen quando houver sessão Google válida no browser.
 
 ## 2.4-G — Real Google OAuth Staging Stabilization & Observability Expansion
 

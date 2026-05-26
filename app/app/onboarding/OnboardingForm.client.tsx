@@ -22,7 +22,7 @@ export default function OnboardingFormClient({ onboardingState, flowStage }: Onb
       const data = await res.json();
       if (res.ok && data.ok) {
         setSuccess(data.status === "recovered" ? "Recuperamos seu onboarding com segurança." : "Onboarding concluído com sucesso.");
-        window.location.href = '/app/dashboard';
+        window.location.href = '/subscribe';
         return;
       }
       setError(data.error ?? 'unknown_error');

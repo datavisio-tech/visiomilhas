@@ -9,6 +9,7 @@ import {
   incrementAuthMetric,
   recordAuthFallbackUsage,
   reportAuthEvent,
+  resolveBrowserContextTag,
   type AuthFallbackReason,
 } from "./auth-observability";
 
@@ -73,6 +74,19 @@ export async function resolveControlledSessionContext(
 
     if (sessionContext) {
       incrementAuthMetric("better_auth_sessions_valid");
+      reportAuthEvent({
+        level: "info",
+        code: "SESSION_REFRESH_SUCCESS",
+        message: "Better Auth session refreshed successfully",
+        details: {
+          source,
+          allowFallback,
+          onboardingStage: sessionContext.ownership.organizationId ? "ready" : "required",
+          recoveryStage: sessionContext.ownership.organizationId ? "stable" : "recovery-needed",
+          ownershipState: sessionContext.ownership.organizationId ? "owned" : "missing",
+          browserContext: resolveBrowserContextTag(requestHeaders?.get("user-agent")),
+        },
+      });
       return sessionContext;
     }
 

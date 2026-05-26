@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import authClient from "../../lib/auth-client";
 
 type AppHeaderProps = {
   email?: string | null;
@@ -8,6 +10,7 @@ type AppHeaderProps = {
 
 export default function AppHeader({ email }: AppHeaderProps) {
   const [loadingAction, setLoadingAction] = useState<"signin" | "signout" | null>(null);
+  const router = useRouter();
   const isAuthenticated = Boolean(email);
 
   async function handleGoogleSignIn() {
@@ -27,16 +30,14 @@ export default function AppHeader({ email }: AppHeaderProps) {
     try {
       setLoadingAction("signout");
 
-      const response = await fetch("/api/auth/sign-out", {
-        method: "POST",
-        credentials: "include",
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            router.replace("/");
+            router.refresh();
+          },
+        },
       });
-
-      if (!response.ok) {
-        throw new Error("Falha ao encerrar a sessão");
-      }
-
-      window.location.assign("/");
     } catch (error) {
       // eslint-disable-next-line no-alert
       window.alert(error instanceof Error ? error.message : "Falha ao encerrar a sessão");

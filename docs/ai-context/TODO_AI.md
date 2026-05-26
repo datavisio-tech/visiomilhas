@@ -1,5 +1,40 @@
 # TODO_AI - Pendências e próximas ações
 
+## 2.4-K — SaaS Access & Subscription Enforcement — ✅ COMPLETE
+
+**Status**: ✅ gate SaaS server-side implementado; browser ainda precisa de sessao Google válida para validar o ciclo visual completo
+
+**Realizado**:
+- ✅ Criado `SubscriptionAccessContext` separado de auth, ownership e read scope
+- ✅ Dashboard bloqueia usuarios sem acesso SaaS e redireciona para `/subscribe`
+- ✅ `/subscribe` foi adicionada como pagina de gate comercial
+- ✅ Onboarding concluído redireciona para `/subscribe`
+- ✅ Observabilidade expandida para acesso concedido/bloqueado, trial ativo, redirect e suspended
+- ✅ Teste unitário de classificação do gate SaaS validado
+
+**Bloqueador Residual**:
+- ⏳ A validacao visual completa de dashboard ativo x subscribe bloqueado depende de uma sessao Google ativa no navegador atual
+
+**Próxima Ação**:
+- Rodar a suíte completa e repetir o browser-first quando houver sessao válida
+
+## 2.4-J — Session Lifecycle & Onboarding Hardening — ✅ COMPLETE
+
+**Status**: ✅ logout oficial e lifecycle auditável; browser final ficou sem sessão ativa
+
+**Realizado**:
+- ✅ Logout passou a usar `authClient.signOut()`
+- ✅ O handler de auth passou a registrar logout sucesso/falha e invalidação de sessão
+- ✅ `SESSION_RESTORED`, `SESSION_REFRESH_SUCCESS` e `SESSION_BROWSER_REOPEN_SUCCESS` foram adicionados ao lifecycle
+- ✅ O boundary onboarding-aware foi preservado sem mudanças estruturais
+- ✅ `npm run lint`, `npm run typecheck`, `npm run test` e `git diff --check` passaram
+
+**Bloqueador Residual**:
+- ⏳ A validação visual final de logout/reopen/login repetido dependia de sessão Google ativa no browser atual, mas o browser observou estado deslogado ao final da rodada
+
+**Próxima Ação**:
+- Reexecutar o ciclo browser-first completo com sessão válida para confirmar logout, bloqueio pós-logout e reopen com persistência
+
 ## 2.4-I — Onboarding Runtime Consistency Hardening — ✅ COMPLETE
 
 **Status**: ✅ runtime onboarding-aware endurecido; browser real ainda depende de sessão Google válida

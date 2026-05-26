@@ -17,7 +17,7 @@ export default async function OnboardingPage() {
   const onboardingState = await getOnboardingStateByEmail(email);
 
   if (onboardingState === "ready") {
-    redirect("/app/dashboard");
+    redirect("/subscribe");
   }
 
   return (
