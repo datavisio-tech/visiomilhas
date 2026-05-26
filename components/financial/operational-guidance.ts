@@ -5,6 +5,7 @@ export type WarningGuide = {
   problem: string;
   impact: string;
   action: string;
+  recoveryAction: string;
   escalate: string;
 };
 
@@ -48,6 +49,8 @@ export function humanizeWarning(message: string): WarningGuide {
       impact: "O saldo pode não fechar com o histórico operacional.",
       action:
         "Recomendo executar a reconciliação e revisar os últimos lançamentos.",
+      recoveryAction:
+        "Executar reconcile de saldo e validar novamente a conta após a reconciliação.",
       escalate: "Escale se a divergência continuar após a reconciliação.",
     };
   }
@@ -63,6 +66,8 @@ export function humanizeWarning(message: string): WarningGuide {
       problem: "Lote sem rastreabilidade detectado.",
       impact: "O replay pode ficar incompleto ou difícil de interpretar.",
       action: "Abra a inspeção da conta e confirme a origem do lote.",
+      recoveryAction:
+        "Executar rebuild de lineage para localizar a origem operacional do lote.",
       escalate:
         "Escale se o lote não puder ser vinculado a uma operação válida.",
     };
@@ -79,6 +84,8 @@ export function humanizeWarning(message: string): WarningGuide {
       problem: "Consumo FIFO inválido detectado.",
       impact: "O lote consumido pode não refletir o estoque real.",
       action: "Revise a sequência de consumo e valide os lotes recentes.",
+      recoveryAction:
+        "Executar reconcile FIFO e revisar a sequência de consumo recente.",
       escalate:
         "Escale se a sequência não puder ser reconciliada com o replay.",
     };
@@ -98,6 +105,8 @@ export function humanizeWarning(message: string): WarningGuide {
         "A sequência operacional pode ter eventos fora de ordem ou duplicados.",
       action:
         "Valide o replay e compare os eventos com o lançamento mais recente.",
+      recoveryAction:
+        "Executar replay reconcile e reconstruir a linha temporal da conta.",
       escalate:
         "Escale se houver eventos faltantes ou duplicados após a validação.",
     };
@@ -110,6 +119,8 @@ export function humanizeWarning(message: string): WarningGuide {
     problem: message,
     impact: "Este aviso pode afetar a leitura operacional do fluxo financeiro.",
     action: "Abra a inspeção da conta e revise os últimos eventos.",
+    recoveryAction:
+      "Executar a validação operacional correspondente e revisar o warning com atenção.",
     escalate: "Escale se bloquear compra, venda ou transferência.",
   };
 }

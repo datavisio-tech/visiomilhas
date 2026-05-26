@@ -38,7 +38,8 @@ export type FinancialEventCode =
   | "FINANCIAL_ACCOUNT_INSPECTED"
   | "FIFO_CONSUMPTION_INSPECTED"
   | "FINANCIAL_WARNING_DETECTED"
-  | "FINANCIAL_LEGACY_SCHEMA_DETECTED";
+  | "FINANCIAL_LEGACY_SCHEMA_DETECTED"
+  | "FINANCIAL_RECOVERY_EXECUTED";
 
 export type FinancialIntegrityIssue = {
   code: FinancialIntegrityIssueCode;
@@ -193,6 +194,29 @@ export type FinancialReplayInspection = {
   replay: FinancialTimeline;
   lineage: FifoLineage;
   warnings: string[];
+};
+
+export type FinancialRecoveryWorkflow =
+  | "balance-reconcile"
+  | "replay-reconcile"
+  | "fifo-reconcile"
+  | "lineage-rebuild";
+
+export type FinancialRecoveryResult = {
+  workflow: FinancialRecoveryWorkflow;
+  organizationId: number;
+  accountId: number | null;
+  executedAt: string;
+  actorUserId: string;
+  actorEmail?: string | null;
+  title: string;
+  status: "consistent" | "warning" | "broken";
+  warningCount: number;
+  warnings: string[];
+  recoveryAction: string;
+  nextStep: string;
+  escalation: string;
+  details: Record<string, unknown>;
 };
 
 export type DuplicateOperationInput = {
@@ -1575,6 +1599,138 @@ export async function recoverFinancialIntegrity(
   }
 
   return result;
+}
+
+export async function executeFinancialRecoveryWorkflow(
+  runner: QueryRunner,
+  input: {
+    workflow: FinancialRecoveryWorkflow;
+    organizationId: number;
+    accountId: number;
+    actorUserId: string;
+    actorEmail?: string | null;
+    source?: string;
+  },
+): Promise<FinancialRecoveryResult> {
+  const executedAt = new Date().toISOString();
+  const source = input.source ?? "financial-recovery-workflow";
+
+  let title = "Recuperação operacional";
+  let status: FinancialRecoveryResult["status"] = "consistent";
+  let warnings: string[] = [];
+  let recoveryAction = "Validar a conta e repetir a inspeção";
+  let nextStep = "Revalide após a recuperação.";
+  let escalation = "Escale engenharia se a inconsistência persistir.";
+  let details: Record<string, unknown> = {};
+
+  if (input.workflow === "balance-reconcile") {
+    title = "Reconciliação de saldo";
+    const result = await reconcileProgramAccountBalance(runner, {
+      organizationId: input.organizationId,
+      accountId: input.accountId,
+      source,
+    });
+    warnings = collectOperationalWarnings(result.issues);
+    status = summarizeIntegrityState(result.issues.length > 0, warnings.length > 0);
+    recoveryAction = "Executar reconcile de saldo e revisar os últimos lotes.";
+    nextStep = warnings.length
+      ? "Reabra a inspeção da conta e confirme se a divergência desapareceu."
+      : "Nenhuma ação adicional é necessária agora.";
+    escalation = warnings.length
+      ? "Escale se o saldo continuar divergente após a reconciliação."
+      : "Escale apenas se houver novo drift após novas operações.";
+    details = { checkedAccounts: result.checkedAccounts, issueCount: result.issues.length };
+  }
+
+  if (input.workflow === "replay-reconcile") {
+    title = "Reconciliação de replay";
+    const result = await inspectFinancialReplay(runner, {
+      organizationId: input.organizationId,
+      accountId: input.accountId,
+      source,
+    });
+    warnings = result.warnings;
+    status = result.summary.ledgerStatus;
+    recoveryAction = "Reexecutar replay reconcile e comparar a timeline com o último lançamento.";
+    nextStep = warnings.length
+      ? "Reveja os eventos mais recentes e compare com a timeline reconstruída."
+      : "Replay reconciliado sem inconsistências adicionais.";
+    escalation = warnings.length
+      ? "Escale se eventos faltantes ou duplicados persistirem após a validação."
+      : "Escale apenas se um novo drift surgir em nova inspeção.";
+    details = { replayDivergence: result.summary.replayDivergence, brokenLineage: result.summary.brokenLineage };
+  }
+
+  if (input.workflow === "fifo-reconcile") {
+    title = "Reconciliação FIFO";
+    const result = await inspectFifoConsumption(runner, {
+      organizationId: input.organizationId,
+      accountId: input.accountId,
+      source,
+    });
+    warnings = result.warnings;
+    status = result.summary.fifoStatus;
+    recoveryAction = "Executar reconcile FIFO e revisar a ordem de consumo dos lotes.";
+    nextStep = warnings.length
+      ? "Reavalie os lotes recentes e compare com o consumo operacional."
+      : "FIFO reconciliado sem inconsistências visíveis.";
+    escalation = warnings.length
+      ? "Escale se a ordem de consumo não fechar após a reconciliação."
+      : "Escale apenas se o próximo consumo gerar novo drift.";
+    details = { totalLots: result.summary.totalLots, orphanLots: result.summary.orphanLots, inconsistentLots: result.summary.inconsistentLots };
+  }
+
+  if (input.workflow === "lineage-rebuild") {
+    title = "Rebuild de lineage";
+    const replay = await inspectFinancialReplay(runner, {
+      organizationId: input.organizationId,
+      accountId: input.accountId,
+      source,
+    });
+    const lineage = await buildFifoLineage(runner, {
+      organizationId: input.organizationId,
+      accountId: input.accountId,
+    });
+    warnings = replay.warnings;
+    status = replay.summary.ledgerStatus;
+    recoveryAction = "Reconstruir lineage e validar a origem de cada evento operacional.";
+    nextStep = warnings.length
+      ? "Revise a origem dos eventos e valide a trilha reconstruída."
+      : "Lineage reconstruída sem divergência adicional.";
+    escalation = warnings.length
+      ? "Escale se não for possível vincular eventos à origem operacional."
+      : "Escale se uma nova operação quebrar a rastreabilidade.";
+    details = { nodeCount: lineage.nodes.length, replayDivergence: replay.summary.replayDivergence };
+  }
+
+  reportFinancialEvent("FINANCIAL_RECOVERY_EXECUTED", "Financial recovery workflow executed", {
+    source,
+    workflow: input.workflow,
+    organizationId: input.organizationId,
+    accountId: input.accountId,
+    actorUserId: input.actorUserId,
+    actorEmail: input.actorEmail ?? null,
+    executedAt,
+    warningCount: warnings.length,
+    status,
+  });
+
+  return {
+    workflow: input.workflow,
+    organizationId: input.organizationId,
+    accountId: input.accountId,
+    executedAt,
+    actorUserId: input.actorUserId,
+    actorEmail: input.actorEmail ?? null,
+    title,
+    status,
+    warningCount: warnings.length,
+    warnings,
+    recoveryAction,
+    nextStep,
+    escalation,
+    details,
+  };
 }
 
 export async function ensureNoDuplicatePurchase(
