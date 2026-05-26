@@ -9,7 +9,7 @@ export default async function AppAreaLayout({ children }: { children: ReactNode 
   const email = sessionContext?.auth.email ?? null;
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-slate-950">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(15,23,42,0.08),_transparent_28%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)] text-slate-950">
       <AppSidebar />
       <div className="ml-72">
         <AppHeader email={email} />
