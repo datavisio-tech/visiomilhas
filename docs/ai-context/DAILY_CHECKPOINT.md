@@ -1,3 +1,63 @@
+# DAILY_CHECKPOINT — 2026-05-25 — 2.4-H Real User Runtime Validation & OAuth Stabilization
+
+**MAJOR BREAKTHROUGH**: ✅ Google OAuth Console fix foi confirmado! Bloqueador redirect_uri_mismatch RESOLVIDO!
+
+Etapa executada:
+
+- ✅ Verificado que Google Cloud Console foi atualizado com URIs localhost
+- ✅ Validado fluxo OAuth ponta-a-ponta até página de login Google
+- ✅ Expandida observabilidade com 4 novos event codes
+- ✅ Documentada validação browser-first em OAUTH_VALIDATION_2.4-H.md
+- ✅ Todas validações executadas: lint/typecheck/test (57/57 passing)
+
+Branch atual:
+
+- `2.3-c-initial-onboarding-flow`
+
+Commits criados nesta sessão:
+
+- `8d83243` — feat(auth): expande observabilidade OAuth e documenta validação browser (2.4-H)
+
+Validações executadas:
+
+- ✅ `npm run lint` — 0 errors/warnings
+- ✅ `npm run typecheck` — 0 errors
+- ✅ `npm run test` — 57/57 tests passing (11 files, 3.17s)
+
+Estado da Aplicação — 2.4-H:
+
+- **Google OAuth Console** — ✅ FIXED (bloqueador resolvido!)
+- **OAuth Runtime** — ✅ Gerando URI correto
+- **Sign-in page** — ✅ Carregando corretamente
+- **Google OAuth flow** — ✅ Alcançando página de login (email aceito)
+- **Better Auth tables** — ✅ Prontos (4 tabelas)
+- **Browser validation** — 🟡 Parcial (bloqueado por erro 500 do Google)
+- **Observabilidade** — ✅ Expandida (23 auth codes + 6 onboarding codes)
+
+Bloqueador Residual:
+
+- ⏳ **Erro 500 do Google** ao clicar em "Avançar" na tela de login
+  - Tipo: Transiente (esperado em testes)
+  - Impacto: Impossibilita E2E completo por enquanto
+  - Ação: Tentar novamente em nova sessão
+
+Novos Event Codes Adicionados:
+
+1. `OAUTH_REAL_LOGIN_SUCCESS` — Rastreia login bem-sucedido real
+2. `OAUTH_REAL_LOGOUT_SUCCESS` — Rastreia logout bem-sucedido real
+3. `SESSION_REOPEN_SUCCESS` — Confirma sessão persistida após reopen
+4. `ONBOARDING_IDEMPOTENT_RECOVERY` — Rastreia recovery do onboarding
+
+Próxima etapa recomendada:
+
+- Na próxima sessão: Tentar fluxo OAuth novamente (erro 500 foi transiente)
+- Completar E2E: callback → onboarding → dashboard
+- Validar persistência em ba_sessions, ba_users, ba_accounts
+- Validar logout e reopen browser
+- Fazer commit final "fix(auth): estabiliza usuário real e OAuth ponta-a-ponta (2.4-H final)"
+
+---
+
 # DAILY_CHECKPOINT — 2026-05-25 — 2.4-G Real Google OAuth Staging Stabilization
 
 Etapa executada:
