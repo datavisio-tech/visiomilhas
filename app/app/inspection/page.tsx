@@ -12,7 +12,7 @@ export default async function InspectionPage() {
     allowFallback: false,
   });
 
-  if (!sessionContext) redirect("/api/auth?provider=google");
+  if (!sessionContext) redirect("/sign-in?callbackUrl=/app/inspection");
 
   const accounts = await getAccountsOverview(sessionContext);
 

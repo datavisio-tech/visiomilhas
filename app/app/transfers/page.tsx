@@ -13,7 +13,7 @@ export default async function TransfersPage() {
     allowFallback: false,
   });
 
-  if (!sessionContext) redirect("/api/auth?provider=google");
+  if (!sessionContext) redirect("/sign-in?callbackUrl=/app/transfers");
   const transfers = await getTransfersOverview(sessionContext);
   const accounts = await getAccountsOverview(sessionContext);
 

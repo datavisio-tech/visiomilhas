@@ -11,7 +11,7 @@ export default async function EntriesPage() {
     allowFallback: false,
   });
 
-  if (!sessionContext) redirect("/api/auth?provider=google");
+  if (!sessionContext) redirect("/sign-in?callbackUrl=/app/entries");
   const entries = await getEntriesOverview(sessionContext);
 
   return (

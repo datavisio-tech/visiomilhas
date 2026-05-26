@@ -13,7 +13,7 @@ export default async function PurchasesPage() {
     allowFallback: false,
   });
 
-  if (!sessionContext) redirect("/api/auth?provider=google");
+  if (!sessionContext) redirect("/sign-in?callbackUrl=/app/purchases");
   const purchases = await getPurchasesOverview(sessionContext);
   const accounts = await getAccountsOverview(sessionContext);
 

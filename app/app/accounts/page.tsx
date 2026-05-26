@@ -11,7 +11,7 @@ export default async function AccountsPage() {
     allowFallback: false,
   });
 
-  if (!sessionContext) redirect("/api/auth?provider=google");
+  if (!sessionContext) redirect("/sign-in?callbackUrl=/app/accounts");
   const accounts = await getAccountsOverview(sessionContext);
 
   return (
