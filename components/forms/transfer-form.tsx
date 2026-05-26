@@ -7,11 +7,14 @@ type Account = {
   nickname: string;
   program: string | null;
   balance: number;
+  cpmCents?: number;
 };
 
 export default function TransferForm({ accounts }: { accounts: Account[] }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [inspectionFrom, setInspectionFrom] = useState<any | null>(null);
+  const [inspectionTo, setInspectionTo] = useState<any | null>(null);
   const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -35,6 +38,22 @@ export default function TransferForm({ accounts }: { accounts: Account[] }) {
         setMessage("Transferência criada com sucesso.");
         form.reset();
         router.refresh();
+        try {
+          const from = fd.get("fromAccountId")?.toString();
+          const to = fd.get("toAccountId")?.toString();
+          if (from) {
+            const r = await fetch(`/api/inspection/account?accountId=${from}`);
+            const j = await r.json();
+            if (j?.success) setInspectionFrom(j.inspection);
+          }
+          if (to) {
+            const r2 = await fetch(`/api/inspection/account?accountId=${to}`);
+            const j2 = await r2.json();
+            if (j2?.success) setInspectionTo(j2.inspection);
+          }
+        } catch (err) {
+          // ignore
+        }
       } else {
         setMessage(
           "Erro: " + (data?.error || JSON.stringify(data?.errors || {})),
@@ -114,6 +133,32 @@ export default function TransferForm({ accounts }: { accounts: Account[] }) {
         </button>
       </div>
       {message && <div className="text-sm text-gray-700">{message}</div>}
+      {(inspectionFrom || inspectionTo) && (
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <div className="bg-gray-50 p-3 rounded border">
+            <div className="font-semibold">Origem</div>
+            {inspectionFrom ? (
+              <>
+                <div className="text-sm">Saldo: {inspectionFrom.summary.currentBalance}</div>
+                <div className="text-sm">Divergência: {inspectionFrom.summary.divergence}</div>
+              </>
+            ) : (
+              <div className="text-sm">—</div>
+            )}
+          </div>
+          <div className="bg-gray-50 p-3 rounded border">
+            <div className="font-semibold">Destino</div>
+            {inspectionTo ? (
+              <>
+                <div className="text-sm">Saldo: {inspectionTo.summary.currentBalance}</div>
+                <div className="text-sm">Divergência: {inspectionTo.summary.divergence}</div>
+              </>
+            ) : (
+              <div className="text-sm">—</div>
+            )}
+          </div>
+        </div>
+      )}
     </form>
   );
 }

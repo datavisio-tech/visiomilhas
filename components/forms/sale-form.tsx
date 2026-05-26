@@ -7,11 +7,13 @@ type Account = {
   nickname: string;
   program: string | null;
   balance: number;
+  cpmCents?: number;
 };
 
 export default function SaleForm({ accounts }: { accounts: Account[] }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [inspection, setInspection] = useState<any | null>(null);
   const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -31,6 +33,16 @@ export default function SaleForm({ accounts }: { accounts: Account[] }) {
         setMessage("Venda criada com sucesso.");
         form.reset();
         router.refresh();
+        try {
+          const accountId = fd.get("accountId")?.toString();
+          if (accountId) {
+            const r = await fetch(`/api/inspection/fifo?accountId=${accountId}`);
+            const j = await r.json();
+            if (j?.success) setInspection(j.inspection);
+          }
+        } catch (err) {
+          // ignore
+        }
       } else {
         setMessage(
           "Erro: " + (data?.error || JSON.stringify(data?.errors || {})),
@@ -99,6 +111,19 @@ export default function SaleForm({ accounts }: { accounts: Account[] }) {
         </button>
       </div>
       {message && <div className="text-sm text-gray-700">{message}</div>}
+      {inspection && (
+        <div className="mt-2 bg-gray-50 p-3 rounded border">
+          <div className="font-semibold">Resultado FIFO</div>
+          <div className="text-sm">Total de lotes: {inspection.summary.totalLots}</div>
+          <div className="text-sm">Orphan lots: {inspection.summary.orphanLots}</div>
+          <div className="text-sm">Inconsistências: {inspection.summary.inconsistentLots}</div>
+          {inspection.warnings && inspection.warnings.length > 0 && (
+            <div className="mt-2 text-sm text-yellow-700">
+              Warnings: {inspection.warnings.map((w: any) => w.message).join("; ")}
+            </div>
+          )}
+        </div>
+      )}
     </form>
   );
 }

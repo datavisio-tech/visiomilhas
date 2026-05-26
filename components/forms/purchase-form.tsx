@@ -7,11 +7,13 @@ type Account = {
   nickname: string;
   program: string | null;
   balance: number;
+  cpmCents?: number;
 };
 
 export default function PurchaseForm({ accounts }: { accounts: Account[] }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [inspection, setInspection] = useState<any | null>(null);
   const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -30,7 +32,18 @@ export default function PurchaseForm({ accounts }: { accounts: Account[] }) {
       if (data?.success) {
         setMessage("Compra criada com sucesso.");
         form.reset();
-        router.refresh();
+          router.refresh();
+          // fetch inspection summary for the account to show operational feedback
+          try {
+            const accountId = fd.get("accountId")?.toString();
+            if (accountId) {
+              const r = await fetch(`/api/inspection/account?accountId=${accountId}`);
+              const j = await r.json();
+              if (j?.success) setInspection(j.inspection);
+            }
+          } catch (err) {
+            // ignore
+          }
       } else {
         setMessage(
           "Erro: " + (data?.error || JSON.stringify(data?.errors || {})),
@@ -95,6 +108,20 @@ export default function PurchaseForm({ accounts }: { accounts: Account[] }) {
         </button>
       </div>
       {message && <div className="text-sm text-gray-700">{message}</div>}
+      {inspection && (
+        <div className="mt-2 bg-gray-50 p-3 rounded border">
+          <div className="font-semibold">Resultado operacional</div>
+          <div className="text-sm">Saldo atual: {inspection.summary.currentBalance}</div>
+          <div className="text-sm">Saldo conciliado: {inspection.summary.reconciledBalance}</div>
+          <div className="text-sm">Divergência: {inspection.summary.divergence}</div>
+          <div className="text-sm">Status: {inspection.summary.integrityStatus}</div>
+          {inspection.warnings && inspection.warnings.length > 0 && (
+            <div className="mt-2 text-sm text-yellow-700">
+              Warnings: {inspection.warnings.map((w: any) => w.message).join("; ")}
+            </div>
+          )}
+        </div>
+      )}
     </form>
   );
 }
