@@ -118,6 +118,14 @@ Critérios de aceite:
 - Revalidar lint, typecheck, testes e diff-check após o ajuste.
 - Tentar novamente o fluxo OAuth real apenas se houver credencial Google válida disponível; caso contrário, registrar o bloqueio externo sem mascarar o estado do runtime.
 
+## 2.4-I — Onboarding Runtime Consistency Hardening
+
+- Hidratar `organizationId` no `SessionContext` quando o onboarding já tiver provisionado ownership.
+- Tornar `resolveReadScope()` onboarding-aware, redirecionando para `/app/onboarding` quando a organização ainda não existir.
+- Adicionar boundary explícito no dashboard para evitar crash e registrar telemetria operacional antes do redirect.
+- Expandir observabilidade para registrar estado de onboarding, recovery, ownership, browser context e session lifecycle.
+- Revalidar browser runtime sem alterar auth, banco, Docker, deploy, RBAC ou arquitetura.
+
 ## 2.4-G — Real Google OAuth Staging Stabilization & Observability Expansion
 
 Objetivo: Resolver bloqueador de OAuth e estabilizar callback ponta-a-ponta.

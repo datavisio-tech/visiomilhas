@@ -1,5 +1,52 @@
 # CHANGELOG_AI
 
+## 2026-05-25 — Fase 2.4-I — Onboarding Runtime Consistency Hardening — ✅ COMPLETE
+
+### Status: runtime consistente, onboarding-aware e protegido contra crash por read scope
+
+**Session 3 Achievements**:
+
+1. **Ownership Hydration** — ✅ COMPLETE
+  - `resolveBetterAuthSessionContext()` agora hidrata `organizationId` e ownership quando onboarding já provisionou a conta
+  - `SessionContext` deixa de depender apenas do payload Better Auth bruto
+
+2. **Onboarding-Aware Read Scope** — ✅ COMPLETE
+  - `resolveReadScope()` agora redireciona para `/app/onboarding` quando `organizationId` estiver ausente
+  - O boundary passou a emitir telemetria operacional em vez de quebrar com erro fatal
+
+3. **Dashboard Boundary** — ✅ COMPLETE
+  - `app/app/dashboard/page.tsx` ganhou redirect explícito e observabilidade antes de renderizar dados
+  - O dashboard não quebra mais quando o usuário ainda está sem ownership resolvida
+
+4. **Observability Expansion** — ✅ COMPLETE
+  - Novos códigos adicionados: `ONBOARDING_REQUIRED_REDIRECT`, `ONBOARDING_CONTEXT_MISSING`, `ONBOARDING_RUNTIME_RECOVERY`, `READ_SCOPE_ONBOARDING_RECOVERY`
+  - Metadados agora incluem onboarding stage, recovery stage, ownership state, browser context e session lifecycle
+
+5. **Validation** — ✅ COMPLETE
+  - `npm run lint`: 0 errors
+  - `npm run typecheck`: 0 errors
+  - `npm run test`: 59/59 tests passing
+  - `git diff --check`: limpo
+
+### Runtime Readiness — 2.4-I Final
+
+| Capability | Status | Note |
+|-----------|--------|------|
+| Better Auth login | ✅ | Continua funcional |
+| Session persistence | ✅ | Continua funcional |
+| Ownership hydration | ✅ | `organizationId` agora entra na session context |
+| Read scope | ✅ | Redirect onboarding-aware em vez de crash |
+| Dashboard | ✅ | Boundary explícito, sem uncaught throw |
+| Observability | ✅ | Novos eventos de onboarding/runtime |
+| Browser runtime | 🟡 | Sign-in/Google continuam alcançáveis; dashboard sem sessão redireciona para sign-in |
+
+### Remaining External Caveat
+
+- O browser atual não estava autenticado no momento da validação final, então o dashboard redirecionou para sign-in.
+- O fluxo Google segue alcançável; a etapa de login real depende de uma credencial Google válida para fechar o ciclo completo.
+
+---
+
 ## 2026-05-25 — Fase 2.4-H (Session 3) — Better Auth Drizzle Schema Alignment — ✅ COMPLETE
 
 ### Status: schema lógico alinhado, runtime validado localmente

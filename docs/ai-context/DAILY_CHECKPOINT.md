@@ -4,6 +4,46 @@
 
 Etapa executada:
 
+- ✅ `resolveBetterAuthSessionContext()` passou a hidratar `organizationId` quando onboarding já provisionou ownership
+- ✅ `resolveReadScope()` passou a redirecionar para `/app/onboarding` quando `organizationId` estiver ausente
+- ✅ `app/app/dashboard/page.tsx` ganhou boundary onboarding-aware com observabilidade antes do redirect
+- ✅ Expandida observabilidade com `ONBOARDING_REQUIRED_REDIRECT`, `ONBOARDING_CONTEXT_MISSING`, `ONBOARDING_RUNTIME_RECOVERY` e `READ_SCOPE_ONBOARDING_RECOVERY`
+- ✅ Validação final executada com lint/typecheck/test/diff-check verdes
+
+Branch atual:
+
+- `2.3-c-initial-onboarding-flow`
+
+Commits criados nesta sessão:
+
+- pendente de commit para agrupar runtime + docs
+
+Validações executadas:
+
+- ✅ `npm run lint`
+- ✅ `npm run typecheck`
+- ✅ `npm run test` — 59/59 passing
+- ✅ `git diff --check`
+
+Estado atual:
+
+- **organizationId** — ✅ agora é hidratado no session context quando onboarding existe
+- **Read scope** — ✅ onboarding-aware, com redirect e telemetria
+- **Dashboard** — ✅ não quebra com organização ausente
+- **Browser** — 🟡 o dashboard redirecionou para sign-in porque não havia sessão autenticada no navegador atual
+
+Bloqueador residual:
+
+- ⏳ Para concluir login/onboarding real no browser ainda é necessária uma credencial Google válida na sessão atual
+
+Próxima etapa:
+
+- Reexecutar o fluxo real com sessão válida para confirmar persistência de ownership/onboarding end-to-end
+
+---
+
+Etapa executada:
+
 - ✅ Alinhado o schema lógico exportado para Better Auth com os modelos singulares esperados (`user`, `session`, `account`, `verification`)
 - ✅ Mantidas as tabelas físicas existentes (`ba_users`, `ba_sessions`, `ba_accounts`, `ba_verification`)
 - ✅ Ajustado o wiring do adapter para consumir o namespace do schema

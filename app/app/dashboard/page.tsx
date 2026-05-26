@@ -9,7 +9,12 @@ import {
   getRecentPurchases,
 } from "../../../lib/server/dashboard";
 import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import {
+  reportAuthEvent,
+  resolveBrowserContextTag,
+} from "../../../lib/server/auth-observability";
 
 export default async function DashboardPage() {
   const sessionContext = await resolveControlledSessionContext({
@@ -19,6 +24,44 @@ export default async function DashboardPage() {
 
   if (!sessionContext) {
     redirect("/sign-in?callbackUrl=/app/dashboard");
+  }
+
+  if (!sessionContext.ownership.organizationId) {
+    const requestHeaders = await headers();
+    const browserContext = resolveBrowserContextTag(
+      requestHeaders.get("user-agent"),
+    );
+
+    reportAuthEvent({
+      level: "warn",
+      code: "ONBOARDING_CONTEXT_MISSING",
+      message: "Dashboard requires onboarding before rendering data",
+      details: {
+        source: "dashboard.page",
+        onboardingStage: "required",
+        recoveryStage: "direct",
+        ownershipState: "missing",
+        browserContext,
+        sessionLifecycle: sessionContext.auth.sessionId ? "persisted" : "missing",
+      },
+    });
+
+    reportAuthEvent({
+      level: "info",
+      code: "ONBOARDING_REQUIRED_REDIRECT",
+      message: "Redirecting dashboard to onboarding",
+      details: {
+        source: "dashboard.page",
+        onboardingStage: "redirect",
+        recoveryStage: "direct",
+        ownershipState: "missing",
+        browserContext,
+        sessionLifecycle: sessionContext.auth.sessionId ? "persisted" : "missing",
+        redirectPath: "/app/onboarding",
+      },
+    });
+
+    redirect("/app/onboarding");
   }
   const metrics = await getMetrics(sessionContext);
   const recentEntries = await getRecentEntries(sessionContext);

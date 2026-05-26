@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import {
   buildAuthContext,
   buildSessionContext,
+  buildOwnershipContext,
   type SessionContext,
 } from "./auth-context";
 import { ensureGlobalUser } from "./onboarding";
@@ -76,6 +77,10 @@ export async function resolveBetterAuthSessionContext(
 
   const sessionContext = buildSessionContextFromBetterAuthSession(session);
 
+  if (!sessionContext) {
+    return null;
+  }
+
   // Ensure global user exists in admin DB (idempotent). Do not fail the request if DB is unavailable.
   try {
     const email = session?.user?.email;
@@ -90,7 +95,23 @@ export async function resolveBetterAuthSessionContext(
       if (globalUserId) {
         const { ensureInitialOrganizationAndAccount } = await import("./onboarding");
         try {
-          await ensureInitialOrganizationAndAccount(globalUserId, email);
+          const provision = await ensureInitialOrganizationAndAccount(
+            globalUserId,
+            email,
+          );
+
+          if (provision?.organizationId) {
+            return buildSessionContext(
+              sessionContext.auth,
+              buildOwnershipContext({
+                userId: sessionContext.auth.userId,
+                accountId: provision.accountId ?? null,
+                organizationId: provision.organizationId,
+                ownsAccount: true,
+                ownsOrganizationScope: true,
+              }),
+            );
+          }
         } catch (innerErr) {
           // Swallow to keep auth resilient; observability elsewhere.
           // eslint-disable-next-line no-console

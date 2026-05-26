@@ -1,5 +1,25 @@
 # TODO_AI - Pendências e próximas ações
 
+## 2.4-I — Onboarding Runtime Consistency Hardening — ✅ COMPLETE
+
+**Status**: ✅ runtime onboarding-aware endurecido; browser real ainda depende de sessão Google válida
+
+**Realizado**:
+- ✅ `organizationId` agora é hidratado no `SessionContext` quando onboarding já provisionou ownership
+- ✅ `resolveReadScope()` passou a redirecionar ao onboarding quando a organização ainda não existe
+- ✅ `app/app/dashboard/page.tsx` ganhou boundary explícito com redirect onboarding-aware
+- ✅ Observabilidade expandida com códigos de onboarding/read-scope recovery
+- ✅ `npm run lint`, `npm run typecheck`, `npm run test` e `git diff --check` passaram
+
+**Bloqueador Residual**:
+- ⏳ O navegador atual não estava autenticado no momento da validação final, então o dashboard redirecionou para sign-in
+- ⏳ Para fechar o ciclo login → onboarding → dashboard → logout → refresh → reopen, ainda é necessária uma credencial Google válida na sessão atual
+
+**Próxima Ação**:
+- Reexecutar o fluxo browser-first com sessão Google válida e confirmar persistência de ownership/onboarding end-to-end
+
+## 2.4-H — Session 3 — Better Auth Drizzle Schema Alignment — ✅ COMPLETE
+
 ## 2.4-H — Session 3 — Better Auth Drizzle Schema Alignment — ✅ COMPLETE
 
 **Status**: ✅ alinhamento lógico concluído; E2E real depende de credencial Google válida

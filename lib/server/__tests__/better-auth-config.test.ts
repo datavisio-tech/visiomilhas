@@ -1,6 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("../onboarding", () => ({
+  ensureGlobalUser: vi.fn(async () => 123),
+  ensureInitialOrganizationAndAccount: vi.fn(async () => ({
+    organizationId: 77,
+    accountId: 55,
+    programId: 11,
+    status: "created" as const,
+  })),
+}));
 
 import { buildSessionContextFromBetterAuthSession } from "../better-auth-session";
+import { resolveBetterAuthSessionContext } from "../better-auth-session";
 import { resolveBetterAuthEnvironment } from "../better-auth-config";
 
 describe("resolveBetterAuthEnvironment", () => {
@@ -66,5 +77,30 @@ describe("buildSessionContextFromBetterAuthSession", () => {
         user: { email: "user@example.com" },
       }),
     ).toBeNull();
+  });
+
+  it("hydrates organization ownership when onboarding is provisioned", async () => {
+    const sessionContext = await resolveBetterAuthSessionContext(
+      {
+        api: {
+          getSession: async () => ({
+            user: {
+              id: "user-123",
+              email: "user@example.com",
+              provider: "google",
+            },
+            session: {
+              id: "session-123",
+            },
+          }),
+        },
+      },
+      new Headers(),
+    );
+
+    expect(sessionContext?.auth.userId).toBe("user-123");
+    expect(sessionContext?.ownership.organizationId).toBe(77);
+    expect(sessionContext?.ownership.accountId).toBe(55);
+    expect(sessionContext?.ownership.ownsOrganizationScope).toBe(true);
   });
 });
