@@ -1,3 +1,44 @@
+# DAILY_CHECKPOINT — 2026-05-26 — 3.2-C Full Financial Operational Walkthrough — 🟡 BLOCKED BY GOOGLE CREDENTIAL
+
+## Session 9 — Browser-first Financial Walkthrough Validation
+
+Etapa executada:
+
+- ✅ `purchase`, `sale` e `transfer` voltaram a manter runtime compatível com esquema legado sem quebrar a operação por `mile_point_lots`
+- ✅ `validateFinancialIntegrity()` passou a degradar com segurança quando `mile_point_lots` não existe
+- ✅ `createSaleAction` permaneceu estabilizada com wrapper `use server`
+- ✅ Validação browser-first alcançou o provedor Google e confirmou o redirect/callback real
+
+Branch atual:
+
+- `2.3-c-initial-onboarding-flow`
+
+Commits criados nesta sessão:
+
+- pendente de commit local
+
+Validações executadas:
+
+- ✅ `npm run lint`
+- ✅ `npm run typecheck`
+- ✅ `npm run test` — 80/80 passing
+- ✅ `git diff --check`
+
+Estado atual:
+
+- **Purchase runtime** — ✅ operacional no runtime, mas o walkthrough browser-first não pôde ser concluído sem login Google ativo
+- **Sale runtime** — ✅ operacional e sem erro `$$id` no runtime validado
+- **Transfer runtime** — ✅ operacional na suíte e sem regressão observada
+- **Inspection runtime** — 🟡 ainda depende de sessão Google ativa para validação visual completa
+
+Bloqueador residual:
+
+- ⏳ o browser atual exige credencial Google para completar o walkthrough operacional real de ponta a ponta
+
+Próxima etapa:
+
+- Reexecutar o browser-first walkthrough completo assim que houver sessão Google ativa no navegador
+
 # DAILY_CHECKPOINT — 2026-05-26 — 3.0-C Replay/Lineage Auditability Debugging — ✅ COMPLETE
 
 ## Session 8 — FIFO Runtime Replay/Lineage Stabilization ✅ COMPLETE

@@ -1,4 +1,3 @@
-"use server";
 import { createSaleSchema } from "../../../lib/validations/sales";
 import { appPool } from "../../../db/app/client";
 import { calculateSaleImpact } from "../../../lib/domain/miles-calculations";
@@ -201,4 +200,12 @@ export async function createSaleAction(formData: FormData, deps: Deps = {}) {
   }
 }
 
-export default createSaleAction;
+// Server Action wrapper: keep the implementation testable (named export)
+// and provide a thin server action default export that Next will proxy.
+export default async function createSaleActionServer(
+  formData: FormData,
+  deps: Deps = {},
+) {
+  "use server";
+  return createSaleAction(formData, deps);
+}

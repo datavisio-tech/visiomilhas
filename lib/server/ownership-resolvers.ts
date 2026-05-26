@@ -35,12 +35,34 @@ async function resolveRow(
   const client = await pool.connect();
 
   try {
-    const result = await client.query(
-      `SELECT id, organization_id, created_by_user_id FROM ${tableName} WHERE id = $1 LIMIT 1`,
-      [id],
-    );
+    try {
+      const result = await client.query(
+        `SELECT id, organization_id, created_by_user_id FROM ${tableName} WHERE id = $1 LIMIT 1`,
+        [id],
+      );
 
-    return (result.rows[0] as OwnershipRow | undefined) ?? null;
+      return (result.rows[0] as OwnershipRow | undefined) ?? null;
+    } catch (err: any) {
+      // If the column created_by_user_id does not exist in the table (schema drift),
+      // fallback to selecting only id and organization_id and treat created_by_user_id as null.
+      // This avoids hard failures when running against older schemas.
+      if (err && err.code === "42703" && String(err.message).includes("created_by_user_id")) {
+        const fallback = await client.query(
+          `SELECT id, organization_id FROM ${tableName} WHERE id = $1 LIMIT 1`,
+          [id],
+        );
+
+        const row = fallback.rows[0];
+        if (!row) return null;
+        return {
+          id: row.id,
+          organization_id: row.organization_id,
+          created_by_user_id: null,
+        } as OwnershipRow;
+      }
+
+      throw err;
+    }
   } finally {
     client.release();
   }

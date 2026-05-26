@@ -37,7 +37,8 @@ export type FinancialEventCode =
   | "LEDGER_INTEGRITY_SUMMARY_CREATED"
   | "FINANCIAL_ACCOUNT_INSPECTED"
   | "FIFO_CONSUMPTION_INSPECTED"
-  | "FINANCIAL_WARNING_DETECTED";
+  | "FINANCIAL_WARNING_DETECTED"
+  | "FINANCIAL_LEGACY_SCHEMA_DETECTED";
 
 export type FinancialIntegrityIssue = {
   code: FinancialIntegrityIssueCode;
@@ -1234,6 +1235,7 @@ export async function validateFinancialIntegrity(
 ): Promise<FinancialIntegrityResult> {
   const params: any[] = [input.organizationId];
   const accountFilter = input.accountId ? " AND id = $2" : "";
+  const legacySchemaMode = { enabled: false };
 
   if (input.accountId) params.push(input.accountId);
 
@@ -1244,20 +1246,31 @@ export async function validateFinancialIntegrity(
     params,
   );
 
-  const lotsRes = await runner.query(
-    `SELECT id, account_id, acquired_points, remaining_points, organization_id
-     FROM mile_point_lots
-     WHERE organization_id = $1`,
-    [input.organizationId],
-  );
+  let lotsRes: { rows: any[] } = { rows: [] };
+  let orphanLotsRes: { rows: any[] } = { rows: [] };
 
-  const orphanLotsRes = await runner.query(
-    `SELECT l.id, l.account_id
-     FROM mile_point_lots l
-     LEFT JOIN program_accounts a ON a.id = l.account_id
-     WHERE l.organization_id = $1 AND a.id IS NULL`,
-    [input.organizationId],
-  );
+  try {
+    lotsRes = await runner.query(
+      `SELECT id, account_id, acquired_points, remaining_points, organization_id
+       FROM mile_point_lots
+       WHERE organization_id = $1`,
+      [input.organizationId],
+    );
+
+    orphanLotsRes = await runner.query(
+      `SELECT l.id, l.account_id
+       FROM mile_point_lots l
+       LEFT JOIN program_accounts a ON a.id = l.account_id
+       WHERE l.organization_id = $1 AND a.id IS NULL`,
+      [input.organizationId],
+    );
+  } catch (error: any) {
+    if (error?.code === "42P01" && String(error?.message ?? "").includes("mile_point_lots")) {
+      legacySchemaMode.enabled = true;
+    } else {
+      throw error;
+    }
+  }
 
   const issues: FinancialIntegrityIssue[] = [];
   const lotsByAccount = new Map<number, any[]>();
@@ -1347,6 +1360,18 @@ export async function validateFinancialIntegrity(
     issues,
     isConsistent: issues.length === 0,
   };
+
+  if (legacySchemaMode.enabled && input.emitEvents) {
+    reportFinancialEvent(
+      "FINANCIAL_LEGACY_SCHEMA_DETECTED",
+      "Financial integrity skipped lot checks because mile_point_lots is missing",
+      {
+        source: input.source ?? "financial-integrity",
+        organizationId: input.organizationId,
+        accountId: input.accountId ?? null,
+      },
+    );
+  }
 
   if (input.emitEvents) {
     if (result.isConsistent) {
