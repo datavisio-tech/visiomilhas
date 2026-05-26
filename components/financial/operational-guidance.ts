@@ -123,3 +123,27 @@ export function buildNarrativeStatus(
     return `status em atenção com ${warningCount} aviso(s)`;
   return "status saudável";
 }
+
+function severityRank(severity: WarningGuide["severity"]): number {
+  if (severity === "CRITICAL") return 3;
+  if (severity === "WARNING") return 2;
+  return 1;
+}
+
+export function prioritizeWarnings(warnings: string[]): WarningGuide[] {
+  const unique = Array.from(new Set(warnings.map((warning) => warning.trim()).filter(Boolean)));
+
+  return unique
+    .map((warning) => humanizeWarning(warning))
+    .sort((left, right) => {
+      const severityDelta = severityRank(right.severity) - severityRank(left.severity);
+      if (severityDelta !== 0) return severityDelta;
+
+      if (left.priority === right.priority) return left.problem.localeCompare(right.problem, "pt-BR");
+      if (left.priority === "alta") return -1;
+      if (right.priority === "alta") return 1;
+      if (left.priority === "média") return -1;
+      if (right.priority === "média") return 1;
+      return 0;
+    });
+}

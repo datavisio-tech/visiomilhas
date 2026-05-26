@@ -5,7 +5,7 @@ import {
   formatMoneyCents,
   formatPoints,
   humanizeOperationalStatus,
-  humanizeWarning,
+  prioritizeWarnings,
 } from "../financial/operational-guidance";
 
 type Account = {
@@ -241,17 +241,20 @@ function NarrativeBox({ title, lines }: { title: string; lines: string[] }) {
 }
 
 function WarningStack({ warnings }: { warnings: string[] }) {
-  if (!warnings.length) {
+  const prioritized = prioritizeWarnings(warnings);
+
+  if (!prioritized.length) {
     return <div className="text-sm text-gray-600">Nenhum warning ativo.</div>;
   }
+
+  const visibleWarnings = prioritized.slice(0, 3);
 
   return (
     <div className="space-y-2">
       <div className="text-sm font-medium">Warnings humanizados</div>
-      {warnings.map((warning) => {
-        const guidance = humanizeWarning(warning);
+      {visibleWarnings.map((guidance) => {
         return (
-          <div key={warning} className="rounded border bg-white p-3 text-sm">
+          <div key={`${guidance.problem}-${guidance.severity}`} className="rounded border bg-white p-3 text-sm">
             <div className="flex items-center justify-between gap-2">
               <div className="font-medium">{guidance.problem}</div>
               <div className="text-xs uppercase tracking-wide text-gray-500">
@@ -265,6 +268,11 @@ function WarningStack({ warnings }: { warnings: string[] }) {
           </div>
         );
       })}
+      {prioritized.length > visibleWarnings.length ? (
+        <div className="text-xs text-gray-500">
+          +{prioritized.length - visibleWarnings.length} warning(s) adicional(is) oculto(s) para reduzir ruído.
+        </div>
+      ) : null}
     </div>
   );
 }

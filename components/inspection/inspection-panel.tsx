@@ -5,7 +5,7 @@ import {
   buildNarrativeStatus,
   formatPoints,
   humanizeOperationalStatus,
-  humanizeWarning,
+  prioritizeWarnings,
 } from "../financial/operational-guidance";
 
 type Account = {
@@ -52,6 +52,11 @@ export default function InspectionPanel({ accounts }: Props) {
   const accountWarnings = accountInspection?.warnings ?? [];
   const fifoWarnings = fifoInspection?.warnings ?? [];
   const replayWarnings = replayInspection?.warnings ?? [];
+  const prioritizedWarnings = prioritizeWarnings([
+    ...accountWarnings,
+    ...fifoWarnings,
+    ...replayWarnings,
+  ]);
   const accountStatus = humanizeOperationalStatus(
     accountInspection?.summary?.integrityStatus ?? "consistent",
   );
@@ -218,9 +223,25 @@ export default function InspectionPanel({ accounts }: Props) {
         <div className="text-xs uppercase tracking-wide text-gray-500">
           VER → ENTENDER → AGIR → ESCALAR
         </div>
-        <TroubleshootingList
-          warnings={[...accountWarnings, ...fifoWarnings, ...replayWarnings]}
-        />
+        <TroubleshootingList warnings={prioritizedWarnings} />
+      </section>
+
+      <section className="rounded border bg-green-50 p-3 text-sm text-green-900">
+        <div className="font-semibold">Sinais de confiança operacional</div>
+        <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li>
+            Replay: {replayInspection?.summary?.ledgerStatus === "consistent" ? "estável" : "em atenção"}
+          </li>
+          <li>
+            Lineage: {replayInspection?.summary?.brokenLineage === 0 ? "íntegra" : "com ajustes pendentes"}
+          </li>
+          <li>
+            Warnings relevantes: {prioritizedWarnings.length}
+          </li>
+          <li>
+            Estado geral: {prioritizedWarnings.length === 0 ? "previsível e estável" : "monitorado com ação guiada"}
+          </li>
+        </ul>
       </section>
 
       {replayInspection?.replay?.events?.length ? (
@@ -293,7 +314,7 @@ function HelpCard({ title, lines }: { title: string; lines: string[] }) {
   );
 }
 
-function TroubleshootingList({ warnings }: { warnings: string[] }) {
+function TroubleshootingList({ warnings }: { warnings: ReturnType<typeof prioritizeWarnings> }) {
   if (!warnings.length) {
     return (
       <div className="text-sm text-gray-600">
@@ -302,12 +323,13 @@ function TroubleshootingList({ warnings }: { warnings: string[] }) {
     );
   }
 
+  const visibleWarnings = warnings.slice(0, 5);
+
   return (
     <div className="space-y-3">
-      {warnings.map((warning) => {
-        const guidance = humanizeWarning(warning);
+      {visibleWarnings.map((guidance) => {
         return (
-          <div key={warning} className="rounded border bg-white p-3 text-sm">
+          <div key={`${guidance.problem}-${guidance.severity}`} className="rounded border bg-white p-3 text-sm">
             <div className="flex items-center justify-between gap-2">
               <div className="font-medium">{guidance.problem}</div>
               <div className="text-xs uppercase tracking-wide text-gray-500">
@@ -326,6 +348,11 @@ function TroubleshootingList({ warnings }: { warnings: string[] }) {
           </div>
         );
       })}
+      {warnings.length > visibleWarnings.length ? (
+        <div className="text-xs text-gray-500">
+          +{warnings.length - visibleWarnings.length} warning(s) adicional(is) oculto(s) para evitar fadiga operacional.
+        </div>
+      ) : null}
     </div>
   );
 }
