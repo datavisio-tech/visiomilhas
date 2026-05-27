@@ -9,7 +9,7 @@ function MockCard({ title, image, tone }: { title: string; image: string; tone: 
         <div className="text-sm font-semibold text-white">{title}</div>
         <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-1 text-[11px] text-emerald-200">LIVE</div>
       </div>
-      <div className="overflow-hidden rounded-[1.25rem] border border-white/10 bg-slate-950/90 p-3">
+      <div className="overflow-hidden rounded-[1.25rem] bg-slate-950/90 p-3">
         <Image src={image} alt={title} width={900} height={540} className="h-auto w-full rounded-[1rem] object-cover" />
       </div>
       <div className="mt-3 grid gap-2 text-[11px] text-white/62 sm:grid-cols-3">

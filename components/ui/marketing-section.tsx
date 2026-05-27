@@ -40,7 +40,7 @@ export default function MarketingSection({ eyebrow, title, body, imageSrc, rever
             <div className="relative">
               <div className="absolute -inset-3 rounded-[1.75rem] bg-gradient-to-r from-violet-500/10 to-cyan-400/8 blur-3xl" />
               <div className="relative overflow-hidden rounded-[1.5rem] border border-white/8 bg-slate-950/50 p-3 shadow-[0_18px_70px_rgba(2,6,23,0.34)] ring-1 ring-white/5 backdrop-blur-2xl">
-                <div className="rounded-[1.15rem] border border-white/8 bg-slate-950/90 p-2.5">
+                <div className="rounded-[1.15rem] bg-slate-950/90 p-2.5">
                   <Image src={imageSrc} alt={typeof title === "string" ? title : "Preview"} width={1200} height={760} className="h-auto w-full rounded-[0.9rem] object-cover" />
                 </div>
               </div>
