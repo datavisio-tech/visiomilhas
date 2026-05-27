@@ -1,3 +1,35 @@
+# DAILY_CHECKPOINT — 2026-05-26 — 3.4-F Contrast Recovery Pass — ✅ COMPLETE
+
+## Session 15 — Dark section readability fix
+
+Etapa executada:
+
+- ✅ o cartão de texto das seções escuras ficou mais sólido e legível
+- ✅ removi a aparência translúcida excessiva que deixava o texto apagado
+- ✅ mantive a estrutura da landing e mexi só em contraste/superfície
+
+Branch atual:
+
+- `3.4-a-public-landing-page`
+
+Validações executadas:
+
+- ✅ `npm run lint`
+- ✅ revisão visual no navegador após `reload`
+
+Estado atual:
+
+- **Contraste** — ✅ corrigido na seção de benefícios
+- **Legibilidade** — ✅ texto agora aparece com presença clara sobre o fundo
+
+Pendências:
+
+- ⏳ `.claude/` continua fora do commit por governança
+
+Próxima etapa:
+
+- Seguir para revisão final se você quiser mais polimento fino
+
 # DAILY_CHECKPOINT — 2026-05-26 — 3.4-F Conversion Polish & Premium Consistency — ✅ COMPLETE
 
 ## Session 14 — Landing copy/CTA consistency pass

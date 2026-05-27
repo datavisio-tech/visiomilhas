@@ -21,9 +21,9 @@ export default function MarketingSection({ eyebrow, title, body, imageSrc, rever
           {eyebrow ? (
             <div className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-200">{eyebrow}</div>
           ) : null}
-          <div className="max-w-xl rounded-[1.75rem] border border-white/8 bg-white/[0.03] p-6 shadow-[0_20px_60px_rgba(2,6,23,0.28)]">
+          <div className="max-w-xl rounded-[1.75rem] border border-white/12 bg-slate-900/88 p-6 shadow-[0_24px_80px_rgba(2,6,23,0.42)] backdrop-blur-xl">
             <h3 className="text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">{title}</h3>
-            <div className="mt-5 text-base leading-7 text-white/88">{body}</div>
+            <div className="mt-5 text-base leading-7 text-slate-100/92">{body}</div>
           </div>
           {cta ? (
             <div className="mt-6">
