@@ -22,7 +22,7 @@ export default function ShadcnButton({ children, href, variant = "default", clas
   const classes = `${base} ${variants[variant]} ${className}`;
 
   if (href) return (
-    <Link href={href} className={classes} {...(rest as any)}>
+    <Link href={href} className={classes} {...(rest as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
       {children}
     </Link>
   );
