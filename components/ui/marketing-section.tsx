@@ -21,7 +21,7 @@ export default function MarketingSection({ eyebrow, title, body, imageSrc, rever
           {eyebrow ? (
             <div className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-200">{eyebrow}</div>
           ) : null}
-          <div className="max-w-xl rounded-[1.75rem] border border-white/12 bg-slate-900/88 p-6 shadow-[0_24px_80px_rgba(2,6,23,0.42)] backdrop-blur-xl">
+          <div className="max-w-xl rounded-[1.5rem] border border-white/8 bg-slate-900/78 p-6 shadow-[0_18px_50px_rgba(2,6,23,0.32)] ring-1 ring-white/5 backdrop-blur-xl">
             <h3 className="text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">{title}</h3>
             <div className="mt-5 text-base leading-7 text-slate-100/92">{body}</div>
           </div>
@@ -38,10 +38,10 @@ export default function MarketingSection({ eyebrow, title, body, imageSrc, rever
         <div className={reverse ? "lg:order-1" : ""}>
           {imageSrc ? (
             <div className="relative">
-              <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-r from-violet-500/15 to-cyan-400/10 blur-2xl" />
-              <div className="relative overflow-hidden rounded-[1.75rem] border border-white/12 bg-white/6 p-4 shadow-[0_24px_120px_rgba(2,6,23,0.42)] backdrop-blur-2xl">
-                <div className="rounded-[1.25rem] border border-white/12 bg-slate-950/92 p-3">
-                  <Image src={imageSrc} alt={typeof title === "string" ? title : "Preview"} width={1200} height={760} className="h-auto w-full rounded-[1rem] object-cover" />
+              <div className="absolute -inset-3 rounded-[1.75rem] bg-gradient-to-r from-violet-500/10 to-cyan-400/8 blur-3xl" />
+              <div className="relative overflow-hidden rounded-[1.5rem] border border-white/8 bg-slate-950/50 p-3 shadow-[0_18px_70px_rgba(2,6,23,0.34)] ring-1 ring-white/5 backdrop-blur-2xl">
+                <div className="rounded-[1.15rem] border border-white/8 bg-slate-950/90 p-2.5">
+                  <Image src={imageSrc} alt={typeof title === "string" ? title : "Preview"} width={1200} height={760} className="h-auto w-full rounded-[0.9rem] object-cover" />
                 </div>
               </div>
             </div>

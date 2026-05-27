@@ -1,3 +1,35 @@
+# DAILY_CHECKPOINT — 2026-05-26 — 3.4-F Card Contour Refinement — ✅ COMPLETE
+
+## Session 16 — Card outline cleanup
+
+Etapa executada:
+
+- ✅ suavizei o contorno dos cards de seção escura para eliminar o efeito de moldura pesada
+- ✅ reduzi bordas duplas, brilho excessivo e sombra forte nos blocos de texto e preview
+- ✅ mantive o layout e só ajustei acabamento visual
+
+Branch atual:
+
+- `3.4-a-public-landing-page`
+
+Validações executadas:
+
+- ✅ `npm run lint`
+- ✅ revisão visual no navegador após `reload`
+
+Estado atual:
+
+- **Contour** — ✅ mais limpo e menos pesado
+- **Cards** — ✅ com presença visual melhor e sem efeito de caixa excessiva
+
+Pendências:
+
+- ⏳ `.claude/` continua fora do commit por governança
+
+Próxima etapa:
+
+- Seguir para polimento fino se você quiser afinar ainda mais borda/sombra
+
 # DAILY_CHECKPOINT — 2026-05-26 — 3.4-F Contrast Recovery Pass — ✅ COMPLETE
 
 ## Session 15 — Dark section readability fix
