@@ -3,7 +3,7 @@
 import React from "react";
 import ShadcnButton from "./shadcn-button";
 
-const heroBadges = ["Premium SaaS", "IA operacional", "Simulação e controle"];
+const heroBadges = ["Controle total", "Lucro com método", "Decisão mais rápida"];
 
 export default function MarketingHero() {
   return (
@@ -16,7 +16,7 @@ export default function MarketingHero() {
         <div className="flex flex-col justify-center">
           <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-white/80 backdrop-blur-xl">
             <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.8)]" />
-            VisioMilhas premium workspace
+            Central operacional para milhas
           </div>
 
           <div className="mt-6 flex flex-wrap gap-2">
@@ -28,34 +28,34 @@ export default function MarketingHero() {
           </div>
 
           <h1 className="mt-6 max-w-3xl text-5xl font-semibold tracking-[-0.05em] text-white sm:text-6xl lg:text-7xl lg:leading-[0.95]">
-            Operação de milhas com aparência de produto financiado e execução de time sênior.
+            Controle suas milhas como um operador profissional, com clareza para decidir, vender e transferir no momento certo.
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-white/72 sm:text-xl">
-            Uma homepage com presença de startup madura: dashboards falsos que parecem reais, métricas com profundidade, simulações elegantes e uma narrativa visual que transmite confiança imediata.
+            Centralize programas, custos, lucro e próximos passos em uma experiência que transforma dados soltos em decisões com mais controle, organização e retorno.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <ShadcnButton variant="primary" href="/app/onboarding" className="px-6 py-3 text-base shadow-[0_0_32px_rgba(124,58,237,0.45)]">
-              Começar agora
+              Quero controlar minhas milhas
             </ShadcnButton>
             <ShadcnButton variant="default" href="/app/dashboard" className="border-white/15 bg-white/8 px-6 py-3 text-base text-white hover:bg-white/12">
-              Ver experiência
+              Ver a central operacional
             </ShadcnButton>
           </div>
 
           <div className="mt-8 grid gap-3 text-sm text-white/68 sm:grid-cols-3">
             <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-xl">
-              <div className="text-white">R$ 0,00</div>
-              <div className="mt-1 text-white/60">Setup inicial sem atrito</div>
+              <div className="text-white">Lucro visível</div>
+              <div className="mt-1 text-white/60">Decida com margem na tela</div>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-xl">
-              <div className="text-white">16 cenários</div>
-              <div className="mt-1 text-white/60">Simulação visual pronta</div>
+              <div className="text-white">Custo claro</div>
+              <div className="mt-1 text-white/60">Saiba o ponto ideal de ação</div>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-xl">
-              <div className="text-white">+7 programas</div>
-              <div className="mt-1 text-white/60">Controle centralizado</div>
+              <div className="text-white">Tudo em ordem</div>
+              <div className="mt-1 text-white/60">Programas, contas e histórico</div>
             </div>
           </div>
         </div>
@@ -68,11 +68,11 @@ export default function MarketingHero() {
             <div className="rounded-[1.6rem] border border-white/10 bg-slate-950/90 p-4">
               <div className="flex items-center justify-between border-b border-white/8 pb-4">
                 <div>
-                  <div className="text-xs uppercase tracking-[0.28em] text-white/45">Live cockpit</div>
-                  <div className="mt-1 text-lg font-semibold text-white">VisioMilhas Overview</div>
+                  <div className="text-xs uppercase tracking-[0.28em] text-white/45">Painel em tempo real</div>
+                  <div className="mt-1 text-lg font-semibold text-white">Visão executiva do seu inventário</div>
                 </div>
                 <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-200">
-                  Atualizado agora
+                  3 alertas leves hoje
                 </div>
               </div>
 
@@ -83,7 +83,7 @@ export default function MarketingHero() {
                       <div className="text-sm text-white/60">Rentabilidade acumulada</div>
                       <div className="mt-1 text-2xl font-semibold text-white">R$ 28.430,00</div>
                     </div>
-                    <div className="rounded-full bg-violet-500/15 px-3 py-1 text-xs text-violet-200">+18,4%</div>
+                    <div className="rounded-full bg-violet-500/15 px-3 py-1 text-xs text-violet-200">+18,4% no mês</div>
                   </div>
 
                   <div className="mt-5 h-48 rounded-2xl bg-[linear-gradient(180deg,rgba(124,58,237,0.18),rgba(14,165,233,0.06))] p-4">
@@ -99,7 +99,7 @@ export default function MarketingHero() {
 
                 <div className="grid gap-4">
                   <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
-                    <div className="text-xs uppercase tracking-[0.24em] text-white/45">Distribuição</div>
+                    <div className="text-xs uppercase tracking-[0.24em] text-white/45">Mix por programa</div>
                     <div className="mt-3 space-y-3">
                       {[
                         ["Livelo", "42%"],
@@ -120,15 +120,15 @@ export default function MarketingHero() {
                   </div>
 
                   <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
-                    <div className="text-xs uppercase tracking-[0.24em] text-white/45">Operação</div>
+                    <div className="text-xs uppercase tracking-[0.24em] text-white/45">Operação ativa</div>
                     <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
                       <div className="rounded-xl bg-white/5 p-3">
                         <div className="text-white">24 compras</div>
-                        <div className="mt-1 text-white/55">Hoje</div>
+                        <div className="mt-1 text-white/55">6 em observação</div>
                       </div>
                       <div className="rounded-xl bg-white/5 p-3">
                         <div className="text-white">8 vendas</div>
-                        <div className="mt-1 text-white/55">Margem em alta</div>
+                        <div className="mt-1 text-white/55">Margem acima do piso</div>
                       </div>
                     </div>
                   </div>

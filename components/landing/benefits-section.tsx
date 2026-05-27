@@ -6,7 +6,7 @@ function SectionTitle({ icon, title }: { icon: string; title: string }) {
   return (
     <span className="inline-flex items-center gap-3">
       <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 shadow-[0_0_32px_rgba(124,58,237,0.22)] backdrop-blur-xl">
-        <Image src={icon} alt="" width={24} height={24} className="h-6 w-6" />
+        <Image src={icon} alt="" width={24} height={24} className="shrink-0" />
       </span>
       <span>{title}</span>
     </span>
@@ -17,28 +17,28 @@ export default function BenefitsSection() {
   return (
     <>
       <MarketingSection
-        eyebrow="Controle financeiro"
-        title={<SectionTitle icon="/assets/icons/icon-finance.svg" title="Performance com clareza absoluta" />}
-        body={<p>Custo médio, lucro e saldo consolidado em um layout que parece um cockpit financeiro de produto premium.</p>}
+        eyebrow="Situação"
+        title={<SectionTitle icon="/assets/icons/icon-finance.svg" title="Quando tudo fica solto, a margem some no detalhe" />}
+        body={<p>Planilhas, alertas e decisões espalhadas deixam o custo obscuro. Aqui a leitura financeira vira uma visão única, clara e pronta para agir.</p>}
         imageSrc="/assets/section-1.svg"
-        cta={{ href: "/app/dashboard", label: "Explorar dashboard" }}
+        cta={{ href: "/app/dashboard", label: "Ver a leitura financeira" }}
       />
 
       <MarketingSection
-        eyebrow="Gestão de programas"
-        title={<SectionTitle icon="/assets/icons/icon-programs.svg" title="Tudo centralizado em uma única camada operacional" />}
-        body={<p>Múltiplos programas, contas e transferências reunidos com hierarquia visual forte, estados e fluidez.</p>}
+        eyebrow="Solução"
+        title={<SectionTitle icon="/assets/icons/icon-programs.svg" title="A central operacional organiza programas, contas e próximos passos" />}
+        body={<p>VisioMilhas reúne saldo, histórico e movimentações em uma superfície única que reduz ruído e deixa a operação pronta para escalar.</p>}
         imageSrc="/assets/section-2.svg"
         reverse
-        cta={{ href: "/app/dashboard", label: "Ver organização" }}
+        cta={{ href: "/app/dashboard", label: "Centralizar minha operação" }}
       />
 
       <MarketingSection
-        eyebrow="Simulações"
-        title={<SectionTitle icon="/assets/icons/icon-simulate.svg" title="Cenários rápidos com aparência de software de decisão" />}
-        body={<p>Compare cenários antes de vender ou transferir com uma visualização que passa sensação de precisão e maturidade.</p>}
+        eyebrow="Benefício"
+        title={<SectionTitle icon="/assets/icons/icon-simulate.svg" title="Decisões melhores porque o lucro aparece antes da ação" />}
+        body={<p>Compare cenários, enxergue o custo e escolha o melhor momento para vender ou transferir com mais confiança e menos adivinhação.</p>}
         imageSrc="/assets/section-3.svg"
-        cta={{ href: "/app/purchases", label: "Simular agora" }}
+        cta={{ href: "/app/purchases", label: "Simular com clareza" }}
       />
     </>
   );

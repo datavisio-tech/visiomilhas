@@ -1,15 +1,45 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" width="720" height="420">
   <rect width="720" height="420" rx="16" fill="#fbfbff"/>
   <g transform="translate(28,28)">
-    <rect width="420" height="300" rx="12" fill="#fff" stroke="#eef2ff"/>
-    <g transform="translate(12,20)">
-      <rect width="120" height="36" rx="8" fill="#f3f4ff"/>
-      <rect y="60" width="380" height="160" rx="10" fill="#fafafa" stroke="#eef2ff"/>
-      <g transform="translate(12,72)">
-        <rect width="80" height="80" rx="8" fill="#fff" stroke="#eef2ff"/>
-        <rect x="100" width="80" height="80" rx="8" fill="#fff" stroke="#eef2ff"/>
-        <rect x="200" width="80" height="80" rx="8" fill="#fff" stroke="#eef2ff"/>
+    <rect width="664" height="54" rx="12" fill="#ffffff" stroke="#eef2ff"/>
+    <rect x="18" y="17" width="92" height="10" rx="5" fill="#0f172a"/>
+    <rect x="18" y="33" width="154" height="8" rx="4" fill="#cbd5e1"/>
+    <rect x="538" y="13" width="104" height="28" rx="14" fill="#ecfeff"/>
+    <rect x="550" y="22" width="80" height="10" rx="5" fill="#06b6d4"/>
+
+    <rect y="70" width="420" height="300" rx="12" fill="#fff" stroke="#eef2ff"/>
+    <g transform="translate(14,86)">
+      <rect width="120" height="32" rx="8" fill="#f3f4ff"/>
+      <rect x="132" width="72" height="32" rx="8" fill="#ecfeff"/>
+      <rect x="212" width="72" height="32" rx="8" fill="#fef3c7"/>
+      <rect x="292" width="72" height="32" rx="8" fill="#fce7f3"/>
+      <rect y="52" width="382" height="180" rx="10" fill="#fafafa" stroke="#eef2ff"/>
+      <g transform="translate(12,64)">
+        <rect width="86" height="80" rx="8" fill="#fff" stroke="#eef2ff"/>
+        <rect x="98" width="86" height="80" rx="8" fill="#fff" stroke="#eef2ff"/>
+        <rect x="196" width="86" height="80" rx="8" fill="#fff" stroke="#eef2ff"/>
+        <rect x="294" width="76" height="80" rx="8" fill="#fff" stroke="#eef2ff"/>
       </g>
+    </g>
+
+    <g transform="translate(444,70)">
+      <rect width="220" height="132" rx="12" fill="#fff" stroke="#eef2ff"/>
+      <rect x="16" y="16" width="92" height="12" rx="6" fill="#7c3aed"/>
+      <rect x="16" y="38" width="144" height="10" rx="5" fill="#e2e8f0"/>
+      <rect x="16" y="58" width="180" height="10" rx="5" fill="#e2e8f0"/>
+      <rect x="16" y="86" width="58" height="24" rx="12" fill="#ede9fe"/>
+      <rect x="82" y="86" width="58" height="24" rx="12" fill="#ecfeff"/>
+      <rect x="148" y="86" width="56" height="24" rx="12" fill="#fef3c7"/>
+    </g>
+
+    <g transform="translate(444,218)">
+      <rect width="220" height="152" rx="12" fill="#fff" stroke="#eef2ff"/>
+      <rect x="16" y="16" width="84" height="12" rx="6" fill="#0f172a"/>
+      <rect x="16" y="38" width="180" height="8" rx="4" fill="#e2e8f0"/>
+      <rect x="16" y="56" width="162" height="8" rx="4" fill="#e2e8f0"/>
+      <rect x="16" y="78" width="188" height="12" rx="6" fill="#f8fafc" stroke="#eef2ff"/>
+      <rect x="16" y="100" width="160" height="12" rx="6" fill="#f8fafc" stroke="#eef2ff"/>
+      <rect x="16" y="122" width="124" height="12" rx="6" fill="#f8fafc" stroke="#eef2ff"/>
     </g>
   </g>
 </svg>

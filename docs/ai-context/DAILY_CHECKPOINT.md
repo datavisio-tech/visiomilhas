@@ -1,3 +1,44 @@
+# DAILY_CHECKPOINT — 2026-05-26 — 3.4-C Premium SaaS Visual Upgrade — ✅ COMPLETE
+
+## Session 12 — Landing page premium visual upgrade
+
+Etapa executada:
+
+- ✅ Hero redesenhado com fundo escuro premium, radial gradients, glow, glassmorphism leve e mockup dominante de cockpit
+- ✅ Seções de benefícios migradas para composição mais cinematográfica e tipografia mais forte
+- ✅ Mockups refatorados para parecerem pseudo screenshots com gráficos, métricas, distribuição, estados e tags
+- ✅ `next/image` aplicado nas superfícies visuais principais
+- ✅ CTA final e footer alinhados ao sistema visual premium da landing
+
+Branch atual:
+
+- `3.4-a-public-landing-page`
+
+Commits criados nesta sessão:
+
+- `87099ca` — `refactor(landing): eleva homepage para visual premium SaaS (3.4-C)`
+
+Validações executadas:
+
+- ✅ `npm run lint`
+- ✅ `npm run typecheck`
+- ✅ `npm run test`
+- ✅ `git diff --check`
+
+Estado atual:
+
+- **Hero premium** — ✅ dominante, com profundidade, glow e CTA mais forte
+- **Mockups ricos** — ✅ parecem produto funcionando, não placeholders
+- **Brand feeling** — ✅ mais premium, tecnológico e comercialmente maduro
+
+Pendência residual:
+
+- ⏳ pasta `.claude/` permanece fora do commit por governança, sem impacto na entrega
+
+Próxima etapa:
+
+- Revisão fina de conteúdo visual, se necessário, ou seguir para a próxima sessão de produto
+
 # DAILY_CHECKPOINT — 2026-05-26 — 3.2-E Financial Recovery Workflows — ✅ COMPLETE
 
 ## Session 11 — Operational recovery workflows for finance

@@ -10,7 +10,7 @@ export default function LandingFooter() {
           <a href="#">Privacidade</a>
           <a href="#">Contato</a>
         </div>
-        <div className="text-sm text-white/45">© {new Date().getFullYear()} DataVisio</div>
+        <div className="text-sm text-white/45">© {new Date().getFullYear()} DataVisio • operação clara, lucro visível</div>
       </div>
     </footer>
   );
