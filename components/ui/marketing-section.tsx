@@ -19,10 +19,12 @@ export default function MarketingSection({ eyebrow, title, body, imageSrc, rever
       <div className="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-2 lg:items-center lg:px-8">
         <div className={reverse ? "lg:order-2" : ""}>
           {eyebrow ? (
-            <div className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-200/70">{eyebrow}</div>
+            <div className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-200">{eyebrow}</div>
           ) : null}
-          <h3 className="max-w-xl text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">{title}</h3>
-          <div className="mt-5 max-w-xl text-base leading-7 text-white/78">{body}</div>
+          <div className="max-w-xl rounded-[1.75rem] border border-white/8 bg-white/[0.03] p-6 shadow-[0_20px_60px_rgba(2,6,23,0.28)]">
+            <h3 className="text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">{title}</h3>
+            <div className="mt-5 text-base leading-7 text-white/88">{body}</div>
+          </div>
           {cta ? (
             <div className="mt-6">
               <ShadcnButton href={cta.href} variant="outline" className="px-5 py-2.5 text-sm">

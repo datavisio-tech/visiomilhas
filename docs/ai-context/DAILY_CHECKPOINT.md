@@ -8,6 +8,7 @@ Etapa executada:
 - ✅ CTAs principais e secundários foram padronizados para `Começar gratuitamente` e `Ver plataforma`
 - ✅ contraste e legibilidade foram reforçados no hero, nas seções escuras e no CTA final
 - ✅ a leitura rápida ficou mais coerente entre header, hero, benefícios e CTA final
+- ✅ a seção escura de benefícios recebeu superfície e contraste extra para evitar texto apagado
 
 Branch atual:
 
