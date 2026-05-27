@@ -1,3 +1,35 @@
+# DAILY_CHECKPOINT — 2026-05-26 — Storytelling Paradigm Shift — ✅ COMPLETE
+
+## Session 18 — Narrative repositioning
+
+Etapa executada:
+
+- ✅ o bloco de storytelling passou a comunicar `mudança de paradigma`
+- ✅ ajustei título, eyebrow e copy para uma narrativa mais estratégica
+- ✅ mantive os passos e a estrutura visual intactos
+
+Branch atual:
+
+- `3.4-a-public-landing-page`
+
+Validações executadas:
+
+- ✅ `npm run lint`
+- ✅ revisão visual no navegador após `reload`
+
+Estado atual:
+
+- **Narrativa** — ✅ mais forte e mais alinhada ao posicionamento SaaS
+- **Layout** — ✅ preservado
+
+Pendências:
+
+- ⏳ `.claude/` continua fora do commit por governança
+
+Próxima etapa:
+
+- Seguir para refinamento de copy, se você quiser
+
 # DAILY_CHECKPOINT — 2026-05-26 — Label Rename Pass — ✅ COMPLETE
 
 ## Session 17 — Mockups label rename

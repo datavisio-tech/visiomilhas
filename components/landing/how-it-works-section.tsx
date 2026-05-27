@@ -12,9 +12,9 @@ export default function HowItWorksSection() {
     <section className="bg-white py-20">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="max-w-2xl">
-          <div className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Storytelling</div>
-          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">Do caos operacional à decisão limpa em poucos passos.</h2>
-          <p className="mt-4 text-base leading-7 text-slate-700">Você entra com contas dispersas, centraliza a operação e termina com mais clareza sobre o que vender, transferir e manter.</p>
+          <div className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Mudança de paradigma</div>
+          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">Da operação espalhada para uma central que muda a forma de decidir.</h2>
+          <p className="mt-4 text-base leading-7 text-slate-700">Você sai do modo reativo, centraliza a visão da operação e passa a decidir com mais clareza sobre comprar, vender e transferir.</p>
         </div>
 
         <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
