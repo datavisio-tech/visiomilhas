@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ShadcnButton from "../ui/shadcn-button";
 
 type GoogleSignInCardProps = {
   callbackUrl: string;
@@ -55,7 +56,7 @@ export default function GoogleSignInCard({ callbackUrl }: GoogleSignInCardProps)
   }
 
   return (
-    <div className="mx-auto max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-lg">
       <div className="mb-5">
         <div className="inline-flex rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
           Fluxo OAuth oficial
@@ -66,17 +67,12 @@ export default function GoogleSignInCard({ callbackUrl }: GoogleSignInCardProps)
         </p>
       </div>
 
-      <button
-        type="button"
-        onClick={handleGoogleSignIn}
-        disabled={loading}
-        className="inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-      >
+      <ShadcnButton variant="primary" className="w-full" onClick={handleGoogleSignIn}>
         {loading ? "Abrindo login Google..." : "Continuar com Google"}
-      </button>
+      </ShadcnButton>
 
       {error ? (
-        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       ) : null}
