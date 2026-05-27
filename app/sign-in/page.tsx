@@ -1,13 +1,6 @@
 import Image from "next/image";
 import GoogleSignInCard from "../../components/auth/google-sign-in-card.client";
 
-const signInBullets = [
-  "Sessão segura e persistida",
-  "Login rápido com Google",
-  "Acesso imediato ao dashboard",
-  "Continuidade automática do onboarding",
-];
-
 const previewMetrics = [
   { label: "Saldo líquido", value: "+R$ 12.904" },
   { label: "Rentabilidade", value: "+18,4%" },
@@ -43,14 +36,6 @@ export default function SignInPage({ searchParams }: SignInPageProps) {
           <p className="mt-5 max-w-2xl text-lg leading-8 text-white/78 sm:text-xl">
             Controle contas, acompanhe lucro real e centralize toda sua operação em um único painel.
           </p>
-
-          <div className="mt-7 grid max-w-2xl gap-3 sm:grid-cols-2">
-            {signInBullets.map((bullet) => (
-              <div key={bullet} className="rounded-2xl border border-white/12 bg-white/6 px-4 py-4 text-sm text-white/82 shadow-[0_18px_50px_rgba(2,6,23,0.22)] backdrop-blur-xl">
-                {bullet}
-              </div>
-            ))}
-          </div>
 
           <div className="mt-8 grid max-w-2xl gap-4 rounded-[2rem] border border-white/12 bg-white/6 p-4 shadow-[0_24px_120px_rgba(2,6,23,0.42)] backdrop-blur-2xl sm:grid-cols-[1.16fr_0.84fr]">
             <div className="relative overflow-hidden rounded-[1.5rem] border border-white/12 bg-slate-950/90 p-4">
