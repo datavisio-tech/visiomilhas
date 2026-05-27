@@ -1,6 +1,7 @@
 import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import PrimaryButton from "../../../components/ui/button";
 import PageHeader from "../../../components/ui/page-header";
 import EmptyState from "../../../components/ui/empty-state";
 import { getOnboardingStateByEmail } from "../../../lib/server/onboarding";
@@ -61,14 +62,7 @@ export default async function OnboardingPage() {
         eyebrow="Primeira configuração"
         title="Onboarding operacional guiado"
         subtitle="Siga um fluxo curto e claro para deixar o SaaS pronto para uso: criar base, registrar compra, validar saldo e operar a primeira venda."
-        actions={
-          <Link
-            href="/app/dashboard"
-            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:text-slate-950"
-          >
-            Ir para dashboard
-          </Link>
-        }
+        actions={<PrimaryButton><Link href="/app/dashboard">Ir para dashboard</Link></PrimaryButton>}
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">

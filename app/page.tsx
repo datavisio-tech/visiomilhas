@@ -1,6 +1,11 @@
+import MarketingHero from "../components/ui/marketing-hero";
+import MarketingSection from "../components/ui/marketing-section";
+import PrimaryButton from "../components/ui/button";
+import React from "react";
+
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white">
+    <main className="bg-white">
       <header className="border-b p-6 flex items-center justify-between">
         <div className="text-2xl font-bold text-indigo-600">VisioMilhas</div>
         <nav className="space-x-4">
@@ -16,63 +21,46 @@ export default function Home() {
         </nav>
       </header>
 
-      <section className="max-w-5xl mx-auto p-8">
-        <div className="text-center py-12">
-          <h1 className="text-4xl font-bold mb-4">
-            Controle suas milhas, custos e vendas em um só lugar.
-          </h1>
-          <p className="text-gray-600 mb-6">
-            Acompanhe saldos, calcule o custo médio do milheiro, registre
-            compras, vendas e transferências e entenda seu lucro real.
-          </p>
-          <div className="space-x-3">
-            <a
-              href="/sign-in?callbackUrl=/app/dashboard"
-              className="px-4 py-2 bg-indigo-600 text-white rounded"
-            >
-              Começar teste grátis de 15 dias
-            </a>
-            <a href="/sign-in?callbackUrl=/app/dashboard" className="px-4 py-2 border rounded">
-              Ver demonstração
-            </a>
+      <MarketingHero />
+
+      <MarketingSection
+        title="Seus pontos, seus números, sua estratégia"
+        body={
+          <>
+            <p className="mt-4">Veja a saúde de todos os programas, use CPM médio e o valor estimado de sua carteira.</p>
+            <ul className="mt-4 list-inside list-disc text-slate-600">
+              <li>Dashboard unificado de todos os programas</li>
+              <li>Simule antes de decidir e compare cenários</li>
+            </ul>
+          </>
+        }
+        imageSrc="/assets/section-1.png"
+      />
+
+      <MarketingSection
+        title="Simule antes de decidir"
+        body={<p className="mt-4 text-slate-600">Transfira com bônus, compare cenários e estime o impacto no seu saldo.</p>}
+        imageSrc="/assets/section-2.png"
+        reverse
+      />
+
+      <MarketingSection
+        title="Acompanhe bônus e nunca perca uma oportunidade"
+        body={<p className="mt-4 text-slate-600">Receba alertas e acompanhe históricos por parceiro e por CPF.</p>}
+        imageSrc="/assets/section-3.png"
+      />
+
+      <section id="pricing" className="py-20 bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white">
+        <div className="container mx-auto px-6 lg:px-8 text-center">
+          <h3 className="text-3xl font-semibold mb-3">Pronto para organizar suas milhas?</h3>
+          <p className="mb-6 max-w-2xl mx-auto">Comece gratuitamente e experimente todas as funcionalidades PRO por 15 dias.</p>
+          <div className="flex justify-center gap-4">
+            <PrimaryButton>
+              <a href="/sign-in?callbackUrl=/app/dashboard">Começar grátis</a>
+            </PrimaryButton>
+            <a href="/sign-in?callbackUrl=/app/dashboard" className="inline-flex items-center rounded-full px-4 py-2 text-sm font-medium bg-white bg-opacity-20">Ver demo</a>
           </div>
         </div>
-
-        <section id="features" className="grid grid-cols-3 gap-4 mb-12">
-          <div className="bg-gray-50 p-6 rounded">Controle de saldo</div>
-          <div className="bg-gray-50 p-6 rounded">Custo médio do milheiro</div>
-          <div className="bg-gray-50 p-6 rounded">Compra e venda de milhas</div>
-        </section>
-
-        <section id="modules" className="mb-12">
-          <h2 className="text-2xl font-semibold mb-4">Módulos</h2>
-          <div className="grid grid-cols-4 gap-4">
-            <div className="bg-white p-4 rounded border">Dashboard</div>
-            <div className="bg-white p-4 rounded border">Programas</div>
-            <div className="bg-white p-4 rounded border">Contas</div>
-            <div className="bg-white p-4 rounded border">Lançamentos</div>
-            <div className="bg-white p-4 rounded border">Compras</div>
-            <div className="bg-white p-4 rounded border">Vendas</div>
-            <div className="bg-white p-4 rounded border">Transferências</div>
-            <div className="bg-white p-4 rounded border">Clubes</div>
-          </div>
-        </section>
-
-        <section id="pricing" className="text-center p-8 bg-indigo-50 rounded">
-          <h3 className="text-xl font-semibold mb-2">Trial full por 15 dias</h3>
-          <p className="text-gray-700">
-            Experimente o PRO por 15 dias. Depois, plano PRO ou versão Free
-            limitada.
-          </p>
-          <div className="mt-4">
-            <a
-              href="/sign-in?callbackUrl=/app/dashboard"
-              className="px-4 py-2 bg-indigo-600 text-white rounded"
-            >
-              Começar teste grátis
-            </a>
-          </div>
-        </section>
       </section>
     </main>
   );

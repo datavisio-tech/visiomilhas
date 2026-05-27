@@ -1,9 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import PrimaryButton, { SecondaryButton } from "../../../components/ui/button";
 import MetricCard from "../../../components/dashboard/metric-card";
 import EmptyState from "../../../components/ui/empty-state";
 import PageHeader from "../../../components/ui/page-header";
+import ProductFlow from "../../../components/ui/product-flow";
 import TrialBanner from "../../../components/layout/trial-banner";
 import { getMetrics } from "../../../lib/server/dashboard";
 import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
@@ -238,21 +240,17 @@ export default async function DashboardPage() {
         subtitle="Resumo do SaaS com leitura humana: saldo, margem, integridade, warnings e ações rápidas para operar sem perder o contexto."
         actions={
           <>
-            <Link
-              href="/app/purchases"
-              className="rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
-            >
-              Nova compra
-            </Link>
-            <Link
-              href="/app/inspection"
-              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:text-slate-950"
-            >
-              Inspeção
-            </Link>
+              <PrimaryButton className="" ariaLabel="Nova compra">
+                <Link href="/app/purchases">Nova compra</Link>
+              </PrimaryButton>
+              <SecondaryButton>
+                <Link href="/app/inspection">Inspeção</Link>
+              </SecondaryButton>
           </>
         }
       />
+
+      <ProductFlow activeIndex={0} variant="page" />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard
