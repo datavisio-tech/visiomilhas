@@ -43,18 +43,7 @@ export default function MockupsSection() {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-4">
-          {[
-            "KPI cards",
-            "Tags de status",
-            "Mini charts",
-            "Tabelas vivas",
-          ].map((item) => (
-            <div key={item} className="rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-white/72 backdrop-blur-xl">
-              {item}
-            </div>
-          ))}
-        </div>
+        <div className="mt-6" />
       </div>
     </section>
   );
