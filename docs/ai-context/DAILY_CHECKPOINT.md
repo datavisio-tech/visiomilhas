@@ -1,3 +1,37 @@
+# DAILY_CHECKPOINT — 2026-05-27 — 3.4-G SVG Stroke Cleanup — ✅ COMPLETE
+
+## Session 19 — SVG mockups stroke cleanup
+
+Etapa executada:
+
+- ✅ removi atributos `stroke` que desenhavam contornos internos nos mockups SVG
+- ✅ arquivos atualizados: `public/assets/mock-dashboard-rich.svg`, `public/assets/mock-accounts-rich.svg`, `public/assets/mock-sim-rich.svg`
+- ✅ commitei as mudanças (branch `3.4-a-public-landing-page`, commit `cdf45ca`)
+- ✅ rodei `npm run lint` e iniciei o servidor dev para validação visual
+- ✅ validei visualmente em http://localhost:3001
+
+Branch atual:
+
+- `3.4-a-public-landing-page`
+
+Validações executadas:
+
+- ✅ `npm run lint`
+- ✅ preview local em http://localhost:3001
+
+Estado atual:
+
+- **SVG mockups** — ✅ traços internos removidos, aparência mais limpa
+- **Landing visual** — ✅ sem linhas duplas nas molduras dos cards
+
+Pendências:
+
+- ⏳ Atualizar outros assets se necessário (ex.: versões PNG geradas)
+
+Próxima etapa:
+
+- Revisar o snapshot visual em diferentes resoluções e dispositivos
+
 # DAILY_CHECKPOINT — 2026-05-26 — Storytelling Paradigm Shift — ✅ COMPLETE
 
 ## Session 18 — Narrative repositioning
