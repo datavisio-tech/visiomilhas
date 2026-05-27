@@ -57,11 +57,7 @@ export default function AppHeader({ email }: AppHeaderProps) {
   return (
     <header className="w-full border-b border-slate-100 bg-white/96 px-8 py-4 backdrop-blur-sm sticky top-0 z-10">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center gap-2">
-          <div className="text-sm font-bold tracking-tight text-slate-950">
-            VisioMilhas
-          </div>
-        </div>
+        <div className="flex items-center gap-2"></div>
         <div className="flex items-center gap-4 text-sm">
           {isAuthenticated ? (
             <>

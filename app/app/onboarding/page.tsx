@@ -62,7 +62,9 @@ export default async function OnboardingPage() {
         eyebrow="Primeira configuração"
         title="Onboarding operacional guiado"
         subtitle="Siga um fluxo curto e claro para deixar o SaaS pronto para uso: criar base, registrar compra, validar saldo e operar a primeira venda."
-        actions={<PrimaryButton href="/app/dashboard">Ir para dashboard</PrimaryButton>}
+        actions={
+          <PrimaryButton href="/app/dashboard">Ir para dashboard</PrimaryButton>
+        }
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
@@ -95,12 +97,18 @@ export default async function OnboardingPage() {
                         : "bg-white text-slate-600"
                     }`}
                   >
-                    {item.id < currentStep ? "concluído" : item.id === currentStep ? "em andamento" : "próximo"}
+                    {item.id < currentStep
+                      ? "concluído"
+                      : item.id === currentStep
+                        ? "em andamento"
+                        : "próximo"}
                   </div>
                 </div>
                 <div
                   className={`mt-2 text-sm leading-6 ${
-                    item.id === currentStep ? "text-slate-100" : "text-slate-600"
+                    item.id === currentStep
+                      ? "text-slate-100"
+                      : "text-slate-600"
                   }`}
                 >
                   {item.description}

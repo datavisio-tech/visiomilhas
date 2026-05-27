@@ -31,7 +31,7 @@ import {
   buildOwnershipContext,
   buildSessionContext,
 } from "../../../lib/server/auth-context";
-import { getAccountsOverview } from "../../../lib/data/accounts";
+// getAccountsOverview intentionally not used on dashboard summary
 import { getPurchasesOverview } from "../../../lib/data/purchases";
 import { getSalesOverview } from "../../../lib/data/sales";
 import { getTransfersOverview } from "../../../lib/data/transfers";
@@ -187,19 +187,17 @@ export default async function DashboardPage() {
   const organizationId = effectiveSessionContext.ownership.organizationId;
   const pool = appPool();
 
-  const [metrics, accounts, purchases, sales, transfers, integrity] =
-    await Promise.all([
-      getMetrics(effectiveSessionContext),
-      getAccountsOverview(effectiveSessionContext),
-      getPurchasesOverview(effectiveSessionContext, 5),
-      getSalesOverview(effectiveSessionContext, 5),
-      getTransfersOverview(effectiveSessionContext, 5),
-      validateFinancialIntegrity(pool, {
-        organizationId,
-        source: "dashboard.page",
-        emitEvents: false,
-      }),
-    ]);
+  const [metrics, purchases, sales, transfers, integrity] = await Promise.all([
+    getMetrics(effectiveSessionContext),
+    getPurchasesOverview(effectiveSessionContext, 5),
+    getSalesOverview(effectiveSessionContext, 5),
+    getTransfersOverview(effectiveSessionContext, 5),
+    validateFinancialIntegrity(pool, {
+      organizationId,
+      source: "dashboard.page",
+      emitEvents: false,
+    }),
+  ]);
 
   const revenueCents = sales.reduce(
     (sum, sale) => sum + (sale.revenueCents || 0),
@@ -235,12 +233,6 @@ export default async function DashboardPage() {
       tone: "success" as const,
     },
     {
-      title: "CPM médio",
-      value: formatMoneyCents(metrics.avgCpmCents),
-      caption: "Custo por mil milha",
-      tone: "neutral" as const,
-    },
-    {
       title: "Resultado operacional",
       value:
         revenueCents > 0
@@ -253,9 +245,15 @@ export default async function DashboardPage() {
       tone: profitCents >= 0 ? ("success" as const) : ("warning" as const),
     },
     {
-      title: "Contas conectadas",
-      value: accounts.length,
-      caption: "Programas e contas ativas",
+      title: "CPM médio",
+      value: formatMoneyCents(metrics.avgCpmCents),
+      caption: "Custo por mil milha",
+      tone: "neutral" as const,
+    },
+    {
+      title: "Margem média",
+      value: grossMargin,
+      caption: "Comparação simples entre receita e lucro",
       tone: "neutral" as const,
     },
   ];
@@ -313,9 +311,9 @@ export default async function DashboardPage() {
       ) : null}
 
       <PageHeader
-        eyebrow="Central operacional"
-        title="Sua operação de milhas em um só lugar"
-        subtitle="Acompanhe saldo, custo, lucro e movimentações com uma visão simples e clara."
+        title="Central operacional"
+        eyebrow=""
+        subtitle="Acompanhe saldo, custo, lucro e movimentações."
         actions={
           <>
             <PrimaryButton ariaLabel="Nova compra" href="/app/purchases">
@@ -326,41 +324,9 @@ export default async function DashboardPage() {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-card border border-slate-200 bg-slate-50/80 p-5 text-sm text-slate-700 shadow-card">
-          <div className="font-semibold text-slate-950">Operação ativa</div>
-          <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-600">
-            <span>Atualizado há {latestUpdate}</span>
-            <span className="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm">
-              Fluxo estável
-            </span>
-          </div>
-        </div>
-        <div className="rounded-card border border-slate-200 bg-white p-5 shadow-card">
-          <div className="text-label-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-            Margem média
-          </div>
-          <div className="mt-3 text-2xl font-semibold text-slate-950">
-            {grossMargin}
-          </div>
-          <p className="mt-2 text-sm text-slate-600">
-            Comparação simples entre receita e lucro.
-          </p>
-        </div>
-        <div className="rounded-card border border-slate-200 bg-white p-5 shadow-card">
-          <div className="text-label-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-            Movimentações recentes
-          </div>
-          <div className="mt-3 text-2xl font-semibold text-slate-950">
-            {purchases.length + sales.length + transfers.length}
-          </div>
-          <p className="mt-2 text-sm text-slate-600">
-            Registros consolidados do período.
-          </p>
-        </div>
-      </div>
+      {/* Resumo de contas e movimentos descontinuado neste dashboard */}
 
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4 items-stretch">
         {topKpis.map((metric) => (
           <MetricCard
             key={metric.title}
@@ -368,6 +334,7 @@ export default async function DashboardPage() {
             value={metric.value}
             caption={metric.caption}
             tone={metric.tone}
+            compact
           />
         ))}
       </div>

@@ -86,7 +86,7 @@ export default function AppSidebar() {
           </nav>
         </section>
 
-        <section className="space-y-2">
+        <section className="space-y-5">
           <div className="mb-3 px-3 text-label-xs font-semibold text-slate-400">
             Apoio
           </div>
@@ -99,9 +99,17 @@ export default function AppSidebar() {
       </div>
 
       <div className="flex-shrink-0 border-t border-slate-100 pt-4">
-        <p className="text-xs text-slate-400 leading-5">
-          Atualizado há 2 minutos
-        </p>
+        <div className="space-y-1">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] justify-self-center text-slate-500">
+            Datavisio
+          </p>
+          <p className="text-xs leading-5 justify-self-center text-slate-400">
+            App VisioMilhas
+          </p>
+          <p className="text-xs leading-5 justify-self-center text-center text-slate-400">
+            Controle para milhas e pontos de clubes de fidelidade
+          </p>
+        </div>
       </div>
     </aside>
   );

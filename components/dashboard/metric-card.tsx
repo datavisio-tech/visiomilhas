@@ -3,6 +3,7 @@ type MetricCardProps = {
   value: string | number;
   caption?: string;
   tone?: "neutral" | "success" | "warning" | "danger";
+  compact?: boolean;
   footer?: string;
 };
 
@@ -30,29 +31,34 @@ export default function MetricCard({
   caption,
   tone = "neutral",
   footer,
+  compact = false,
 }: MetricCardProps) {
+  const containerPadding = compact ? "p-4" : "p-card-p-lg";
+  const valueClass = compact
+    ? "mt-4 text-3xl font-bold"
+    : "mt-6 text-4xl font-bold tracking-[-0.02em]";
+  const accentSize = compact ? "h-1 w-8" : "h-1 w-12";
+
   return (
     <div
-      className={`rounded-card border p-card-p-lg transition-shadow duration-200 ${toneStyles[tone]}`}
+      className={`rounded-card border ${containerPadding} transition-shadow duration-200 ${toneStyles[tone]}`}
     >
-      <div className="flex items-start justify-between gap-6">
+      <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <div className="text-label-xs font-semibold text-slate-500">
             {title}
           </div>
-          <div className="mt-6 text-4xl font-bold tracking-[-0.02em] text-slate-950">
-            {value}
-          </div>
+          <div className={`${valueClass} text-slate-950`}>{value}</div>
         </div>
         <div
-          className={`h-1 w-12 rounded-full flex-shrink-0 ${accentStyles[tone]}`}
+          className={`${accentSize} rounded-full flex-shrink-0 ${accentStyles[tone]}`}
         />
       </div>
       {caption ? (
-        <div className="mt-5 text-sm leading-6 text-slate-600">{caption}</div>
+        <div className={`mt-3 text-sm leading-6 text-slate-600`}>{caption}</div>
       ) : null}
       {footer ? (
-        <div className="mt-4 text-label-xs text-slate-400">{footer}</div>
+        <div className="mt-3 text-label-xs text-slate-400">{footer}</div>
       ) : null}
     </div>
   );
