@@ -79,6 +79,15 @@ export async function getOnboardingStateByEmail(
   const pool = admPool();
   const client = await pool.connect();
   try {
+    const hasTable = async (tableName: string) => {
+      const result = await client.query(
+        `SELECT to_regclass($1) IS NOT NULL AS exists`,
+        [tableName],
+      );
+
+      return Boolean(result.rows[0]?.exists);
+    };
+
     const userRes = await client.query(
       `SELECT id FROM global_users WHERE email = $1 LIMIT 1`,
       [email.trim()],
@@ -95,19 +104,28 @@ export async function getOnboardingStateByEmail(
     if (orgRes.rows.length === 0) return "partial";
 
     const organizationId = Number(orgRes.rows[0].id);
+    const hasProgramsTable = await hasTable("loyalty_programs");
+    const hasAccountsTable = await hasTable("program_accounts");
+
+    if (!hasProgramsTable || !hasAccountsTable) {
+      return "partial";
+    }
+
     const programRes = await client.query(
       `SELECT id FROM loyalty_programs WHERE organization_id = $1 LIMIT 1`,
       [organizationId],
     );
 
-    const accountRes = programRes.rows.length > 0
-      ? await client.query(
-          `SELECT id FROM program_accounts WHERE organization_id = $1 AND program_id = $2 LIMIT 1`,
-          [organizationId, Number(programRes.rows[0].id)],
-        )
-      : { rows: [] as Array<{ id: unknown }> };
+    const accountRes =
+      programRes.rows.length > 0
+        ? await client.query(
+            `SELECT id FROM program_accounts WHERE organization_id = $1 AND program_id = $2 LIMIT 1`,
+            [organizationId, Number(programRes.rows[0].id)],
+          )
+        : { rows: [] as Array<{ id: unknown }> };
 
-    if (programRes.rows.length > 0 && accountRes.rows.length > 0) return "ready";
+    if (programRes.rows.length > 0 && accountRes.rows.length > 0)
+      return "ready";
 
     return "partial";
   } finally {
@@ -158,7 +176,6 @@ export async function ensureInitialOrganizationAndAccount(
           organizationId = Number(retry.rows[0].id);
         }
       }
-
     }
   } finally {
     admClient.release();
@@ -187,7 +204,14 @@ export async function ensureInitialOrganizationAndAccount(
     } else {
       const insertProgram = await appClient.query(
         `INSERT INTO loyalty_programs (organization_id, name, slug, type, is_system_default, is_active, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW()) RETURNING id`,
-        [organizationId, "Default Program", "default-program", "default", true, true],
+        [
+          organizationId,
+          "Default Program",
+          "default-program",
+          "default",
+          true,
+          true,
+        ],
       );
       programId = Number(insertProgram.rows[0].id);
       createdProgram = true;

@@ -1,7 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import TrialBanner from "../../components/layout/trial-banner";
 import { resolveControlledSessionContext } from "../../lib/server/controlled-session";
 import { resolveSubscriptionAccessContext } from "../../lib/server/subscription-access";
 import {
@@ -9,6 +8,7 @@ import {
   resolveRolloutAccess,
 } from "../../lib/server/rollout-control";
 import ActivateTrialButton from "./ActivateTrialButton.client";
+import TrialBanner from "../../components/layout/trial-banner";
 
 export default async function SubscribePage() {
   const sessionContext = await resolveControlledSessionContext({
@@ -69,101 +69,83 @@ export default async function SubscribePage() {
     accessContext.accessState === "SUSPENDED";
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#eef2ff_0%,_#ffffff_42%,_#f8fafc_100%)] px-6 py-16">
-      <section className="mx-auto flex max-w-5xl flex-col gap-8 lg:grid lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
-        <div className="space-y-6">
-          <div className="inline-flex rounded-full border border-indigo-200 bg-white px-4 py-2 text-sm font-medium text-indigo-700 shadow-sm">
-            SaaS access control · controle administrativo
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#eef2ff_0%,_#ffffff_42%,_#f8fafc_100%)] px-6 py-12 lg:py-14">
+      <section className="mx-auto max-w-7xl space-y-8">
+        <div className="space-y-6 text-center">
+          <div className="max-w-3xl">
+            <h1 className="text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
+              Continue operando com clareza todos os dias.
+            </h1>
+            <p className="mt-3 text-lg text-slate-600">
+              Mantenha saldo, custo e movimentações centralizados por apenas
+              <span className="ml-2 font-semibold text-slate-900">
+                R$ 4,99/mês
+              </span>
+              .
+            </p>
           </div>
-          <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
-            Assinatura, trial e bloqueio comercial ficam no SAAS_DB.
-          </h1>
-          <p className="max-w-2xl text-base leading-7 text-slate-600">
-            Esta etapa valida seu acesso comercial antes do dashboard. O app
-            operacional continua separado e só é liberado quando o estado SaaS
-            permite.
-          </p>
 
-          <div className="grid max-w-2xl gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="text-sm font-medium text-slate-900">
-                Estado comercial
-              </div>
-              <div className="mt-1 text-sm text-slate-600">
-                {accessContext.commercialLifecycleState}
+          <div className="mt-4 flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-center">
+            <div className="flex items-center gap-6">
+              <div className="text-center">
+                <div className="text-sm font-medium text-slate-500">
+                  Por apenas
+                </div>
+                <div className="mt-1 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
+                  R$ 4,99
+                  <span className="text-sm font-medium text-slate-600">
+                    /mês
+                  </span>
+                </div>
               </div>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="text-sm font-medium text-slate-900">
-                Estado de acesso
-              </div>
-              <div className="mt-1 text-sm text-slate-600">
-                {accessContext.accessState}
-              </div>
+
+            <div className="flex items-center gap-4">
+              <ActivateTrialButton disabled={false} />
             </div>
           </div>
+
+          <div className="mt-4 flex flex-wrap gap-3 text-sm text-slate-600">
+            <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-medium ring-1 ring-slate-100">
+              Controle operacional centralizado
+            </span>
+            <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-medium ring-1 ring-slate-100">
+              Histórico e movimentações organizadas
+            </span>
+            <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-medium ring-1 ring-slate-100">
+              Continuidade operacional
+            </span>
+            <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-medium ring-1 ring-slate-100">
+              Operação sem limitações
+            </span>
+          </div>
+
+          {/* estado comercial removido por request - centralizando hero abaixo */}
         </div>
 
-        <aside className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/50">
-          {accessContext.accessState === "TRIAL" ? (
-            <TrialBanner
-              tone="warning"
-              title="Trial ativo"
-              description="Seu acesso comercial está liberado com aviso de avaliação enquanto o trial estiver válido."
-            />
-          ) : null}
+        <div className="mx-auto max-w-3xl">
+          <TrialBanner variant="subscription" />
 
-          <div className="space-y-4 rounded-2xl bg-slate-50 p-5">
-            <div className="text-sm font-medium uppercase tracking-wide text-slate-500">
-              Resumo
-            </div>
-            <div className="space-y-2 text-sm text-slate-700">
-              <p>
-                <strong>Tenant:</strong> {accessContext.tenantState}
-              </p>
-              <p>
-                <strong>Assinatura:</strong> {accessContext.subscriptionStatus}
-              </p>
-              <p>
-                <strong>Plano:</strong>{" "}
-                {accessContext.planName ??
-                  accessContext.planCode ??
-                  "sem plano"}
-              </p>
-              <p>
-                <strong>Organização:</strong> {accessContext.organizationId}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-6 space-y-3">
+          <div className="mt-6 flex justify-center">
             {isAccessGranted ? (
               <a
                 href="/app/dashboard"
-                className="inline-flex w-full items-center justify-center rounded-xl bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
+                className="inline-flex items-center justify-center rounded-xl bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
               >
                 Ir para o dashboard
               </a>
             ) : (
-              <div className="space-y-3">
-                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                  O acesso comercial ainda não está ativo. Ative o trial para liberar o dashboard.
-                </div>
-                <ActivateTrialButton disabled={isBlockedAccess} />
-                {isBlockedAccess ? (
-                  <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-                    Esta assinatura esta bloqueada e nao permite ativar trial novamente.
-                  </div>
-                ) : null}
-              </div>
+              <ActivateTrialButton disabled={false} />
             )}
-
-            <div className="text-sm text-slate-500">
-              Sem Stripe real nesta etapa. O fluxo apenas controla o acesso e
-              mantém a persistência no SAAS_DB.
-            </div>
           </div>
-        </aside>
+
+          {isBlockedAccess ? (
+            <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+              Esta assinatura está bloqueada e não permite liberar o acesso
+              novamente.
+            </div>
+          ) : null}
+        </div>
       </section>
     </main>
   );

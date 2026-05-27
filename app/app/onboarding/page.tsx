@@ -38,10 +38,10 @@ export default async function OnboardingPage() {
     },
     {
       id: 3,
-      title: "Validar saldo",
+      title: "Conferir contas",
       description:
-        "Abra a inspeção para conferir saldo, FIFO, replay e warnings da operação.",
-      href: "/app/inspection",
+        "Revise a base criada antes de seguir para a operação principal.",
+      href: "/app/accounts",
     },
     {
       id: 4,
@@ -136,17 +136,17 @@ export default async function OnboardingPage() {
             description={
               onboardingState === "not-started"
                 ? "O fluxo abaixo orienta a criação da primeira conta e do primeiro programa para sair do modo de preparação e começar a operar."
-                : "A estrutura existe parcialmente. Confirme a conta, valide o saldo e use a inspeção para garantir consistência antes da primeira venda."
+                : "A estrutura existe parcialmente. Confirme a conta, revise a base e siga para a primeira compra com segurança."
             }
             actionLabel={
               onboardingState === "not-started"
                 ? "Abrir programas"
-                : "Abrir inspeção"
+                : "Abrir contas"
             }
             actionHref={
               onboardingState === "not-started"
                 ? "/app/programs"
-                : "/app/inspection"
+                : "/app/accounts"
             }
             supportingText="fluxo guiado"
           />

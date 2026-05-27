@@ -10,9 +10,9 @@ type ActivateTrialButtonProps = {
 export default function ActivateTrialButton({
   disabled,
 }: ActivateTrialButtonProps) {
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
-    "idle",
-  );
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -54,16 +54,18 @@ export default function ActivateTrialButton({
         disabled={disabled || status === "loading"}
         className="inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {status === "loading" ? "Ativando trial..." : "Iniciar trial"}
+        {status === "loading"
+          ? "Processando assinatura..."
+          : "Assinar por R$ 4,99/mês"}
       </button>
       {status === "success" ? (
         <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-          Trial ativado com sucesso. Redirecionando...
+          Assinatura liberada com sucesso. Redirecionando...
         </div>
       ) : null}
       {status === "error" && error ? (
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-          Falha ao ativar trial: {error}. Tente novamente.
+          Falha ao processar a assinatura: {error}. Tente novamente.
         </div>
       ) : null}
     </div>

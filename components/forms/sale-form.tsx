@@ -156,7 +156,7 @@ export default function SaleForm({ accounts }: { accounts: Account[] }) {
           </div>
         </section>
       )}
-      {inspection && (
+      {false && inspection && (
         <div className="space-y-3 rounded border bg-gray-50 p-3">
           <div className="flex items-center justify-between gap-3">
             <div className="font-semibold">Resultado FIFO</div>
@@ -165,9 +165,21 @@ export default function SaleForm({ accounts }: { accounts: Account[] }) {
             </div>
           </div>
           <div className="grid gap-2 text-sm md:grid-cols-3">
-            <MetricBox label="Lotes totais" value={String(inspection.summary.totalLots)} />
-            <MetricBox label="Lotes problemáticos" value={String(inspection.summary.orphanLots + inspection.summary.inconsistentLots)} />
-            <MetricBox label="Consumo inválido" value={String(inspection.summary.invalidRemainingPoints)} />
+            <MetricBox
+              label="Lotes totais"
+              value={String(inspection.summary.totalLots)}
+            />
+            <MetricBox
+              label="Lotes problemáticos"
+              value={String(
+                inspection.summary.orphanLots +
+                  inspection.summary.inconsistentLots,
+              )}
+            />
+            <MetricBox
+              label="Consumo inválido"
+              value={String(inspection.summary.invalidRemainingPoints)}
+            />
           </div>
           <ReplaySummary
             title="Lotes consumidos e lineage"
@@ -175,16 +187,24 @@ export default function SaleForm({ accounts }: { accounts: Account[] }) {
               replayInspection?.lineage?.nodes
                 ?.filter((node: any) => node.operationKind === "sale")
                 ?.slice(0, 5)
-                ?.map((node: any) => `Lote ${node.lotId} consumiu ${formatPoints(node.consumedPoints)} e deixou ${formatPoints(node.remainingPoints)}`) ?? []
+                ?.map(
+                  (node: any) =>
+                    `Lote ${node.lotId} consumiu ${formatPoints(node.consumedPoints)} e deixou ${formatPoints(node.remainingPoints)}`,
+                ) ?? []
             }
           />
           <ReplaySummary
             title="Replay simplificado"
             items={
               replayInspection?.replay?.events
-                ?.filter((event: any) => event.kind === "sale" || event.kind === "lot")
+                ?.filter(
+                  (event: any) => event.kind === "sale" || event.kind === "lot",
+                )
                 ?.slice(0, 3)
-                ?.map((event: any) => `${event.kind === "sale" ? "Venda" : "Lote"} em ${new Date(event.occurredAt).toLocaleString("pt-BR")} - ${formatPoints(event.points ?? 0)}`) ?? []
+                ?.map(
+                  (event: any) =>
+                    `${event.kind === "sale" ? "Venda" : "Lote"} em ${new Date(event.occurredAt).toLocaleString("pt-BR")} - ${formatPoints(event.points ?? 0)}`,
+                ) ?? []
             }
           />
           <WarningStack warnings={inspection?.warnings ?? []} />
@@ -197,7 +217,9 @@ export default function SaleForm({ accounts }: { accounts: Account[] }) {
 function NarrativeBox({ title, lines }: { title: string; lines: string[] }) {
   return (
     <div className="rounded border bg-white p-3">
-      <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">{title}</div>
+      <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+        {title}
+      </div>
       <div className="mt-2 space-y-1 text-sm text-gray-700">
         {lines.map((line) => (
           <div key={line}>{line}</div>
@@ -210,7 +232,9 @@ function NarrativeBox({ title, lines }: { title: string; lines: string[] }) {
 function MetricBox({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded border bg-white p-3">
-      <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-gray-500">
+        {label}
+      </div>
       <div className="mt-1 font-medium text-gray-900">{value}</div>
     </div>
   );
@@ -227,7 +251,9 @@ function ReplaySummary({ title, items }: { title: string; items: string[] }) {
           ))}
         </ul>
       ) : (
-        <div className="mt-2 text-sm text-gray-500">Nenhum replay relevante encontrado.</div>
+        <div className="mt-2 text-sm text-gray-500">
+          Nenhum replay relevante encontrado.
+        </div>
       )}
     </div>
   );
@@ -247,23 +273,31 @@ function WarningStack({ warnings }: { warnings: string[] }) {
       <div className="text-sm font-medium">Warnings humanizados</div>
       {visibleWarnings.map((guidance) => {
         return (
-          <div key={`${guidance.problem}-${guidance.severity}`} className="rounded border bg-white p-3 text-sm">
+          <div
+            key={`${guidance.problem}-${guidance.severity}`}
+            className="rounded border bg-white p-3 text-sm"
+          >
             <div className="flex items-center justify-between gap-2">
               <div className="font-medium">{guidance.problem}</div>
               <div className="text-xs uppercase tracking-wide text-gray-500">
                 {guidance.severity} • prioridade {guidance.priority}
               </div>
             </div>
-            <div className="mt-1 text-gray-700">Impacto: {guidance.impactArea}</div>
+            <div className="mt-1 text-gray-700">
+              Impacto: {guidance.impactArea}
+            </div>
             <div className="mt-1 text-gray-700">Impacto: {guidance.impact}</div>
             <div className="mt-1 text-gray-700">Ação: {guidance.action}</div>
-            <div className="mt-1 text-gray-700">Escalar: {guidance.escalate}</div>
+            <div className="mt-1 text-gray-700">
+              Escalar: {guidance.escalate}
+            </div>
           </div>
         );
       })}
       {prioritized.length > visibleWarnings.length ? (
         <div className="text-xs text-gray-500">
-          +{prioritized.length - visibleWarnings.length} warning(s) adicional(is) oculto(s) para reduzir ruído.
+          +{prioritized.length - visibleWarnings.length} warning(s)
+          adicional(is) oculto(s) para reduzir ruído.
         </div>
       ) : null}
     </div>

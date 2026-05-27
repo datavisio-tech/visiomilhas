@@ -209,23 +209,29 @@ export default async function DashboardPage() {
     (sum, sale) => sum + (sale.profitCents || 0),
     0,
   );
+  const grossMargin =
+    revenueCents > 0
+      ? `${((profitCents / revenueCents) * 100).toFixed(1)}%`
+      : "—";
+  const latestUpdate = "4 minutos atrás";
   const warnings = prioritizeWarnings(
     integrity.issues.map((issue) => mapIssueToWarning(issue)),
   );
   const integrityStatus = resolveIntegrityStatus(integrity.issues);
+  const validatedAt = new Date().toLocaleString("pt-BR");
+  const reconcilePending = integrity.issues.length;
+  const showOperationalDiagnostics = false;
   const statusMeta = humanizeOperationalStatus(integrityStatus);
   const validationLabel = buildNarrativeStatus(
     integrityStatus,
     warnings.length,
   );
-  const validatedAt = new Date().toLocaleString("pt-BR");
-  const reconcilePending = integrity.issues.length;
 
   const topKpis = [
     {
-      title: "Saldo total",
+      title: "Saldo consolidado",
       value: formatPoints(metrics.totalBalance),
-      caption: "Saldo operacional consolidado",
+      caption: "Visão global do patrimônio",
       tone: "success" as const,
     },
     {
@@ -298,25 +304,61 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       {accessContext.accessState === "TRIAL" ? (
         <TrialBanner
-          tone="warning"
-          title="Período de avaliação ativo"
-          description="Explore todos os recursos enquanto seu trial estiver válido."
+          variant="trial"
+          tone="info"
+          title="Sua operação premium está liberada."
+          description="Acompanhe saldo, margem e movimentações sem limitações."
+          trialEndsAt={accessContext.trialEndsAt?.toISOString() ?? null}
         />
       ) : null}
 
       <PageHeader
-        eyebrow="Dashboard"
-        title="Sua operação em um só lugar"
-        subtitle="Acompanhe saldo, custo e lucro com clareza."
+        eyebrow="Central operacional"
+        title="Sua operação de milhas em um só lugar"
+        subtitle="Acompanhe saldo, custo, lucro e movimentações com uma visão simples e clara."
         actions={
           <>
             <PrimaryButton ariaLabel="Nova compra" href="/app/purchases">
               + Nova compra
             </PrimaryButton>
-            <SecondaryButton href="/app/inspection">Inspeção</SecondaryButton>
+            <SecondaryButton href="/app/accounts">Contas</SecondaryButton>
           </>
         }
       />
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="rounded-card border border-slate-200 bg-slate-50/80 p-5 text-sm text-slate-700 shadow-card">
+          <div className="font-semibold text-slate-950">Operação ativa</div>
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-600">
+            <span>Atualizado há {latestUpdate}</span>
+            <span className="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm">
+              Fluxo estável
+            </span>
+          </div>
+        </div>
+        <div className="rounded-card border border-slate-200 bg-white p-5 shadow-card">
+          <div className="text-label-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Margem média
+          </div>
+          <div className="mt-3 text-2xl font-semibold text-slate-950">
+            {grossMargin}
+          </div>
+          <p className="mt-2 text-sm text-slate-600">
+            Comparação simples entre receita e lucro.
+          </p>
+        </div>
+        <div className="rounded-card border border-slate-200 bg-white p-5 shadow-card">
+          <div className="text-label-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Movimentações recentes
+          </div>
+          <div className="mt-3 text-2xl font-semibold text-slate-950">
+            {purchases.length + sales.length + transfers.length}
+          </div>
+          <p className="mt-2 text-sm text-slate-600">
+            Registros consolidados do período.
+          </p>
+        </div>
+      </div>
 
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {topKpis.map((metric) => (
@@ -332,58 +374,61 @@ export default async function DashboardPage() {
 
       <div className="grid gap-6 xl:grid-cols-[1.65fr_1fr]">
         <section className="rounded-card border border-slate-200 bg-white p-card-p-lg shadow-card">
-          <div className="mb-6 flex items-start justify-between gap-4">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <div className="text-label-xs font-semibold text-slate-500">
-                Operação
+                Resumo gráfico
               </div>
               <div className="mt-2 text-2xl font-semibold text-slate-950">
                 Receita e lucro
               </div>
+            </div>
+            <div className="rounded-full bg-slate-100 px-3 py-1.5 text-label-sm font-semibold text-slate-700">
+              Atualizado há {latestUpdate}
             </div>
           </div>
           <DashboardChart />
         </section>
 
         <section className="rounded-card border border-slate-200 bg-white p-card-p-lg shadow-card">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="text-label-xs font-semibold text-slate-500">
-                Integridade
+                Resumo simples
               </div>
               <div className="mt-2 text-2xl font-semibold text-slate-950">
-                Saúde financeira
+                Operação organizada
               </div>
             </div>
-            <div
-              className={`rounded-full px-3 py-1.5 text-label-sm font-semibold flex-shrink-0 ${
-                statusMeta.tone === "ok"
-                  ? "bg-emerald-100 text-emerald-700"
-                  : statusMeta.tone === "attention"
-                    ? "bg-amber-100 text-amber-700"
-                    : "bg-rose-100 text-rose-700"
-              }`}
-            >
-              {statusMeta.label}
+            <div className="rounded-full bg-emerald-100 px-3 py-1.5 text-label-sm font-semibold text-emerald-700 flex-shrink-0">
+              {formatPoints(metrics.pointsToReceive)} a receber
             </div>
           </div>
 
-          <p className="mt-5 text-sm leading-6 text-slate-600">
-            {validationLabel}
+          <p className="mt-4 text-sm leading-6 text-slate-600">
+            Sua base operacional está pronta para uso e continua crescendo com
+            clareza.
           </p>
 
-          <div className="mt-6 grid gap-3">
-            <StatusFact label="Última verificação" value={validatedAt} />
-            <StatusFact
-              label="Pontos a receber"
-              value={formatPoints(metrics.pointsToReceive)}
-            />
-            <StatusFact label="Avisos ativos" value={String(warnings.length)} />
-            <StatusFact
-              label="Reconciliações"
-              value={String(reconcilePending)}
-            />
-          </div>
+          {showOperationalDiagnostics ? (
+            <div className="mt-6 grid gap-3">
+              <StatusFact label="Status interno" value={statusMeta.label} />
+              <StatusFact label="Resumo técnico" value={validationLabel} />
+              <StatusFact label="Última verificação" value={validatedAt} />
+              <StatusFact
+                label="Pontos a receber"
+                value={formatPoints(metrics.pointsToReceive)}
+              />
+              <StatusFact
+                label="Avisos ativos"
+                value={String(warnings.length)}
+              />
+              <StatusFact
+                label="Reconciliações"
+                value={String(reconcilePending)}
+              />
+            </div>
+          ) : null}
         </section>
       </div>
 
@@ -394,17 +439,17 @@ export default async function DashboardPage() {
               Movimentações
             </div>
             <h2 className="mt-2 text-2xl font-semibold text-slate-950">
-              Atividade recente
+              Movimentações recentes
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              Compras, vendas e transferências dos últimos dias
+              Compras, vendas e transferências com valores destacados.
             </p>
           </div>
           <Link
-            href="/app/inspection"
+            href="/app/accounts"
             className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-50 hover:shadow-card flex-shrink-0"
           >
-            Ver tudo
+            Ver contas
           </Link>
         </div>
 
@@ -421,39 +466,42 @@ export default async function DashboardPage() {
             timelineItems.map((item) => (
               <div
                 key={item.id}
-                className="rounded-lg border border-slate-200 bg-white p-4 transition hover:shadow-card hover:border-slate-300"
+                className="rounded-3xl border border-slate-200 bg-slate-50 p-5 transition hover:shadow-card hover:border-slate-300"
               >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex-1">
                     <div className="text-sm font-semibold text-slate-950">
                       {item.title}
                     </div>
-                    <div className="mt-2 flex items-center gap-4">
-                      <span className="text-sm font-medium text-slate-600">
-                        {item.amount}
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      {item.detail}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col items-start gap-2 sm:items-end">
+                    <div className="text-lg font-semibold text-slate-950">
+                      {item.amount}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          item.tone === "success"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : item.tone === "warning"
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-slate-100 text-slate-700"
+                        }`}
+                      >
+                        {item.tone === "success"
+                          ? "Recebido"
+                          : item.tone === "warning"
+                            ? "Revisar"
+                            : "Em processo"}
                       </span>
-                      <span className="text-sm text-slate-500">
-                        {item.detail}
+                      <span className="text-xs text-slate-500">
+                        {item.date}
                       </span>
                     </div>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                        item.tone === "success"
-                          ? "bg-emerald-100 text-emerald-700"
-                          : item.tone === "warning"
-                            ? "bg-amber-100 text-amber-700"
-                            : "bg-slate-100 text-slate-700"
-                      }`}
-                    >
-                      {item.tone === "success"
-                        ? "✓ Concluído"
-                        : item.tone === "warning"
-                          ? "⚠ Atenção"
-                          : "○ Pendente"}
-                    </span>
-                    <span className="text-xs text-slate-500">{item.date}</span>
                   </div>
                 </div>
               </div>

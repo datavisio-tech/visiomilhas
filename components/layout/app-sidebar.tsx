@@ -22,7 +22,6 @@ const operationalLinks = [
 ];
 
 const supportLinks = [
-  { href: "/app/inspection", label: "Inspeção", icon: Settings },
   { href: "/app/settings", label: "Configurações", icon: Settings },
   { href: "/app/onboarding", label: "Onboarding", icon: TrendingUp },
 ];
@@ -43,10 +42,10 @@ function NavLink({
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+      className={`group flex items-center gap-3 rounded-lg border-l-4 px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
         active
-          ? "bg-slate-100 text-slate-950 shadow-card"
-          : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+          ? "border-emerald-500 bg-slate-100 text-slate-950 shadow-card"
+          : "border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-950"
       }`}
     >
       <span
@@ -65,20 +64,20 @@ function NavLink({
 
 export default function AppSidebar() {
   return (
-    <aside className="fixed left-0 top-0 z-20 h-screen w-56 border-r border-slate-100 bg-white/98 backdrop-blur-sm px-4 py-6 flex flex-col">
+    <aside className="fixed left-0 top-0 z-20 h-screen w-52 border-r border-slate-100 bg-white/96 backdrop-blur-sm px-4 py-6 flex flex-col">
       <div className="mb-8 flex-shrink-0">
         <div className="text-sm font-bold tracking-tight text-slate-950">
           VisioMilhas
         </div>
         <p className="mt-2 text-xs leading-5 text-slate-500">
-          Sua operação em um só lugar
+          Central operacional premium
         </p>
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-6">
         <section className="space-y-2">
           <div className="mb-3 px-3 text-label-xs font-semibold text-slate-400">
-            Operações
+            Operação
           </div>
           <nav className="space-y-1">
             {operationalLinks.map((link) => (
@@ -89,7 +88,7 @@ export default function AppSidebar() {
 
         <section className="space-y-2">
           <div className="mb-3 px-3 text-label-xs font-semibold text-slate-400">
-            Suporte
+            Apoio
           </div>
           <nav className="space-y-1">
             {supportLinks.map((link) => (
@@ -101,7 +100,7 @@ export default function AppSidebar() {
 
       <div className="flex-shrink-0 border-t border-slate-100 pt-4">
         <p className="text-xs text-slate-400 leading-5">
-          Gerenciador de milhas eficiente
+          Atualizado há 2 minutos
         </p>
       </div>
     </aside>
