@@ -27,7 +27,7 @@ export default function Home() {
               Recursos
             </a>
             <a href="#mockups" className="transition hover:text-white">
-              Mockups
+              Painéis interativos
             </a>
             <ShadcnButton href="/app/dashboard" variant="outline" className="px-4 py-2 text-sm">
               Ver plataforma

@@ -1,3 +1,35 @@
+# DAILY_CHECKPOINT — 2026-05-26 — Label Rename Pass — ✅ COMPLETE
+
+## Session 17 — Mockups label rename
+
+Etapa executada:
+
+- ✅ substituí o rótulo visível `Mockups` por `Painéis interativos`
+- ✅ mantive o ancoramento e a estrutura da seção sem impacto de layout
+- ✅ validei a alteração no navegador
+
+Branch atual:
+
+- `3.4-a-public-landing-page`
+
+Validações executadas:
+
+- ✅ `npm run lint`
+- ✅ revisão visual no navegador após `reload`
+
+Estado atual:
+
+- **Label** — ✅ atualizado para `Painéis interativos`
+- **Layout** — ✅ inalterado
+
+Pendências:
+
+- ⏳ `.claude/` continua fora do commit por governança
+
+Próxima etapa:
+
+- Seguir para qualquer ajuste fino de copy, se você quiser
+
 # DAILY_CHECKPOINT — 2026-05-26 — 3.4-F Card Contour Refinement — ✅ COMPLETE
 
 ## Session 16 — Card outline cleanup

@@ -27,7 +27,7 @@ export default function MockupsSection() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(124,58,237,0.14),_transparent_45%)]" />
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="max-w-2xl">
-          <div className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-200/70">Produto realista</div>
+          <div className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-200/70">Painéis interativos</div>
           <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Os painéis parecem screenshots de um produto que já está operando.</h2>
           <p className="mt-4 max-w-xl text-base leading-7 text-white/68">Métricas, tabelas, alertas, chips e pequenos estados dão densidade sem poluir a leitura. A tela passa a sensação de software vivo.</p>
         </div>
