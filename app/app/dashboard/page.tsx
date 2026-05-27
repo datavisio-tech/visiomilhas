@@ -240,12 +240,8 @@ export default async function DashboardPage() {
         subtitle="Resumo do SaaS com leitura humana: saldo, margem, integridade, warnings e ações rápidas para operar sem perder o contexto."
         actions={
           <>
-              <PrimaryButton className="" ariaLabel="Nova compra">
-                <Link href="/app/purchases">Nova compra</Link>
-              </PrimaryButton>
-              <SecondaryButton>
-                <Link href="/app/inspection">Inspeção</Link>
-              </SecondaryButton>
+              <PrimaryButton className="" ariaLabel="Nova compra" href="/app/purchases">Nova compra</PrimaryButton>
+              <SecondaryButton href="/app/inspection">Inspeção</SecondaryButton>
           </>
         }
       />

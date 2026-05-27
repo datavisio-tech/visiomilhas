@@ -62,7 +62,7 @@ export default async function OnboardingPage() {
         eyebrow="Primeira configuração"
         title="Onboarding operacional guiado"
         subtitle="Siga um fluxo curto e claro para deixar o SaaS pronto para uso: criar base, registrar compra, validar saldo e operar a primeira venda."
-        actions={<PrimaryButton><Link href="/app/dashboard">Ir para dashboard</Link></PrimaryButton>}
+        actions={<PrimaryButton href="/app/dashboard">Ir para dashboard</PrimaryButton>}
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">

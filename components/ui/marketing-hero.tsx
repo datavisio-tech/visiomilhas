@@ -18,9 +18,7 @@ export default function MarketingHero() {
             </p>
 
             <div className="mt-8 flex gap-3">
-              <PrimaryButton className="shadow-lg">
-                <Link href="/app/onboarding">Começar grátis</Link>
-              </PrimaryButton>
+              <PrimaryButton className="shadow-lg" href="/app/onboarding">Começar grátis</PrimaryButton>
               <Link href="/app/dashboard" className="inline-flex items-center rounded-full px-4 py-2 text-sm font-medium text-slate-700 border border-slate-200 hover:bg-slate-50">Ver demo</Link>
             </div>
 
