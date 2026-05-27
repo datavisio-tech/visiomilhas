@@ -21,7 +21,7 @@ export default function BenefitsSection() {
         title={<SectionTitle icon="/assets/icons/icon-finance.svg" title="Quando tudo fica solto, a margem some no detalhe" />}
         body={<p>Planilhas, alertas e decisões espalhadas deixam o custo obscuro. Aqui a leitura financeira vira uma visão única, clara e pronta para agir.</p>}
         imageSrc="/assets/section-1.svg"
-        cta={{ href: "/app/dashboard", label: "Ver a leitura financeira" }}
+        cta={{ href: "/app/dashboard", label: "Ver plataforma" }}
       />
 
       <MarketingSection
@@ -30,7 +30,7 @@ export default function BenefitsSection() {
         body={<p>VisioMilhas reúne saldo, histórico e movimentações em uma superfície única que reduz ruído e deixa a operação pronta para escalar.</p>}
         imageSrc="/assets/section-2.svg"
         reverse
-        cta={{ href: "/app/dashboard", label: "Centralizar minha operação" }}
+        cta={{ href: "/app/dashboard", label: "Ver plataforma" }}
       />
 
       <MarketingSection
@@ -38,7 +38,7 @@ export default function BenefitsSection() {
         title={<SectionTitle icon="/assets/icons/icon-simulate.svg" title="Decisões melhores porque o lucro aparece antes da ação" />}
         body={<p>Compare cenários, enxergue o custo e escolha o melhor momento para vender ou transferir com mais confiança e menos adivinhação.</p>}
         imageSrc="/assets/section-3.svg"
-        cta={{ href: "/app/purchases", label: "Simular com clareza" }}
+        cta={{ href: "/app/purchases", label: "Ver plataforma" }}
       />
     </>
   );

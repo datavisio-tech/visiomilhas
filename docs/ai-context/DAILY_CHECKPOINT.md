@@ -1,3 +1,43 @@
+# DAILY_CHECKPOINT — 2026-05-26 — 3.4-F Conversion Polish & Premium Consistency — ✅ COMPLETE
+
+## Session 14 — Landing copy/CTA consistency pass
+
+Etapa executada:
+
+- ✅ `ShadcnButton` recebeu variantes mais consistentes para CTAs premium em fundo escuro
+- ✅ CTAs principais e secundários foram padronizados para `Começar gratuitamente` e `Ver plataforma`
+- ✅ contraste e legibilidade foram reforçados no hero, nas seções escuras e no CTA final
+- ✅ a leitura rápida ficou mais coerente entre header, hero, benefícios e CTA final
+
+Branch atual:
+
+- `3.4-a-public-landing-page`
+
+Commits criados nesta sessão:
+
+- `66bbbcc` — `refactor(landing): aumenta realismo e acabamento premium SaaS (3.4-E)`
+
+Validações executadas:
+
+- ✅ `npm run lint`
+- ✅ `npm run typecheck`
+- ✅ `npm run test`
+- ✅ `git diff --check`
+
+Estado atual:
+
+- **Copywriting** — ✅ consistente e orientado a resultado
+- **CTA system** — ✅ padronizado e mais premium
+- **Readability** — ✅ contraste melhor e microcopy mais legível
+
+Pendência residual:
+
+- ⏳ `.claude/` permanece fora do commit por governança
+
+Próxima etapa:
+
+- Fechar o commit da sessão 3.4-F e, se necessário, seguir para revisão final de conversão
+
 # DAILY_CHECKPOINT — 2026-05-26 — 3.4-E SaaS Realism & Premium Polish — ✅ COMPLETE
 
 ## Session 13 — Landing mockup realism and polish

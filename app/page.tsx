@@ -5,6 +5,7 @@ import HowItWorksSection from "../components/landing/how-it-works-section";
 import MockupsSection from "../components/landing/mockups-section";
 import FinalCtaSection from "../components/landing/final-cta-section";
 import LandingFooter from "../components/landing/footer";
+import ShadcnButton from "../components/ui/shadcn-button";
 
 export default function Home() {
   return (
@@ -23,14 +24,14 @@ export default function Home() {
 
           <nav className="hidden items-center gap-6 text-sm text-white/65 md:flex">
             <a href="#features" className="transition hover:text-white">
-            Recursos
-          </a>
+              Recursos
+            </a>
             <a href="#mockups" className="transition hover:text-white">
               Mockups
             </a>
-            <a href="/sign-in?callbackUrl=/app/dashboard" className="rounded-full border border-white/10 bg-white/6 px-4 py-2 text-white transition hover:bg-white/10">
-              Entrar
-            </a>
+            <ShadcnButton href="/app/dashboard" variant="outline" className="px-4 py-2 text-sm">
+              Ver plataforma
+            </ShadcnButton>
           </nav>
         </div>
       </header>
