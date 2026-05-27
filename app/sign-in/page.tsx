@@ -1,12 +1,6 @@
 import Image from "next/image";
 import GoogleSignInCard from "../../components/auth/google-sign-in-card.client";
 
-const previewMetrics = [
-  { label: "Saldo líquido", value: "+R$ 12.904" },
-  { label: "Rentabilidade", value: "+18,4%" },
-  { label: "Alertas leves", value: "3 hoje" },
-];
-
 type SignInPageProps = {
   searchParams?: {
     callbackUrl?: string;
@@ -24,50 +18,48 @@ export default function SignInPage({ searchParams }: SignInPageProps) {
 
       <div className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl flex-col gap-10 lg:grid lg:grid-cols-[1.08fr_0.92fr] lg:items-center lg:gap-16">
         <section className="order-2 flex flex-col justify-center lg:order-1">
-          <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/12 bg-white/6 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-white/88 backdrop-blur-xl">
-            <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.8)]" />
-            Central operacional para milhas
+          <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-white/75 backdrop-blur-xl">
+            <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_16px_rgba(103,232,249,0.55)]" />
+            Acesso premium para milhas
           </div>
 
-          <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-[-0.05em] text-white sm:text-5xl lg:text-7xl lg:leading-[0.95]">
-            Sua central operacional de milhas começa aqui.
+          <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-[-0.04em] text-white sm:text-5xl lg:text-6xl">
+            Toda sua operação de milhas em um único painel inteligente.
           </h1>
 
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-white/78 sm:text-xl">
-            Controle contas, acompanhe lucro real e centralize toda sua operação em um único painel.
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-white/70 sm:text-xl">
+            Centralize contas, acompanhe lucro real e tome decisões com mais
+            segurança operacional.
           </p>
 
-          <div className="mt-8 grid max-w-2xl gap-4 rounded-[2rem] border border-white/12 bg-white/6 p-4 shadow-[0_24px_120px_rgba(2,6,23,0.42)] backdrop-blur-2xl sm:grid-cols-[1.16fr_0.84fr]">
-            <div className="relative overflow-hidden rounded-[1.5rem] border border-white/12 bg-slate-950/90 p-4">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(124,58,237,0.18),_transparent_42%),radial-gradient(circle_at_bottom_left,_rgba(34,211,238,0.12),_transparent_34%)]" />
-              <div className="relative flex items-center justify-between">
-                <div>
-                  <div className="text-xs uppercase tracking-[0.24em] text-white/50">Painel executivo</div>
-                  <div className="mt-1 text-lg font-semibold text-white">Visão rápida do seu inventário</div>
+          <div className="mt-8 rounded-[2rem] border border-white/10 bg-slate-900/70 p-5 shadow-[0_32px_120px_rgba(2,6,23,0.32)] backdrop-blur-2xl sm:p-6">
+            <div className="relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-slate-950/80 p-4 sm:p-5">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(124,58,237,0.12),transparent_42%),radial-gradient(circle_at_bottom_left,rgba(34,211,238,0.08),transparent_34%)]" />
+              <div className="relative flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-xs uppercase tracking-[0.24em] text-white/50">
+                      Painel executivo
+                    </div>
+                    <div className="mt-1 text-lg font-semibold text-white">
+                      Indicadores essenciais
+                    </div>
+                  </div>
+                  <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-200">
+                    Ao vivo
+                  </div>
                 </div>
-                <div className="rounded-full border border-emerald-400/24 bg-emerald-400/12 px-3 py-1 text-xs text-emerald-200">
-                  Ao vivo
+
+                <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-950/90 p-2">
+                  <Image
+                    src="/assets/mock-dashboard-rich.svg"
+                    alt="Prévia compacta do painel VisioMilhas"
+                    width={720}
+                    height={420}
+                    className="h-auto w-full rounded-xl object-cover"
+                  />
                 </div>
               </div>
-
-              <div className="relative mt-4 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-                <Image
-                  src="/assets/mock-dashboard-rich.svg"
-                  alt="Prévia do painel VisioMilhas"
-                  width={720}
-                  height={420}
-                  className="h-auto w-full rounded-xl object-cover"
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-rows-3">
-              {previewMetrics.map((metric) => (
-                <div key={metric.label} className="rounded-[1.35rem] border border-white/12 bg-slate-950/88 p-4 shadow-[0_16px_40px_rgba(2,6,23,0.22)]">
-                  <div className="text-xs uppercase tracking-[0.24em] text-white/50">{metric.label}</div>
-                  <div className="mt-2 text-xl font-semibold text-white">{metric.value}</div>
-                </div>
-              ))}
             </div>
           </div>
         </section>
