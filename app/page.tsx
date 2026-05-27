@@ -8,26 +8,41 @@ import LandingFooter from "../components/landing/footer";
 
 export default function Home() {
   return (
-    <main className="bg-white">
-      <header className="border-b p-6 flex items-center justify-between">
-        <div className="text-2xl font-bold text-indigo-600">VisioMilhas</div>
-        <nav className="space-x-4">
-          <a href="#features" className="text-gray-700">
+    <main className="bg-slate-950 text-white">
+      <header className="sticky top-0 z-50 border-b border-white/8 bg-slate-950/70 px-6 py-4 backdrop-blur-2xl lg:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-400 text-sm font-semibold text-white shadow-[0_0_24px_rgba(124,58,237,0.35)]">
+              V
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-white">VisioMilhas</div>
+              <div className="text-xs text-white/45">Premium SaaS para milhas</div>
+            </div>
+          </div>
+
+          <nav className="hidden items-center gap-6 text-sm text-white/65 md:flex">
+            <a href="#features" className="transition hover:text-white">
             Recursos
           </a>
-          <a href="#pricing" className="text-gray-700">
-            Preços
-          </a>
-          <a href="/sign-in?callbackUrl=/app/dashboard" className="text-indigo-600 font-semibold">
-            Entrar
-          </a>
-        </nav>
+            <a href="#mockups" className="transition hover:text-white">
+              Mockups
+            </a>
+            <a href="/sign-in?callbackUrl=/app/dashboard" className="rounded-full border border-white/10 bg-white/6 px-4 py-2 text-white transition hover:bg-white/10">
+              Entrar
+            </a>
+          </nav>
+        </div>
       </header>
 
       <HeroSection />
-      <BenefitsSection />
+      <div id="features">
+        <BenefitsSection />
+      </div>
       <HowItWorksSection />
-      <MockupsSection />
+      <div id="mockups">
+        <MockupsSection />
+      </div>
 
       <FinalCtaSection />
       <LandingFooter />

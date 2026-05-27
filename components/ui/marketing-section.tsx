@@ -1,36 +1,49 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 type Props = {
-  title: string;
+  eyebrow?: string;
+  title: React.ReactNode;
   body: React.ReactNode;
   imageSrc?: string;
   reverse?: boolean;
   cta?: { href: string; label: string } | null;
 };
 
-export default function MarketingSection({ title, body, imageSrc, reverse = false, cta }: Props) {
+export default function MarketingSection({ eyebrow, title, body, imageSrc, reverse = false, cta }: Props) {
   return (
-    <section className="py-16 bg-white">
-      <div className="container mx-auto px-6 lg:px-8">
-        <div className={`grid grid-cols-1 lg:grid-cols-2 gap-12 items-center ${reverse ? "lg:flex-row-reverse" : ""}`}>
-          <div>
-            <h3 className="text-2xl font-semibold text-slate-900">{title}</h3>
-            <div className="mt-4 text-slate-600">{body}</div>
+    <section className="relative overflow-hidden bg-slate-950 py-16 text-white sm:py-20">
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,1),rgba(7,15,31,0.94))]" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      <div className="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-2 lg:items-center lg:px-8">
+        <div className={reverse ? "lg:order-2" : ""}>
+          {eyebrow ? (
+            <div className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-200/70">{eyebrow}</div>
+          ) : null}
+          <h3 className="max-w-xl text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">{title}</h3>
+          <div className="mt-5 max-w-xl text-base leading-7 text-white/68">{body}</div>
             {cta && (
-              <div className="mt-6">
-                <Link href={cta.href} className="inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white">{cta.label}</Link>
-              </div>
+            <div className="mt-6">
+              <Link href={cta.href} className="inline-flex items-center rounded-full border border-white/12 bg-white/8 px-5 py-2.5 text-sm font-medium text-white backdrop-blur-xl transition hover:bg-white/12">
+                {cta.label}
+              </Link>
+            </div>
             )}
-          </div>
 
-          <div className="flex justify-center lg:justify-end">
-            {imageSrc ? (
-              <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-sm">
-                <img src={imageSrc} alt={title} className="w-full rounded-lg" />
+        </div>
+
+        <div className={reverse ? "lg:order-1" : ""}>
+          {imageSrc ? (
+            <div className="relative">
+              <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-r from-violet-500/15 to-cyan-400/10 blur-2xl" />
+              <div className="relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/5 p-4 shadow-[0_24px_120px_rgba(2,6,23,0.42)] backdrop-blur-2xl">
+                <div className="rounded-[1.25rem] border border-white/10 bg-slate-950/90 p-3">
+                  <Image src={imageSrc} alt={typeof title === "string" ? title : "Preview"} width={1200} height={760} className="h-auto w-full rounded-[1rem] object-cover" />
+                </div>
               </div>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
         </div>
       </div>
     </section>

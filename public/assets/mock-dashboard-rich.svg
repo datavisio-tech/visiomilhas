@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" width="900" height="520">
+  <defs>
+    <linearGradient id="g1" x1="0" x2="1">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="520" rx="20" fill="#f8fafc"/>
+  <g transform="translate(36,28)">
+    <rect width="600" height="240" rx="14" fill="#ffffff" stroke="#eef2ff"/>
+    <!-- small summary cards -->
+    <g transform="translate(620,0)">
+      <rect width="224" height="76" rx="12" fill="#fff" stroke="#eef2ff"/>
+      <rect y="92" width="224" height="56" rx="10" fill="#fff" stroke="#eef2ff"/>
+    </g>
+    <!-- chart -->
+    <g transform="translate(24,28)">
+      <path d="M0 160 C80 80, 160 120, 240 60 C320 0, 400 120, 480 40" fill="none" stroke="url(#g1)" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="0" cy="160" r="6" fill="#7c3aed"/>
+      <circle cx="240" cy="60" r="6" fill="#06b6d4"/>
+      <circle cx="480" cy="40" r="6" fill="#7c3aed"/>
+    </g>
+    <!-- metrics row -->
+    <g transform="translate(0,280)">
+      <rect x="0" y="0" width="260" height="120" rx="12" fill="#fff" stroke="#eef2ff"/>
+      <rect x="292" y="0" width="260" height="120" rx="12" fill="#fff" stroke="#eef2ff"/>
+      <rect x="584" y="0" width="260" height="120" rx="12" fill="#fff" stroke="#eef2ff"/>
+    </g>
+  </g>
+</svg>
