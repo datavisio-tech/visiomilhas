@@ -3,9 +3,9 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import PrimaryButton, { SecondaryButton } from "../../../components/ui/button";
 import MetricCard from "../../../components/dashboard/metric-card";
+import DashboardChart from "../../../components/dashboard/dashboard-chart";
 import EmptyState from "../../../components/ui/empty-state";
 import PageHeader from "../../../components/ui/page-header";
-import ProductFlow from "../../../components/ui/product-flow";
 import TrialBanner from "../../../components/layout/trial-banner";
 import { getMetrics } from "../../../lib/server/dashboard";
 import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
@@ -79,6 +79,16 @@ function resolveIntegrityStatus(issues: FinancialIntegrityIssue[]) {
   return "warning" as const;
 }
 
+type TimelineItem = {
+  id: string;
+  title: string;
+  amount: string;
+  detail: string;
+  date: string;
+  status: string;
+  tone: "success" | "neutral" | "warning";
+};
+
 export default async function DashboardPage() {
   const sessionContext = await resolveControlledSessionContext({
     source: "dashboard.page",
@@ -148,7 +158,9 @@ export default async function DashboardPage() {
         recoveryStage: "direct",
         ownershipState: "missing",
         browserContext,
-        sessionLifecycle: sessionContext.auth.sessionId ? "persisted" : "missing",
+        sessionLifecycle: sessionContext.auth.sessionId
+          ? "persisted"
+          : "missing",
       },
     });
 
@@ -162,7 +174,9 @@ export default async function DashboardPage() {
         recoveryStage: "direct",
         ownershipState: "missing",
         browserContext,
-        sessionLifecycle: sessionContext.auth.sessionId ? "persisted" : "missing",
+        sessionLifecycle: sessionContext.auth.sessionId
+          ? "persisted"
+          : "missing",
         redirectPath: "/app/onboarding",
       },
     });
@@ -187,15 +201,6 @@ export default async function DashboardPage() {
       }),
     ]);
 
-  const purchasedMiles = purchases.reduce(
-    (sum, purchase) => sum + (purchase.points || 0),
-    0,
-  );
-  const soldMiles = sales.reduce((sum, sale) => sum + (sale.points || 0), 0);
-  const transferredMiles = transfers.reduce(
-    (sum, transfer) => sum + (transfer.pointsSent || 0),
-    0,
-  );
   const revenueCents = sales.reduce(
     (sum, sale) => sum + (sale.revenueCents || 0),
     0,
@@ -204,7 +209,6 @@ export default async function DashboardPage() {
     (sum, sale) => sum + (sale.profitCents || 0),
     0,
   );
-  const marginPercent = revenueCents > 0 ? (profitCents / revenueCents) * 100 : 0;
   const warnings = prioritizeWarnings(
     integrity.issues.map((issue) => mapIssueToWarning(issue)),
   );
@@ -217,319 +221,279 @@ export default async function DashboardPage() {
   const validatedAt = new Date().toLocaleString("pt-BR");
   const reconcilePending = integrity.issues.length;
 
-  const quickActions = [
-    { href: "/app/purchases", label: "Nova compra", description: "Registrar uma nova aquisição de milhas." },
-    { href: "/app/sales", label: "Nova venda", description: "Abrir a tela de venda operacional." },
-    { href: "/app/transfers", label: "Nova transferência", description: "Mover saldo entre programas." },
-    { href: "/app/inspection", label: "Inspeção", description: "Abrir replay, FIFO e recovery guiado." },
-    { href: "/app/inspection", label: "Reconcile", description: "Validar e corrigir inconsistências." },
+  const topKpis = [
+    {
+      title: "Saldo total",
+      value: formatPoints(metrics.totalBalance),
+      caption: "Saldo operacional consolidado",
+      tone: "success" as const,
+    },
+    {
+      title: "CPM médio",
+      value: formatMoneyCents(metrics.avgCpmCents),
+      caption: "Custo por mil milha",
+      tone: "neutral" as const,
+    },
+    {
+      title: "Resultado operacional",
+      value:
+        revenueCents > 0
+          ? formatMoneyCents(profitCents)
+          : "Sem receita registrada",
+      caption:
+        revenueCents > 0
+          ? `Receita ${formatMoneyCents(revenueCents)}`
+          : "Acompanhe a primeira venda",
+      tone: profitCents >= 0 ? ("success" as const) : ("warning" as const),
+    },
+    {
+      title: "Contas conectadas",
+      value: accounts.length,
+      caption: "Programas e contas ativas",
+      tone: "neutral" as const,
+    },
   ];
 
+  const timelineItems: TimelineItem[] = [
+    ...purchases.map((purchase) => ({
+      id: `purchase-${purchase.id}`,
+      title: purchase.program ?? purchase.account ?? `Compra #${purchase.id}`,
+      amount: `${formatPoints(purchase.points)} pts`,
+      detail: `${formatMoneyCents(purchase.valueCents)} • ${purchase.description ?? purchase.status}`,
+      date: new Date(purchase.date).toLocaleDateString("pt-BR"),
+      status: purchase.status,
+      tone: "success" as const,
+    })),
+    ...sales.map((sale) => ({
+      id: `sale-${sale.id}`,
+      title: sale.program ?? sale.account ?? `Venda #${sale.id}`,
+      amount: `${formatPoints(sale.points)} pts`,
+      detail: `${formatMoneyCents(sale.revenueCents)} • ${sale.description ?? sale.status}`,
+      date: new Date(sale.date).toLocaleDateString("pt-BR"),
+      status: sale.status,
+      tone:
+        sale.profitCents != null && sale.profitCents >= 0
+          ? ("success" as const)
+          : ("warning" as const),
+    })),
+    ...transfers.map((transfer) => ({
+      id: `transfer-${transfer.id}`,
+      title:
+        transfer.fromProgram ??
+        transfer.fromAccount ??
+        `Transferência #${transfer.id}`,
+      amount: `${formatPoints(transfer.pointsSent)} → ${formatPoints(
+        transfer.pointsReceived,
+      )} pts`,
+      detail: `${transfer.bonusPercent}% bônus • ${transfer.description ?? transfer.status}`,
+      date: new Date(transfer.date).toLocaleDateString("pt-BR"),
+      status: transfer.status,
+      tone: "neutral" as const,
+    })),
+  ]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {accessContext.accessState === "TRIAL" ? (
         <TrialBanner
           tone="warning"
-          title="Seu trial SaaS está ativo"
-          description="O dashboard continua operacional enquanto o período de avaliação estiver válido."
+          title="Período de avaliação ativo"
+          description="Explore todos os recursos enquanto seu trial estiver válido."
         />
       ) : null}
+
       <PageHeader
-        eyebrow="MVP operacional"
-        title="Dashboard operacional"
-        subtitle="Resumo do SaaS com leitura humana: saldo, margem, integridade, warnings e ações rápidas para operar sem perder o contexto."
+        eyebrow="Dashboard"
+        title="Sua operação em um só lugar"
+        subtitle="Acompanhe saldo, custo e lucro com clareza."
         actions={
           <>
-              <PrimaryButton className="" ariaLabel="Nova compra" href="/app/purchases">Nova compra</PrimaryButton>
-              <SecondaryButton href="/app/inspection">Inspeção</SecondaryButton>
+            <PrimaryButton ariaLabel="Nova compra" href="/app/purchases">
+              + Nova compra
+            </PrimaryButton>
+            <SecondaryButton href="/app/inspection">Inspeção</SecondaryButton>
           </>
         }
       />
 
-      <ProductFlow activeIndex={0} variant="page" />
-
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard
-          title="Saldo total"
-          value={formatPoints(metrics.totalBalance)}
-          caption="Saldo operacional em todas as contas"
-          tone="success"
-        />
-        <MetricCard
-          title="Milhas totais"
-          value={formatPoints(purchasedMiles)}
-          caption="Volume comprado no período recente"
-          tone="neutral"
-        />
-        <MetricCard
-          title="Custo médio"
-          value={formatMoneyCents(metrics.avgCpmCents)}
-          caption="CPM médio consolidado"
-          tone="neutral"
-        />
-        <MetricCard
-          title="Margem atual"
-          value={`${marginPercent.toFixed(1)}%`}
-          caption={
-            revenueCents > 0
-              ? `Receita ${formatMoneyCents(revenueCents)} · Lucro ${formatMoneyCents(profitCents)}`
-              : "Ainda sem vendas suficientes para calcular margem"
-          }
-          tone={marginPercent >= 0 ? "success" : "warning"}
-        />
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        {topKpis.map((metric) => (
+          <MetricCard
+            key={metric.title}
+            title={metric.title}
+            value={metric.value}
+            caption={metric.caption}
+            tone={metric.tone}
+          />
+        ))}
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[1.3fr_0.9fr_0.9fr]">
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="grid gap-6 xl:grid-cols-[1.65fr_1fr]">
+        <section className="rounded-card border border-slate-200 bg-white p-card-p-lg shadow-card">
+          <div className="mb-6 flex items-start justify-between gap-4">
+            <div>
+              <div className="text-label-xs font-semibold text-slate-500">
+                Operação
+              </div>
+              <div className="mt-2 text-2xl font-semibold text-slate-950">
+                Receita e lucro
+              </div>
+            </div>
+          </div>
+          <DashboardChart />
+        </section>
+
+        <section className="rounded-card border border-slate-200 bg-white p-card-p-lg shadow-card">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-                Estado operacional
+              <div className="text-label-xs font-semibold text-slate-500">
+                Integridade
               </div>
-              <h2 className="mt-2 text-lg font-semibold text-slate-950">
-                Confiança operacional do runtime
-              </h2>
-              <p className="mt-1 text-sm text-slate-600">
-                {validationLabel} validado agora para a organização atual.
-              </p>
+              <div className="mt-2 text-2xl font-semibold text-slate-950">
+                Saúde financeira
+              </div>
             </div>
-            <div className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${statusMeta.tone === "ok" ? "bg-emerald-100 text-emerald-800" : statusMeta.tone === "attention" ? "bg-amber-100 text-amber-800" : "bg-rose-100 text-rose-800"}`}>
+            <div
+              className={`rounded-full px-3 py-1.5 text-label-sm font-semibold flex-shrink-0 ${
+                statusMeta.tone === "ok"
+                  ? "bg-emerald-100 text-emerald-700"
+                  : statusMeta.tone === "attention"
+                    ? "bg-amber-100 text-amber-700"
+                    : "bg-rose-100 text-rose-700"
+              }`}
+            >
               {statusMeta.label}
             </div>
           </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <StatusFact label="Última validação" value={validatedAt} />
-            <StatusFact label="Warnings ativos" value={String(warnings.length)} />
-            <StatusFact label="Reconcile pendentes" value={String(reconcilePending)} />
-            <StatusFact label="Integridade" value={integrity.isConsistent ? "consistente" : "requer atenção"} />
+          <p className="mt-5 text-sm leading-6 text-slate-600">
+            {validationLabel}
+          </p>
+
+          <div className="mt-6 grid gap-3">
+            <StatusFact label="Última verificação" value={validatedAt} />
             <StatusFact
               label="Pontos a receber"
               value={formatPoints(metrics.pointsToReceive)}
             />
-            <StatusFact label="Milhas vendidas" value={formatPoints(soldMiles)} />
+            <StatusFact label="Avisos ativos" value={String(warnings.length)} />
             <StatusFact
-              label="Milhas transferidas"
-              value={formatPoints(transferredMiles)}
+              label="Reconciliações"
+              value={String(reconcilePending)}
             />
-          </div>
-
-          <div className="mt-5 rounded-2xl bg-slate-50 p-4">
-            <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
-              Operar agora
-            </div>
-            <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              {quickActions.map((action) => (
-                <Link
-                  key={action.href + action.label}
-                  href={action.href}
-                  className="rounded-2xl border border-slate-200 bg-white p-3 text-left transition hover:border-slate-300 hover:shadow-sm"
-                >
-                  <div className="text-sm font-semibold text-slate-950">
-                    {action.label}
-                  </div>
-                  <div className="mt-1 text-xs leading-5 text-slate-600">
-                    {action.description}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-            Alertas operacionais
-          </div>
-          <h2 className="mt-2 text-lg font-semibold text-slate-950">
-            Warnings ativos e próximos passos
-          </h2>
-          <div className="mt-4 space-y-3">
-            {warnings.length === 0 ? (
-              <EmptyState
-                title="Nenhum warning ativo"
-                description="O runtime está coerente neste momento. Continue operando com inspeção periódica para manter a estabilidade."
-                actionLabel="Abrir inspeção"
-                actionHref="/app/inspection"
-                supportingText="fluxo saudável"
-              />
-            ) : (
-              warnings.slice(0, 4).map((warning) => (
-                <div
-                  key={`${warning.problem}-${warning.impactArea}`}
-                  className="rounded-2xl border border-amber-200 bg-amber-50 p-4"
-                >
-                  <div className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">
-                    {warning.priority}
-                  </div>
-                  <div className="mt-1 text-sm font-semibold text-amber-950">
-                    {warning.problem}
-                  </div>
-                  <div className="mt-2 text-sm text-amber-900">
-                    {warning.action}
-                  </div>
-                  <div className="mt-2 text-xs text-amber-800">
-                    Recovery: {warning.recoveryAction}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </section>
-
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-            Contas principais
-          </div>
-          <h2 className="mt-2 text-lg font-semibold text-slate-950">
-            Base operacional da organização
-          </h2>
-          <div className="mt-4 space-y-3">
-            {accounts.length === 0 ? (
-              <EmptyState
-                title="Sem contas ainda"
-                description="Crie a primeira conta para começar a registrar compras, vendas e transferências com contexto operacional completo."
-                actionLabel="Ir para onboarding"
-                actionHref="/app/onboarding"
-                supportingText="primeiro passo"
-              />
-            ) : (
-              accounts.slice(0, 4).map((account) => (
-                <div
-                  key={account.id}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="text-sm font-semibold text-slate-950">
-                        {account.nickname}
-                      </div>
-                      <div className="text-xs text-slate-500">
-                        {account.program ?? "Programa não identificado"}
-                      </div>
-                    </div>
-                    <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600">
-                      Conta ativa
-                    </div>
-                  </div>
-                  <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-slate-700">
-                    <div>
-                      <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Saldo</div>
-                      <div className="font-semibold text-slate-950">{formatPoints(account.balance)}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs uppercase tracking-[0.18em] text-slate-400">CPM</div>
-                      <div className="font-semibold text-slate-950">
-                        {formatMoneyCents(account.cpmCents)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
           </div>
         </section>
       </div>
 
-      <section className="grid gap-4 xl:grid-cols-3">
-        <ActivityPanel
-          title="Compras recentes"
-          emptyTitle="Sem compras registradas"
-          emptyDescription="Registre sua primeira compra para alimentar o saldo operacional e o custo médio."
-          emptyHref="/app/purchases"
-          items={purchases.map((purchase) => ({
-            title: purchase.program ?? purchase.account ?? `Compra #${purchase.id}`,
-            lines: [
-              `${purchase.points.toLocaleString()} pts`,
-              formatMoneyCents(purchase.valueCents),
-              purchase.status,
-            ],
-          }))}
-        />
-        <ActivityPanel
-          title="Vendas recentes"
-          emptyTitle="Sem vendas registradas"
-          emptyDescription="Abra a tela de vendas quando quiser realizar a primeira liquidação operacional."
-          emptyHref="/app/sales"
-          items={sales.map((sale) => ({
-            title: sale.program ?? sale.account ?? `Venda #${sale.id}`,
-            lines: [
-              `${sale.points.toLocaleString()} pts`,
-              formatMoneyCents(sale.revenueCents),
-              sale.status,
-            ],
-          }))}
-        />
-        <ActivityPanel
-          title="Transferências recentes"
-          emptyTitle="Sem transferências registradas"
-          emptyDescription="Movimente pontos entre programas quando precisar ajustar a estratégia operacional."
-          emptyHref="/app/transfers"
-          items={transfers.map((transfer) => ({
-            title: transfer.fromProgram ?? transfer.fromAccount ?? `Transferência #${transfer.id}`,
-            lines: [
-              `${transfer.pointsSent.toLocaleString()} -> ${transfer.pointsReceived.toLocaleString()} pts`,
-              `${transfer.bonusPercent}% bônus`,
-              transfer.status,
-            ],
-          }))}
-        />
+      <section className="rounded-card border border-slate-200 bg-white p-card-p-lg shadow-card">
+        <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+          <div>
+            <div className="text-label-xs font-semibold text-slate-500">
+              Movimentações
+            </div>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+              Atividade recente
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              Compras, vendas e transferências dos últimos dias
+            </p>
+          </div>
+          <Link
+            href="/app/inspection"
+            className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-50 hover:shadow-card flex-shrink-0"
+          >
+            Ver tudo
+          </Link>
+        </div>
+
+        <div className="mt-6 space-y-3">
+          {timelineItems.length === 0 ? (
+            <EmptyState
+              title="Nenhuma movimentação"
+              description="Suas transações aparecerão aqui quando começarem a ser registradas."
+              actionLabel="Registrar operação"
+              actionHref="/app/purchases"
+              supportingText="Acompanhe movimentações à medida que ocorrem"
+            />
+          ) : (
+            timelineItems.map((item) => (
+              <div
+                key={item.id}
+                className="rounded-lg border border-slate-200 bg-white p-4 transition hover:shadow-card hover:border-slate-300"
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold text-slate-950">
+                      {item.title}
+                    </div>
+                    <div className="mt-2 flex items-center gap-4">
+                      <span className="text-sm font-medium text-slate-600">
+                        {item.amount}
+                      </span>
+                      <span className="text-sm text-slate-500">
+                        {item.detail}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                        item.tone === "success"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : item.tone === "warning"
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      {item.tone === "success"
+                        ? "✓ Concluído"
+                        : item.tone === "warning"
+                          ? "⚠ Atenção"
+                          : "○ Pendente"}
+                    </span>
+                    <span className="text-xs text-slate-500">{item.date}</span>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </section>
     </div>
   );
 }
 
-function StatusFact({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-3">
-      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-        {label}
-      </div>
-      <div className="mt-2 text-sm font-medium text-slate-950">{value}</div>
-    </div>
-  );
-}
-
-function ActivityPanel({
-  title,
-  emptyTitle,
-  emptyDescription,
-  emptyHref,
-  items,
+function StatusFact({
+  label,
+  value,
+  dark = false,
 }: {
-  title: string;
-  emptyTitle: string;
-  emptyDescription: string;
-  emptyHref: string;
-  items: Array<{ title: string; lines: string[] }>;
+  label: string;
+  value: string;
+  dark?: boolean;
 }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-        {title}
+    <div
+      className={`rounded-lg border p-4 transition-colors ${
+        dark
+          ? "border-white/10 bg-slate-900/80"
+          : "border-slate-200 bg-white hover:bg-slate-50"
+      }`}
+    >
+      <div
+        className={`text-label-xs font-semibold ${
+          dark ? "text-slate-400" : "text-slate-500"
+        }`}
+      >
+        {label}
       </div>
-      <div className="mt-3 space-y-3">
-        {items.length === 0 ? (
-          <EmptyState
-            title={emptyTitle}
-            description={emptyDescription}
-            actionLabel="Abrir tela"
-            actionHref={emptyHref}
-            supportingText="fluxo guiado"
-          />
-        ) : (
-          items.slice(0, 4).map((item) => (
-            <div key={`${item.title}-${item.lines[0]}`} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <div className="text-sm font-semibold text-slate-950">{item.title}</div>
-              <div className="mt-2 space-y-1 text-sm text-slate-600">
-                {item.lines.map((line) => (
-                  <div key={line}>{line}</div>
-                ))}
-              </div>
-            </div>
-          ))
-        )}
+      <div
+        className={`mt-2 text-sm font-semibold tracking-[-0.01em] ${dark ? "text-white" : "text-slate-950"}`}
+      >
+        {value}
       </div>
-    </section>
+    </div>
   );
 }

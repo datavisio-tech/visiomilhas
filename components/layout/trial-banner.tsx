@@ -6,19 +6,33 @@ type TrialBannerProps = {
 
 export default function TrialBanner({
   tone = "info",
-  title = "Teste PRO: 15 dias restantes",
-  description = "Aproveite todos os recursos durante o período de avaliação.",
+  title = "Período de avaliação: 15 dias restantes",
+  description = "Explore todos os recursos enquanto o trial estiver ativo.",
 }: TrialBannerProps) {
   const styles =
     tone === "warning"
-      ? "bg-amber-50 border-amber-300"
-      : "bg-indigo-50 border-indigo-300";
-  const titleStyles = tone === "warning" ? "text-amber-800" : "text-indigo-700";
+      ? "bg-gradient-to-r from-amber-50 to-amber-50/50 border-amber-200"
+      : "bg-gradient-to-r from-blue-50 to-blue-50/50 border-blue-200";
+  const titleStyles = tone === "warning" ? "text-amber-900" : "text-blue-900";
+  const badgeStyles =
+    tone === "warning"
+      ? "bg-amber-100 text-amber-700"
+      : "bg-blue-100 text-blue-700";
+
   return (
-    <div className={`${styles} border-l-4 p-3 rounded mb-4`}>
-      <strong className={titleStyles}>{title}</strong>
-      <div className="text-sm text-gray-600">
-        {description}
+    <div
+      className={`${styles} border rounded-card p-card-p-lg shadow-card flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between`}
+    >
+      <div>
+        <strong className={`${titleStyles} text-sm font-semibold`}>
+          {title}
+        </strong>
+        <p className="text-sm text-slate-600 mt-1">{description}</p>
+      </div>
+      <div
+        className={`${badgeStyles} rounded-full px-4 py-2 text-xs font-semibold text-nowrap flex-shrink-0`}
+      >
+        Trial ativo
       </div>
     </div>
   );
