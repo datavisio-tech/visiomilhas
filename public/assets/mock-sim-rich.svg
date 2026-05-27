@@ -41,5 +41,15 @@
       <rect x="16" y="100" width="160" height="12" rx="6" fill="#f8fafc" stroke="#eef2ff"/>
       <rect x="16" y="122" width="124" height="12" rx="6" fill="#f8fafc" stroke="#eef2ff"/>
     </g>
+
+    <g transform="translate(20,350)">
+      <rect width="640" height="24" rx="8" fill="#fff" stroke="#eef2ff"/>
+      <rect x="12" y="7" width="72" height="8" rx="4" fill="#0f172a"/>
+      <rect x="110" y="7" width="104" height="8" rx="4" fill="#e2e8f0"/>
+      <rect x="240" y="7" width="82" height="8" rx="4" fill="#fca5a5"/>
+      <rect x="342" y="7" width="86" height="8" rx="4" fill="#e2e8f0"/>
+      <rect x="448" y="7" width="78" height="8" rx="4" fill="#67e8f9"/>
+      <rect x="548" y="7" width="74" height="8" rx="4" fill="#e2e8f0"/>
+    </g>
   </g>
 </svg>

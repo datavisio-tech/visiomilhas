@@ -35,6 +35,15 @@
       <rect y="40" width="120" height="8" rx="4" fill="#e2e8f0"/>
       <rect y="66" width="92" height="18" rx="9" fill="#f1f5f9"/>
     </g>
+      <g transform="translate(20,348)">
+        <rect width="640" height="28" rx="10" fill="#f8fafc" stroke="#eef2ff"/>
+        <rect x="14" y="8" width="90" height="10" rx="5" fill="#c4b5fd"/>
+        <rect x="118" y="8" width="106" height="10" rx="5" fill="#e2e8f0"/>
+        <rect x="244" y="8" width="74" height="10" rx="5" fill="#a7f3d0"/>
+        <rect x="330" y="8" width="68" height="10" rx="5" fill="#e2e8f0"/>
+        <rect x="412" y="8" width="96" height="10" rx="5" fill="#e2e8f0"/>
+        <rect x="524" y="8" width="86" height="10" rx="5" fill="#f9a8d4"/>
+      </g>
     <g transform="translate(258,246)">
       <rect width="64" height="10" rx="5" fill="#0f172a"/>
       <rect y="22" width="138" height="8" rx="4" fill="#e2e8f0"/>
