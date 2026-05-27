@@ -1,7 +1,10 @@
-import MarketingHero from "../components/ui/marketing-hero";
-import MarketingSection from "../components/ui/marketing-section";
-import PrimaryButton from "../components/ui/button";
 import React from "react";
+import HeroSection from "../components/landing/hero-section";
+import BenefitsSection from "../components/landing/benefits-section";
+import HowItWorksSection from "../components/landing/how-it-works-section";
+import MockupsSection from "../components/landing/mockups-section";
+import FinalCtaSection from "../components/landing/final-cta-section";
+import LandingFooter from "../components/landing/footer";
 
 export default function Home() {
   return (
@@ -21,45 +24,13 @@ export default function Home() {
         </nav>
       </header>
 
-      <MarketingHero />
+      <HeroSection />
+      <BenefitsSection />
+      <HowItWorksSection />
+      <MockupsSection />
 
-      <MarketingSection
-        title="Seus pontos, seus números, sua estratégia"
-        body={
-          <>
-            <p className="mt-4">Veja a saúde de todos os programas, use CPM médio e o valor estimado de sua carteira.</p>
-            <ul className="mt-4 list-inside list-disc text-slate-600">
-              <li>Dashboard unificado de todos os programas</li>
-              <li>Simule antes de decidir e compare cenários</li>
-            </ul>
-          </>
-        }
-        imageSrc="/assets/section-1.png"
-      />
-
-      <MarketingSection
-        title="Simule antes de decidir"
-        body={<p className="mt-4 text-slate-600">Transfira com bônus, compare cenários e estime o impacto no seu saldo.</p>}
-        imageSrc="/assets/section-2.png"
-        reverse
-      />
-
-      <MarketingSection
-        title="Acompanhe bônus e nunca perca uma oportunidade"
-        body={<p className="mt-4 text-slate-600">Receba alertas e acompanhe históricos por parceiro e por CPF.</p>}
-        imageSrc="/assets/section-3.png"
-      />
-
-      <section id="pricing" className="py-20 bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white">
-        <div className="container mx-auto px-6 lg:px-8 text-center">
-          <h3 className="text-3xl font-semibold mb-3">Pronto para organizar suas milhas?</h3>
-          <p className="mb-6 max-w-2xl mx-auto">Comece gratuitamente e experimente todas as funcionalidades PRO por 15 dias.</p>
-          <div className="flex justify-center gap-4">
-            <PrimaryButton href="/sign-in?callbackUrl=/app/dashboard">Começar grátis</PrimaryButton>
-            <a href="/sign-in?callbackUrl=/app/dashboard" className="inline-flex items-center rounded-full px-4 py-2 text-sm font-medium bg-white bg-opacity-20">Ver demo</a>
-          </div>
-        </div>
-      </section>
+      <FinalCtaSection />
+      <LandingFooter />
     </main>
   );
 }
