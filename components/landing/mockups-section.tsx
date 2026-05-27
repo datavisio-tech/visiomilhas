@@ -18,8 +18,14 @@ export default function MockupsSection() {
 
         <div className="mt-6 grid gap-6 md:grid-cols-3">
           <MockCard title="Dashboard" image="/assets/mock-dashboard.svg" />
-          <MockCard title="Gestão de contas" image="/assets/mock-accounts.svg" />
-          <MockCard title="Simulação operacional" image="/assets/mock-sim.svg" />
+          <MockCard
+            title="Gestão de contas"
+            image="/assets/mock-accounts.svg"
+          />
+          <MockCard
+            title="Simulação operacional"
+            image="/assets/mock-sim.svg"
+          />
         </div>
       </div>
     </section>
