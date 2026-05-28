@@ -1,8 +1,8 @@
 # TODO_AI - Pendências e próximas ações
 
-# 3.6-A — Accounts Operational Center — EM ANDAMENTO
+# 3.6-A — Accounts Operational Center — ✅ COMPLETE
 
-**Status**: ✅ refatoração principal implementada; falta apenas finalizar a validação operacional e o commit final
+**Status**: ✅ refatoração principal implementada, validada e commitada
 
 **Realizado**:
 
@@ -12,10 +12,15 @@
 - ✅ Modal de criação com saldo inicial e CPM opcionais
 - ✅ Ações rápidas para visualizar, editar, ajustar saldo, inativar e excluir com soft delete
 
+**Validação**:
+
+- ✅ `npm run lint`
+- ✅ `npm run typecheck`
+- ✅ `git diff --check`
+
 **Próxima Ação**:
 
-- Rodar `npm run lint`, `npm run typecheck` e `git diff --check`
-- Criar commit obrigatório da fase 3.6-A
+- Manter a central de contas como base operacional para refinamentos futuros de UX e ações avançadas
 
 ## 2.4-L — Commercial Trial Activation Runtime — ✅ COMPLETE
 
