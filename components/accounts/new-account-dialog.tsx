@@ -13,7 +13,7 @@ import Dialog, {
   DialogTitle,
 } from "../ui/dialog";
 import Input from "../ui/input";
-import Select from "../ui/select";
+import ProgramSelector from "./program-selector";
 import Separator from "../ui/separator";
 import Switch from "../ui/switch";
 import type {
@@ -196,24 +196,18 @@ export default function NewAccountDialog({
                 <label className="text-sm font-medium text-slate-700">
                   Programa de pontos
                 </label>
-                <Select
-                  value={formState.programId}
-                  onChange={(event) =>
+                <ProgramSelector
+                  selectedProgramId={formState.programId}
+                  onChange={(value) =>
                     setFormState((current) => ({
                       ...current,
-                      programId: event.target.value,
+                      programId: value,
                     }))
                   }
+                  programs={programs}
                   disabled={mode === "view"}
                   required
-                >
-                  <option value="">Selecione</option>
-                  {programs.map((program) => (
-                    <option key={program.id} value={program.id}>
-                      {program.name}
-                    </option>
-                  ))}
-                </Select>
+                />
               </div>
 
               <div className="md:col-span-2 space-y-2">
