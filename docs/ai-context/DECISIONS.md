@@ -1,5 +1,14 @@
 # DECISIONS - VisioMilhas
 
+# 2026-05-27 — Central operacional de contas 3.6-A
+
+- Decisão: a tela `/app/accounts` deve ser tratada como central operacional de contas de milhas, não como tabela administrativa genérica.
+- Decisão: o mesmo programa pode ter múltiplas contas e isso deve ser visível na lista sem agrupar ou esconder registros.
+- Decisão: `display_name` visual é derivado do programa + apelido, mantendo a leitura imediata sem exigir preenchimento manual extra.
+- Decisão: saldo inicial e CPM inicial são opcionais no cadastro; quando o saldo inicial existir, a conta deve ganhar uma operação seed `INITIAL_BALANCE`.
+- Decisão: exclusão inicial é soft delete/inactive, sem remoção física da linha.
+- Decisão: a UI deve seguir linhas premium e limpas, com branding de programa simples e sem excesso de métricas ou aparência enterprise pesada.
+
 ## 2026-05-22 — reindex do workflow manual de produção
 
 - Decisão: renomear o workflow de produção para `production-deploy-manual.yml` com nome amigável `Production Deploy Manual - VisioMilhas`.

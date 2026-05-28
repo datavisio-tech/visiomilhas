@@ -8,13 +8,14 @@ type BaseProps = {
   className?: string;
   ariaLabel?: string;
   href?: string;
-};
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 export function PrimaryButton({
   children,
   className = "",
   ariaLabel,
   href,
+  ...props
 }: BaseProps) {
   const base =
     "inline-flex items-center justify-center rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 hover:shadow-card active:scale-95";
@@ -36,6 +37,7 @@ export function PrimaryButton({
       type="button"
       className={`${base} ${className}`}
       aria-label={ariaLabel}
+      {...props}
     >
       {children}
     </button>
@@ -47,6 +49,7 @@ export function SecondaryButton({
   className = "",
   ariaLabel,
   href,
+  ...props
 }: BaseProps) {
   const base =
     "inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:border-slate-300 hover:text-slate-950 hover:shadow-card active:scale-95";
@@ -68,6 +71,7 @@ export function SecondaryButton({
       type="button"
       className={`${base} ${className}`}
       aria-label={ariaLabel}
+      {...props}
     >
       {children}
     </button>

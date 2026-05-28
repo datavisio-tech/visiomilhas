@@ -1,3 +1,31 @@
+# 2026-05-27 — Fase 3.6-A — Accounts Operational Center — ✅ COMPLETE
+
+### Status: central de contas refatorada para leitura operacional premium, com múltiplas contas por programa e modal simples
+
+**Achievements**:
+
+1. **Accounts UX Refresh** — ✅ COMPLETE
+
+- A tela `/app/accounts` saiu da tabela técnica e passou a operar como lista limpa e premium
+- Cada linha agora prioriza nome visual da conta, programa, saldo atual, CPM médio e estado ativo/inativo
+
+2. **Operational Model** — ✅ COMPLETE
+
+- A conta passou a ser tratada como unidade operacional de programa de milhas
+- Múltiplas contas do mesmo programa continuam suportadas e agora são apresentadas com naming visual automático
+- Saldo inicial e CPM inicial podem ser informados no cadastro e geram operação seed `INITIAL_BALANCE` quando aplicável
+
+3. **Actions & Modals** — ✅ COMPLETE
+
+- Modal premium de criação/edição com foco em clareza operacional
+- Ações rápidas: visualizar, editar, ajustar saldo, inativar e excluir com soft delete
+- Visual de programa com branding simples por cor/ícone circular e fallback genérico
+
+4. **UI System** — ✅ COMPLETE
+
+- Criados primitives locais no padrão shadcn-like para suportar Card, Dialog, DropdownMenu, Badge, Input, Select, Separator e Switch
+- A tela mantém branco predominante, bordas suaves e baixo ruído visual
+
 # 2026-05-26 — Fase 3.0-C — FIFO Replay/Lineage Stabilization — ✅ COMPLETE
 
 ### Status: runtime FIFO reparado e replay auditável alinhado ao modelo materializado
@@ -5,29 +33,33 @@
 **Achievements**:
 
 1. **FIFO Runtime Fix** — ✅ COMPLETE
-  - Removida a referência indevida a `consumedLots` de `acquireMiles()`
-  - A aquisição volta a operar sem `ReferenceError`
+
+- Removida a referência indevida a `consumedLots` de `acquireMiles()`
+- A aquisição volta a operar sem `ReferenceError`
 
 2. **Audit Timeline** — ✅ COMPLETE
-  - `buildFinancialTimeline()` passa a refletir a linha materializada sem duplicar o registro de transferência
-  - O teste de replay foi alinhado para incluir o evento de lote FIFO como parte da timeline auditável
+
+- `buildFinancialTimeline()` passa a refletir a linha materializada sem duplicar o registro de transferência
+- O teste de replay foi alinhado para incluir o evento de lote FIFO como parte da timeline auditável
 
 3. **FIFO Lineage** — ✅ COMPLETE
-  - `buildFifoLineage()` continua derivando lineage do runtime persistido e dos registros de transferência sem romper o fluxo de leitura
+
+- `buildFifoLineage()` continua derivando lineage do runtime persistido e dos registros de transferência sem romper o fluxo de leitura
 
 4. **Validation** — ✅ COMPLETE
-  - Suíte focada de runtime e actions ficou verde novamente
+
+- Suíte focada de runtime e actions ficou verde novamente
 
 ### Runtime Readiness — 3.0-C
 
-| Capability | Status | Note |
-|-----------|--------|------|
-| FIFO purchase | ✅ | `acquireMiles()` estabilizado |
-| FIFO sale | ✅ | Continuidade preservada |
-| FIFO transfer | ✅ | Continua registrando lineage |
-| Replay timeline | ✅ | Materializada sem duplicidade conceitual |
-| FIFO lineage | ✅ | Derivada do runtime persistido |
-| Validation | ✅ | Suíte focada passou |
+| Capability      | Status | Note                                     |
+| --------------- | ------ | ---------------------------------------- |
+| FIFO purchase   | ✅     | `acquireMiles()` estabilizado            |
+| FIFO sale       | ✅     | Continuidade preservada                  |
+| FIFO transfer   | ✅     | Continua registrando lineage             |
+| Replay timeline | ✅     | Materializada sem duplicidade conceitual |
+| FIFO lineage    | ✅     | Derivada do runtime persistido           |
+| Validation      | ✅     | Suíte focada passou                      |
 
 # CHANGELOG_AI
 
@@ -38,26 +70,29 @@
 **Achievements**:
 
 1. **FIFO Transfer Runtime** — ✅ COMPLETE
-  - `transferMiles()` agora valida a conta de destino, consome a origem e credita o destino com entry, lote e saldo
-  - O runtime FIFO deixa de parar no débito da origem e passa a manter o ledger bilateral consistente
+
+- `transferMiles()` agora valida a conta de destino, consome a origem e credita o destino com entry, lote e saldo
+- O runtime FIFO deixa de parar no débito da origem e passa a manter o ledger bilateral consistente
 
 2. **Transactional Actions** — ✅ COMPLETE
-  - `createSaleAction` e `createTransferAction` só fazem `COMMIT` depois do use case FIFO concluir
-  - As actions passaram a respeitar `deps.appPool`, `deps.revalidatePath`, `deps.isFifoMovementsEngineEnabled` e o use case injetado, como purchase já fazia
+
+- `createSaleAction` e `createTransferAction` só fazem `COMMIT` depois do use case FIFO concluir
+- As actions passaram a respeitar `deps.appPool`, `deps.revalidatePath`, `deps.isFifoMovementsEngineEnabled` e o use case injetado, como purchase já fazia
 
 3. **Validation** — ✅ COMPLETE
-  - Testes unitários novos cobrem ordem transacional e rollback para sale/transfer
-  - `npm run typecheck` e `git diff --check` passaram
+
+- Testes unitários novos cobrem ordem transacional e rollback para sale/transfer
+- `npm run typecheck` e `git diff --check` passaram
 
 ### Runtime Readiness — 3.0-A
 
-| Capability | Status | Note |
-|-----------|--------|------|
-| FIFO purchase | ✅ | Mantido |
-| FIFO sale | ✅ | Commit só após o use case |
-| FIFO transfer | ✅ | Credita destino e mantém rollback |
-| Testability | ✅ | Dependências críticas injetáveis |
-| Ledger consistency | ✅ | Destino deixa de ficar sem lote/saldo |
+| Capability         | Status | Note                                  |
+| ------------------ | ------ | ------------------------------------- |
+| FIFO purchase      | ✅     | Mantido                               |
+| FIFO sale          | ✅     | Commit só após o use case             |
+| FIFO transfer      | ✅     | Credita destino e mantém rollback     |
+| Testability        | ✅     | Dependências críticas injetáveis      |
+| Ledger consistency | ✅     | Destino deixa de ficar sem lote/saldo |
 
 ---
 
@@ -68,30 +103,34 @@
 **Achievements**:
 
 1. **Trial Activation Runtime** — ✅ COMPLETE
-  - Criado `activateTrialForOrganization()` com persistencia comercial no SAAS_DB
-  - Endpoint `/api/subscription/activate-trial` agora ativa trial server-side
-  - Campos comerciais persistidos em `subscriptions`: `access_state`, `activated_at`, `trial_started_at`, `trial_expires_at`, `plan_type`, `tenant_state`
+
+- Criado `activateTrialForOrganization()` com persistencia comercial no SAAS_DB
+- Endpoint `/api/subscription/activate-trial` agora ativa trial server-side
+- Campos comerciais persistidos em `subscriptions`: `access_state`, `activated_at`, `trial_started_at`, `trial_expires_at`, `plan_type`, `tenant_state`
 
 2. **Commercial Lifecycle** — ✅ COMPLETE
-  - Estados `TRIAL`, `ACTIVE`, `EXPIRED`, `CANCELED`, `SUSPENDED` passam a bloquear/liberar o dashboard
-  - Trial expirado gera bloqueio e atualiza status no SAAS_DB
+
+- Estados `TRIAL`, `ACTIVE`, `EXPIRED`, `CANCELED`, `SUSPENDED` passam a bloquear/liberar o dashboard
+- Trial expirado gera bloqueio e atualiza status no SAAS_DB
 
 3. **Subscribe UX** — ✅ COMPLETE
-  - Botão “Iniciar trial” com loading/success/retry
-  - Redirect automático para `/app/dashboard` após ativação
+
+- Botão “Iniciar trial” com loading/success/retry
+- Redirect automático para `/app/dashboard` após ativação
 
 4. **Validation** — 🟡 PARCIAL
-  - Teste unitário atualizado para `EXPIRED`
-  - Necessária validação browser-first com sessão Google ativa
+
+- Teste unitário atualizado para `EXPIRED`
+- Necessária validação browser-first com sessão Google ativa
 
 ### Runtime Readiness — 2.4-L Inicial
 
-| Capability | Status | Note |
-|-----------|--------|------|
-| Trial activation | ✅ | Server-side e persistido no SAAS_DB |
-| Commercial lifecycle | ✅ | Estados bloqueiam/liberam dashboard |
-| Subscribe UX | ✅ | CTA com retry e redirect |
-| Browser lifecycle | 🟡 | Falta validação completa no browser |
+| Capability           | Status | Note                                |
+| -------------------- | ------ | ----------------------------------- |
+| Trial activation     | ✅     | Server-side e persistido no SAAS_DB |
+| Commercial lifecycle | ✅     | Estados bloqueiam/liberam dashboard |
+| Subscribe UX         | ✅     | CTA com retry e redirect            |
+| Browser lifecycle    | 🟡     | Falta validação completa no browser |
 
 ---
 
@@ -102,34 +141,38 @@
 **Achievements**:
 
 1. **Subscription Access Context** — ✅ COMPLETE
-  - Criado `SubscriptionAccessContext` separado de `AuthContext`, `OwnershipContext` e `ReadScope`
-  - O runtime agora classifica `ACTIVE`, `TRIAL`, `NO_SUBSCRIPTION`, `CANCELED` e `SUSPENDED`
-  - O contexto comercial deriva do ADM DB e preserva a separacao entre SAAS_DB e APP_DB
+
+- Criado `SubscriptionAccessContext` separado de `AuthContext`, `OwnershipContext` e `ReadScope`
+- O runtime agora classifica `ACTIVE`, `TRIAL`, `NO_SUBSCRIPTION`, `CANCELED` e `SUSPENDED`
+- O contexto comercial deriva do ADM DB e preserva a separacao entre SAAS_DB e APP_DB
 
 2. **Server-side Enforcement** — ✅ COMPLETE
-  - O dashboard agora valida o estado SaaS antes de carregar dados operacionais
-  - Usuários sem acesso sao redirecionados para `/subscribe`
-  - O onboarding concluído tambem segue para `/subscribe` quando a etapa comercial ainda nao esta liberada
+
+- O dashboard agora valida o estado SaaS antes de carregar dados operacionais
+- Usuários sem acesso sao redirecionados para `/subscribe`
+- O onboarding concluído tambem segue para `/subscribe` quando a etapa comercial ainda nao esta liberada
 
 3. **Subscription Gate UI** — ✅ COMPLETE
-  - Criada a pagina `/subscribe` para explicar trial/plano/status comercial
-  - Sem Stripe real e sem checkout real nesta fase
+
+- Criada a pagina `/subscribe` para explicar trial/plano/status comercial
+- Sem Stripe real e sem checkout real nesta fase
 
 4. **Validation** — 🟡 PARCIAL
-  - `evaluateSubscriptionAccess` foi validado com testes unitários
-  - A suíte completa ainda precisa ser rerodada apos a integracao final dos docs e do browser
+
+- `evaluateSubscriptionAccess` foi validado com testes unitários
+- A suíte completa ainda precisa ser rerodada apos a integracao final dos docs e do browser
 
 ### Runtime Readiness — 2.4-K Inicial
 
-| Capability | Status | Note |
-|-----------|--------|------|
-| SAAS_DB separation | ✅ | Billing/subscription continuam no ADM DB |
-| APP_DB separation | ✅ | Dados operacionais continuam no APP DB |
-| Subscription access | ✅ | Gating server-side implementado |
-| Subscribe page | ✅ | Nova etapa publica/autenticada de gate comercial |
-| Trial state | ✅ | Agora e um estado operacional de acesso |
-| Cancel/Suspend | ✅ | Bloqueio comercial classificado |
-| Browser runtime | 🟡 | Ainda falta rerodar o fluxo real com sessao Google válida |
+| Capability          | Status | Note                                                      |
+| ------------------- | ------ | --------------------------------------------------------- |
+| SAAS_DB separation  | ✅     | Billing/subscription continuam no ADM DB                  |
+| APP_DB separation   | ✅     | Dados operacionais continuam no APP DB                    |
+| Subscription access | ✅     | Gating server-side implementado                           |
+| Subscribe page      | ✅     | Nova etapa publica/autenticada de gate comercial          |
+| Trial state         | ✅     | Agora e um estado operacional de acesso                   |
+| Cancel/Suspend      | ✅     | Bloqueio comercial classificado                           |
+| Browser runtime     | 🟡     | Ainda falta rerodar o fluxo real com sessao Google válida |
 
 ### Residual Caveat
 
@@ -144,38 +187,42 @@
 **Session 4 Achievements**:
 
 1. **Logout Runtime** — ✅ COMPLETE
-  - Logout saiu do `fetch` manual e passou a usar `authClient.signOut()`
-  - `app/api/auth/[...all]/route.ts` agora registra sucesso/falha e invalidação da sessão no endpoint Better Auth `/sign-out`
-  - Redirecionamento pós-logout permanece explícito e o header não depende mais de contrato frágil de request manual
+
+- Logout saiu do `fetch` manual e passou a usar `authClient.signOut()`
+- `app/api/auth/[...all]/route.ts` agora registra sucesso/falha e invalidação da sessão no endpoint Better Auth `/sign-out`
+- Redirecionamento pós-logout permanece explícito e o header não depende mais de contrato frágil de request manual
 
 2. **Session Lifecycle** — ✅ COMPLETE
-  - `SESSION_RESTORED`, `SESSION_REFRESH_SUCCESS` e `SESSION_BROWSER_REOPEN_SUCCESS` passaram a ser reportados no runtime
-  - `USER_LOGOUT_SUCCESS`, `USER_LOGOUT_FAILED` e `SESSION_INVALIDATED` foram adicionados para auditar o ciclo completo
+
+- `SESSION_RESTORED`, `SESSION_REFRESH_SUCCESS` e `SESSION_BROWSER_REOPEN_SUCCESS` passaram a ser reportados no runtime
+- `USER_LOGOUT_SUCCESS`, `USER_LOGOUT_FAILED` e `SESSION_INVALIDATED` foram adicionados para auditar o ciclo completo
 
 3. **Onboarding Boundary** — ✅ COMPLETE
-  - O lifecycle continua onboarding-aware sem alterar arquitetura, banco ou UX estrutural
-  - O runtime mantém redirect para onboarding quando ownership não existe
+
+- O lifecycle continua onboarding-aware sem alterar arquitetura, banco ou UX estrutural
+- O runtime mantém redirect para onboarding quando ownership não existe
 
 4. **Validation** — ✅ COMPLETE
-  - `npm run lint`: 0 errors
-  - `npm run typecheck`: 0 errors
-  - `npm run test`: 59/59 tests passing
-  - `git diff --check`: limpo
+
+- `npm run lint`: 0 errors
+- `npm run typecheck`: 0 errors
+- `npm run test`: 59/59 tests passing
+- `git diff --check`: limpo
 
 ### Runtime Readiness — 2.4-J Final
 
-| Capability | Status | Note |
-|-----------|--------|------|
-| Google OAuth | ✅ | Continua funcional |
-| Callback | ✅ | Continua funcional |
-| Session persistence | ✅ | Continua funcional |
-| Logout | ✅ | Agora usa signOut oficial |
-| Session invalidation | ✅ | Auditada no handler |
-| Refresh | ✅ | Instrumentado como success |
-| Browser reopen | ✅ | Instrumentado como success |
-| Onboarding | ✅ | Continua onboarding-aware |
-| Ownership | ✅ | Mantido no server |
-| Browser runtime | 🟡 | Sem sessão ativa no browser final da validação |
+| Capability           | Status | Note                                           |
+| -------------------- | ------ | ---------------------------------------------- |
+| Google OAuth         | ✅     | Continua funcional                             |
+| Callback             | ✅     | Continua funcional                             |
+| Session persistence  | ✅     | Continua funcional                             |
+| Logout               | ✅     | Agora usa signOut oficial                      |
+| Session invalidation | ✅     | Auditada no handler                            |
+| Refresh              | ✅     | Instrumentado como success                     |
+| Browser reopen       | ✅     | Instrumentado como success                     |
+| Onboarding           | ✅     | Continua onboarding-aware                      |
+| Ownership            | ✅     | Mantido no server                              |
+| Browser runtime      | 🟡     | Sem sessão ativa no browser final da validação |
 
 ### Residual Caveat
 
@@ -191,38 +238,43 @@
 **Session 3 Achievements**:
 
 1. **Ownership Hydration** — ✅ COMPLETE
-  - `resolveBetterAuthSessionContext()` agora hidrata `organizationId` e ownership quando onboarding já provisionou a conta
-  - `SessionContext` deixa de depender apenas do payload Better Auth bruto
+
+- `resolveBetterAuthSessionContext()` agora hidrata `organizationId` e ownership quando onboarding já provisionou a conta
+- `SessionContext` deixa de depender apenas do payload Better Auth bruto
 
 2. **Onboarding-Aware Read Scope** — ✅ COMPLETE
-  - `resolveReadScope()` agora redireciona para `/app/onboarding` quando `organizationId` estiver ausente
-  - O boundary passou a emitir telemetria operacional em vez de quebrar com erro fatal
+
+- `resolveReadScope()` agora redireciona para `/app/onboarding` quando `organizationId` estiver ausente
+- O boundary passou a emitir telemetria operacional em vez de quebrar com erro fatal
 
 3. **Dashboard Boundary** — ✅ COMPLETE
-  - `app/app/dashboard/page.tsx` ganhou redirect explícito e observabilidade antes de renderizar dados
-  - O dashboard não quebra mais quando o usuário ainda está sem ownership resolvida
+
+- `app/app/dashboard/page.tsx` ganhou redirect explícito e observabilidade antes de renderizar dados
+- O dashboard não quebra mais quando o usuário ainda está sem ownership resolvida
 
 4. **Observability Expansion** — ✅ COMPLETE
-  - Novos códigos adicionados: `ONBOARDING_REQUIRED_REDIRECT`, `ONBOARDING_CONTEXT_MISSING`, `ONBOARDING_RUNTIME_RECOVERY`, `READ_SCOPE_ONBOARDING_RECOVERY`
-  - Metadados agora incluem onboarding stage, recovery stage, ownership state, browser context e session lifecycle
+
+- Novos códigos adicionados: `ONBOARDING_REQUIRED_REDIRECT`, `ONBOARDING_CONTEXT_MISSING`, `ONBOARDING_RUNTIME_RECOVERY`, `READ_SCOPE_ONBOARDING_RECOVERY`
+- Metadados agora incluem onboarding stage, recovery stage, ownership state, browser context e session lifecycle
 
 5. **Validation** — ✅ COMPLETE
-  - `npm run lint`: 0 errors
-  - `npm run typecheck`: 0 errors
-  - `npm run test`: 59/59 tests passing
-  - `git diff --check`: limpo
+
+- `npm run lint`: 0 errors
+- `npm run typecheck`: 0 errors
+- `npm run test`: 59/59 tests passing
+- `git diff --check`: limpo
 
 ### Runtime Readiness — 2.4-I Final
 
-| Capability | Status | Note |
-|-----------|--------|------|
-| Better Auth login | ✅ | Continua funcional |
-| Session persistence | ✅ | Continua funcional |
-| Ownership hydration | ✅ | `organizationId` agora entra na session context |
-| Read scope | ✅ | Redirect onboarding-aware em vez de crash |
-| Dashboard | ✅ | Boundary explícito, sem uncaught throw |
-| Observability | ✅ | Novos eventos de onboarding/runtime |
-| Browser runtime | 🟡 | Sign-in/Google continuam alcançáveis; dashboard sem sessão redireciona para sign-in |
+| Capability          | Status | Note                                                                                |
+| ------------------- | ------ | ----------------------------------------------------------------------------------- |
+| Better Auth login   | ✅     | Continua funcional                                                                  |
+| Session persistence | ✅     | Continua funcional                                                                  |
+| Ownership hydration | ✅     | `organizationId` agora entra na session context                                     |
+| Read scope          | ✅     | Redirect onboarding-aware em vez de crash                                           |
+| Dashboard           | ✅     | Boundary explícito, sem uncaught throw                                              |
+| Observability       | ✅     | Novos eventos de onboarding/runtime                                                 |
+| Browser runtime     | 🟡     | Sign-in/Google continuam alcançáveis; dashboard sem sessão redireciona para sign-in |
 
 ### Remaining External Caveat
 
@@ -238,34 +290,38 @@
 **Session 3 Achievements**:
 
 1. **Schema Alignment** — ✅ COMPLETE
-  - Corrigido o shape exportado por `lib/server/better-auth-schema.ts`
-  - Exports lógicos agora existem como `user`, `session`, `account` e `verification`
-  - Tabelas físicas permaneceram `ba_users`, `ba_sessions`, `ba_accounts` e `ba_verification`
+
+- Corrigido o shape exportado por `lib/server/better-auth-schema.ts`
+- Exports lógicos agora existem como `user`, `session`, `account` e `verification`
+- Tabelas físicas permaneceram `ba_users`, `ba_sessions`, `ba_accounts` e `ba_verification`
 
 2. **Adapter Wiring** — ✅ COMPLETE
-  - `lib/auth.ts` passou a consumir o namespace do schema
-  - `db/adm/client.ts` permanece compatível com o mesmo namespace
-  - O ajuste é incremental e rollback-safe; nenhuma migration foi criada
+
+- `lib/auth.ts` passou a consumir o namespace do schema
+- `db/adm/client.ts` permanece compatível com o mesmo namespace
+- O ajuste é incremental e rollback-safe; nenhuma migration foi criada
 
 3. **Validation** — ✅ COMPLETE LOCALMENTE
-  - `npm run lint`: 0 errors, 0 warnings
-  - `npm run typecheck`: 0 errors
-  - `npm run test`: 57/57 tests passing
-  - `git diff --check`: limpo, com apenas avisos LF/CRLF no Windows
+
+- `npm run lint`: 0 errors, 0 warnings
+- `npm run typecheck`: 0 errors
+- `npm run test`: 57/57 tests passing
+- `git diff --check`: limpo, com apenas avisos LF/CRLF no Windows
 
 ### Runtime Readiness After Alignment
 
-| Capability | Status | Note |
-|-----------|--------|------|
-| Better Auth schema lookup | ✅ | `user/session/account/verification` agora exportados |
-| OAuth callback wiring | ✅ | Continua apontando para `/api/auth/callback/google` |
-| Session persistence | 🟡 | Pronto no runtime; E2E real depende de login Google válido |
-| Onboarding | 🟡 | Sem regressão observada; aguardando E2E completo |
-| Browser runtime | ✅ | Sign-in continua carregando normalmente |
+| Capability                | Status | Note                                                       |
+| ------------------------- | ------ | ---------------------------------------------------------- |
+| Better Auth schema lookup | ✅     | `user/session/account/verification` agora exportados       |
+| OAuth callback wiring     | ✅     | Continua apontando para `/api/auth/callback/google`        |
+| Session persistence       | 🟡     | Pronto no runtime; E2E real depende de login Google válido |
+| Onboarding                | 🟡     | Sem regressão observada; aguardando E2E completo           |
+| Browser runtime           | ✅     | Sign-in continua carregando normalmente                    |
 
 ### Residual Blocker
 
 **Google account not found / credential-dependent login**
+
 - O fluxo chega ao Google com o callback correto.
 - A etapa de login continua dependente de credencial válida no provedor Google.
 - Não houve regressão no runtime do app após o alinhamento do schema.
@@ -310,20 +366,20 @@
 
 ### Readiness Matrix — 2.4-H Final
 
-| Capability | Code | Testing | Docs | Status |
-|-----------|------|---------|------|--------|
-| Google OAuth | ✅ | ✅ | ✅ | 🟢 READY |
-| Better Auth DB | ✅ | ✅ | ✅ | 🟢 READY |
-| Session Persistence | ✅ | ✅ | ✅ | 🟢 READY |
-| Callback Routing | ✅ | ✅ | ✅ | 🟢 READY |
-| Onboarding Flow | ✅ | ✅ | ✅ | 🟢 READY |
-| Error Handling | ✅ | ✅ | ✅ | 🟢 READY |
-| Observability | ✅ | ✅ | ✅ | 🟢 READY |
-| Runtime Hardening | ✅ | ✅ | ✅ | 🟢 READY |
-| Recovery Fallback | ✅ | ✅ | ✅ | 🟢 READY |
-| Browser Runtime | ✅ | 🟡* | ✅ | 🟡 READY* |
+| Capability          | Code | Testing | Docs | Status     |
+| ------------------- | ---- | ------- | ---- | ---------- |
+| Google OAuth        | ✅   | ✅      | ✅   | 🟢 READY   |
+| Better Auth DB      | ✅   | ✅      | ✅   | 🟢 READY   |
+| Session Persistence | ✅   | ✅      | ✅   | 🟢 READY   |
+| Callback Routing    | ✅   | ✅      | ✅   | 🟢 READY   |
+| Onboarding Flow     | ✅   | ✅      | ✅   | 🟢 READY   |
+| Error Handling      | ✅   | ✅      | ✅   | 🟢 READY   |
+| Observability       | ✅   | ✅      | ✅   | 🟢 READY   |
+| Runtime Hardening   | ✅   | ✅      | ✅   | 🟢 READY   |
+| Recovery Fallback   | ✅   | ✅      | ✅   | 🟢 READY   |
+| Browser Runtime     | ✅   | 🟡\*    | ✅   | 🟡 READY\* |
 
-*Browser runtime código 100% ready, E2E real login bloqueado por erro transiente do Google
+\*Browser runtime código 100% ready, E2E real login bloqueado por erro transiente do Google
 
 ### 3 Commits Nesta Fase (2.4-H Total)
 
@@ -336,6 +392,7 @@
 ### Bloqueador Externo (Transiente)
 
 **Google OAuth 500 Error** — Erro temporário do servidor Google ao processar login
+
 - Tipo: Transiente
 - Causa: Provável sandbox/throttling/cache propagation
 - Impacto: E2E real login não pode ser testado neste momento
@@ -345,6 +402,7 @@
 ### Next Phase
 
 **2.5-A**: AI Context Entropy Reduction
+
 - Arquivação de changelogs antigos
 - Consolidação de contexto
 - Manutenção de "hot" context
@@ -424,10 +482,12 @@ Bloqueador Residual (Externo):
 **Status**: ⏳ PENDING EXTERNAL ACTION
 
 **Problema**:
+
 - Google Cloud Console não tem URIs localhost registradas
 - Error: "Erro 400: redirect_uri_mismatch"
 
 **Solução**:
+
 - Adicionar 2 URIs a "Authorized redirect URIs": localhost:3000 e localhost:3001
 - Adicionar 2 origens a "Authorized JavaScript origins": localhost:3000 e localhost:3001
 - Aguardar 2+ minutos para propagação
@@ -603,16 +663,14 @@ Próxima etapa recomendada:
 
 Objetivo:
 
-
 Resultado desta etapa:
 
-
 Decisões registradas:
-
 
 Próxima etapa recomendada:
 
 1. Continuar a migração das rotas restantes uma por vez e manter a telemetria de fallback perto de zero.
+
 ## 2026-05-24 — Fase 2.4-D — Bootstrap Guard Better Auth (2.4-D)
 
 Objetivo:
@@ -666,6 +724,7 @@ Bloqueio atual:
 Próxima etapa recomendada:
 
 1. Ajustar URIs de callback no Google Console, aplicar migration em staging e validar login, callback, sessão persistida, logout, refresh e reopen browser.
+
 ## 2026-05-24 — Fase 2.2-C — Ownership Hardening
 
 Objetivo:
