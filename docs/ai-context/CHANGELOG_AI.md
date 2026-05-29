@@ -1,3 +1,31 @@
+# 2026-05-28 — Fase 3.7-B — Auth Modal Unification — ✅ COMPLETE
+
+### Status: `/sign-in` consolidado como hub de autenticação Google-first com fallback por credenciais
+
+**Achievements**:
+
+1. **Auth Hub UI** — ✅ COMPLETE
+
+- Fluxo principal de Google OAuth preservado
+- CTA secundário de e-mail/senha incorporado ao card premium existente
+- Login, cadastro e recuperação migrados para modais com diálogo padrão da interface
+
+2. **Credential Runtime** — ✅ COMPLETE
+
+- `emailAndPassword` habilitado no Better Auth para login/cadastro credencial
+- Recuperação via `request-password-reset` e redefinição via `reset-password` com token temporário
+- Fluxo de recuperação sem revelar existência de e-mail
+
+3. **Reset Flow** — ✅ COMPLETE
+
+- Nova rota `/reset-password` criada como única página adicional do ciclo
+- Formulário dedicado de nova senha + confirmação + redirecionamento para `/sign-in`
+
+4. **Validation** — ✅ COMPLETE
+
+- `npm run lint` passou
+- `npm run typecheck` passou
+
 # 2026-05-27 — Fase 3.6-A — Accounts Operational Center — ✅ COMPLETE
 
 ### Status: central de contas refatorada para leitura operacional premium, com múltiplas contas por programa e modal simples

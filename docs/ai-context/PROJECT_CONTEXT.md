@@ -28,6 +28,13 @@ Módulos do MVP1:
 - Clubes (assinaturas de pontos) — geração manual de crédito
 - Estrutura basica de billing individual recorrente
 
+Diretriz atual de autenticação (3.7-B):
+
+- `/sign-in` opera como hub unificado de autenticação, mantendo Google como fluxo principal.
+- Fallback por credenciais (entrar/cadastrar/recuperar) ocorre via modais na mesma tela premium.
+- A única página adicional do fluxo é `/reset-password`, acionada por token temporário de recuperação.
+- O fluxo de recuperação não revela se o e-mail existe na base.
+
 Escopo fora do MVP1:
 
 - Importação massiva (CSV/Excel)
@@ -81,6 +88,7 @@ IA-First operacional:
 - O documento consolidado de governanca e operacao e `AI_OPERATING_MODEL.md`, que amarra Context, Specs, Skills, Agents e Prompts.
 - `AI_OPERATING_MODEL_VERSION=2.2-I` é a baseline oficial ativa da governança IA.
 - `docs/specs`, `docs/ai-skills`, `.claude/skills` e `.github/agents` formam uma cadeia: docs definem a verdade, skills operacionalizam e agents orquestram.
+- Referencia visual e comportamental para novas telas: `docs/ai-context/UI_PATTERNS.md`.
 - Os fluxos de escrita nao devem aceitar `orgSlug` como boundary; `organizationId` deve ser derivado no servidor.
 
 Versionamento operacional

@@ -1,5 +1,13 @@
 # DECISIONS - VisioMilhas
 
+# 2026-05-28 — Hub de autenticação unificado 3.7-B
+
+- Decisão: manter Google OAuth como caminho principal em `/sign-in` e adicionar fallback por e-mail/senha via modais, sem criar páginas públicas extras.
+- Decisão: login, cadastro e recuperação de senha compartilham a mesma identidade visual premium e permanecem na mesma superfície.
+- Decisão: reset de senha ocorre em `/reset-password` com token temporário e expiração controlada pelo Better Auth.
+- Decisão: mensagem de recuperação é não-disclosive (não confirma existência de e-mail na base).
+- Decisão: fallback por credenciais deve preservar compatibilidade com onboarding/ownership existentes.
+
 # 2026-05-27 — Central operacional de contas 3.6-A
 
 - Decisão: a tela `/app/accounts` deve ser tratada como central operacional de contas de milhas, não como tabela administrativa genérica.

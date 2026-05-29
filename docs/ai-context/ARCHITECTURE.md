@@ -16,6 +16,13 @@ Separação de áreas:
 - Área auth: páginas de login/registro/recuperação.
 - Área app (autenticada): /app/\* com proteção por middleware e verificação de tenant/membership.
 
+Auth UX unificada (3.7-B):
+
+- A entrada de autenticação fica centralizada em `/sign-in` com estratégia Google-first.
+- Credenciais (login, cadastro e recuperação) rodam em modais para evitar fragmentação de rotas públicas.
+- O reset de senha usa rota dedicada `/reset-password` com token temporário e validação server-side.
+- O backend mantém Better Auth como núcleo, com `emailAndPassword` habilitado sem regressão do OAuth Google.
+
 Multi-tenancy:
 
 - Isolamento logico forte por usuario/conta.

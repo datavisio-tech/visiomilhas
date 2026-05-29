@@ -1,5 +1,27 @@
 # TODO_AI - Pendências e próximas ações
 
+# 3.7-B — Auth Modal Unification — ✅ COMPLETE
+
+**Status**: ✅ hub de autenticação consolidado em `/sign-in` com fallback por credenciais
+
+**Realizado**:
+
+- ✅ Login Google mantido como fluxo principal
+- ✅ Login com e-mail e senha via modal
+- ✅ Cadastro com e-mail e senha via modal
+- ✅ Recuperação de senha via modal com mensagem não-disclosive
+- ✅ Página `/reset-password` criada com validações de nova senha
+- ✅ Better Auth configurado com `emailAndPassword` e token temporário de reset
+
+**Validação**:
+
+- ✅ `npm run lint`
+- ✅ `npm run typecheck`
+
+**Próxima Ação**:
+
+- Integrar provedor real de envio de e-mail para recuperação (produção), mantendo política de não exposição de identidade
+
 # 3.6-A — Accounts Operational Center — ✅ COMPLETE
 
 **Status**: ✅ refatoração principal implementada, validada e commitada

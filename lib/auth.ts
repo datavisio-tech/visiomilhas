@@ -26,6 +26,23 @@ export const auth: any = (() => {
           clientSecret: betterAuthEnvironment.googleClientSecret,
         },
       },
+      emailAndPassword: {
+        enabled: true,
+        minPasswordLength: 8,
+        resetPasswordTokenExpiresIn: 60 * 60,
+        sendResetPassword: async ({ user }) => {
+          // Email delivery provider can be connected later.
+          // Keep this flow non-disclosive and avoid logging reset tokens/links.
+          reportAuthEvent({
+            level: "info",
+            code: "OAUTH_RUNTIME_STAGING_CHECK",
+            message: "Password reset requested",
+            details: {
+              userId: user.id,
+            },
+          });
+        },
+      },
       advanced: {
         useSecureCookies: true,
         disableCSRFCheck: false,
