@@ -11,15 +11,6 @@ function makeForm(data: Record<string, any>) {
 
 describe("createPurchaseAction (unit)", () => {
   it("flag off -> uses legacy flow and does not call acquireMilesUseCase", async () => {
-    const mockAdmClient = {
-      query: vi.fn(async (sql: string) => {
-        if (sql.includes("SELECT id FROM organizations"))
-          return { rows: [{ id: 1 }] };
-        return { rows: [] };
-      }),
-      release: vi.fn(),
-    };
-
     const mockAppClient = {
       queries: [] as any[],
       query: vi.fn(async (sql: string) => {
@@ -42,7 +33,22 @@ describe("createPurchaseAction (unit)", () => {
     };
 
     const deps = {
-      admPool: () => ({ connect: async () => mockAdmClient }),
+      resolveSessionContext: async () => ({
+        auth: {
+          userId: "user-1",
+          authProvider: "internal",
+          isAuthenticated: true,
+        },
+        ownership: {
+          userId: "user-1",
+          organizationId: 1,
+          ownsAccount: true,
+          ownsOrganizationScope: true,
+        },
+      }),
+      resolveOwnedAccount: vi.fn(async () => ({
+        ownership: { organizationId: 1 },
+      })),
       appPool: () => ({ connect: async () => mockAppClient }),
       isFifoMovementsEngineEnabled: () => false,
       acquireMilesUseCase: vi.fn(),
@@ -66,15 +72,6 @@ describe("createPurchaseAction (unit)", () => {
   });
 
   it("flag on -> calls acquireMilesUseCase and commits after", async () => {
-    const mockAdmClient = {
-      query: vi.fn(async (sql: string) => {
-        if (sql.includes("SELECT id FROM organizations"))
-          return { rows: [{ id: 2 }] };
-        return { rows: [] };
-      }),
-      release: vi.fn(),
-    };
-
     const mockAppClient = {
       queries: [] as any[],
       query: vi.fn(async (sql: string) => {
@@ -101,7 +98,22 @@ describe("createPurchaseAction (unit)", () => {
     });
 
     const deps = {
-      admPool: () => ({ connect: async () => mockAdmClient }),
+      resolveSessionContext: async () => ({
+        auth: {
+          userId: "user-1",
+          authProvider: "internal",
+          isAuthenticated: true,
+        },
+        ownership: {
+          userId: "user-1",
+          organizationId: 2,
+          ownsAccount: true,
+          ownsOrganizationScope: true,
+        },
+      }),
+      resolveOwnedAccount: vi.fn(async () => ({
+        ownership: { organizationId: 2 },
+      })),
       appPool: () => ({ connect: async () => mockAppClient }),
       isFifoMovementsEngineEnabled: () => true,
       acquireMilesUseCase: acquireMock,
@@ -124,15 +136,6 @@ describe("createPurchaseAction (unit)", () => {
   });
 
   it("flag on + use-case throws -> rollback occurs and error propagates", async () => {
-    const mockAdmClient = {
-      query: vi.fn(async (sql: string) => {
-        if (sql.includes("SELECT id FROM organizations"))
-          return { rows: [{ id: 9 }] };
-        return { rows: [] };
-      }),
-      release: vi.fn(),
-    };
-
     const mockAppClient = {
       queries: [] as any[],
       query: vi.fn(async (sql: string) => {
@@ -159,7 +162,22 @@ describe("createPurchaseAction (unit)", () => {
     });
 
     const deps = {
-      admPool: () => ({ connect: async () => mockAdmClient }),
+      resolveSessionContext: async () => ({
+        auth: {
+          userId: "user-1",
+          authProvider: "internal",
+          isAuthenticated: true,
+        },
+        ownership: {
+          userId: "user-1",
+          organizationId: 9,
+          ownsAccount: true,
+          ownsOrganizationScope: true,
+        },
+      }),
+      resolveOwnedAccount: vi.fn(async () => ({
+        ownership: { organizationId: 9 },
+      })),
       appPool: () => ({ connect: async () => mockAppClient }),
       isFifoMovementsEngineEnabled: () => true,
       acquireMilesUseCase: acquireMock,

@@ -1,5 +1,6 @@
 import {
   pgTable,
+  pgEnum,
   serial,
   varchar,
   text,
@@ -8,6 +9,20 @@ import {
   json,
   boolean,
 } from "drizzle-orm/pg-core";
+
+export const campaignTypeEnum = pgEnum("campaign_type", [
+  "POINTS_PER_REAL",
+  "POINTS_PER_DOLLAR",
+  "FIXED_POINTS",
+  "CASHBACK",
+]);
+
+export const campaignStatusEnum = pgEnum("campaign_status", [
+  "ACTIVE",
+  "EXPIRED",
+  "SUSPENDED",
+  "UNKNOWN",
+]);
 
 export const loyalty_programs = pgTable("loyalty_programs", {
   id: serial("id").primaryKey(),
@@ -218,4 +233,113 @@ export const business_contacts = pgTable("business_contacts", {
   notes: text("notes"),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
+});
+
+export const partner_stores = pgTable("partner_stores", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").notNull(),
+  slug: varchar("slug", { length: 255 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  logoUrl: varchar("logo_url", { length: 1024 }),
+  websiteUrl: varchar("website_url", { length: 1024 }),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
+
+export const partner_campaigns = pgTable("partner_campaigns", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").notNull(),
+  partnerStoreId: integer("partner_store_id"),
+  programId: integer("program_id"),
+  programSlug: varchar("program_slug", { length: 255 }),
+  programName: varchar("program_name", { length: 255 }),
+  partnerSlug: varchar("partner_slug", { length: 255 }),
+  partnerName: varchar("partner_name", { length: 255 }),
+  logoUrl: varchar("logo_url", { length: 1024 }),
+  campaignTitle: varchar("campaign_title", { length: 255 }),
+  campaignUrl: varchar("campaign_url", { length: 1024 }),
+  countryCode: varchar("country_code", { length: 10 }),
+  campaignType: campaignTypeEnum("campaign_type"),
+  pointsPerReal: integer("points_per_real"),
+  pointsPerDollar: integer("points_per_dollar"),
+  minimumPurchaseAmount: integer("minimum_purchase_amount"),
+  couponCode: varchar("coupon_code", { length: 255 }),
+  requiresClub: boolean("requires_club").notNull().default(false),
+  creditDeadlineDays: integer("credit_deadline_days"),
+  campaignStartDate: timestamp("campaign_start_date"),
+  campaignEndDate: timestamp("campaign_end_date"),
+  scrapedAt: timestamp("scraped_at"),
+  lastVerifiedAt: timestamp("last_verified_at"),
+  campaignStatus: campaignStatusEnum("campaign_status")
+    .notNull()
+    .default("UNKNOWN"),
+  sourceType: varchar("source_type", { length: 100 }),
+  sourceName: varchar("source_name", { length: 255 }),
+  isFeatured: boolean("is_featured").notNull().default(false),
+  title: varchar("title", { length: 255 }).notNull(),
+  multiplier: integer("multiplier").notNull().default(0),
+  multiplierType: varchar("multiplier_type", { length: 50 })
+    .notNull()
+    .default("points_per_real"),
+  startsAt: timestamp("starts_at"),
+  endsAt: timestamp("ends_at"),
+  sourceUrl: varchar("source_url", { length: 1024 }),
+  observedAt: timestamp("observed_at"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
+
+export const campaign_snapshots = pgTable("campaign_snapshots", {
+  id: serial("id").primaryKey(),
+  campaignId: integer("campaign_id").notNull(),
+  pointsPerReal: integer("points_per_real"),
+  campaignStatus: campaignStatusEnum("campaign_status")
+    .notNull()
+    .default("UNKNOWN"),
+  capturedAt: timestamp("captured_at").notNull(),
+  rawPayload: json("raw_payload").notNull(),
+});
+
+export const purchase_records = pgTable("purchase_records", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").notNull(),
+  accountId: integer("account_id"),
+  programId: integer("program_id"),
+  partnerStoreId: integer("partner_store_id"),
+  partnerCampaignId: integer("partner_campaign_id"),
+  title: varchar("title", { length: 255 }),
+  orderNumber: varchar("order_number", { length: 255 }),
+  purchaseDate: timestamp("purchase_date"),
+  purchaseAmountCents: integer("purchase_amount_cents"),
+  freightCents: integer("freight_cents"),
+  otherCostsCents: integer("other_costs_cents"),
+  expectedPoints: integer("expected_points"),
+  creditedPoints: integer("credited_points"),
+  multiplier: integer("multiplier"),
+  status: varchar("status", { length: 50 }).notNull().default("PENDING"),
+  expectedCreditDate: timestamp("expected_credit_date"),
+  creditedAt: timestamp("credited_at"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
+
+export const purchase_status_history = pgTable("purchase_status_history", {
+  id: serial("id").primaryKey(),
+  purchaseId: integer("purchase_id").notNull(),
+  oldStatus: varchar("old_status", { length: 50 }),
+  newStatus: varchar("new_status", { length: 50 }).notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull(),
+});
+
+export const purchase_evidences = pgTable("purchase_evidences", {
+  id: serial("id").primaryKey(),
+  purchaseId: integer("purchase_id").notNull(),
+  fileName: varchar("file_name", { length: 1024 }),
+  fileType: varchar("file_type", { length: 255 }),
+  fileUrl: varchar("file_url", { length: 2048 }),
+  uploadedAt: timestamp("uploaded_at"),
 });

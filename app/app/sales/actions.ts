@@ -1,31 +1,67 @@
-"use server";
 import { createSaleSchema } from "../../../lib/validations/sales";
 import { appPool } from "../../../db/app/client";
-import { admPool } from "../../../db/adm/client";
 import { calculateSaleImpact } from "../../../lib/domain/miles-calculations";
 import { revalidatePath } from "next/cache";
 import { isFifoMovementsEngineEnabled } from "../../../lib/featureFlags";
 import { consumeMilesUseCase } from "../../../lib/services/movements.use-cases";
+import { createDrizzleMovementsRepoFromClient } from "../../../lib/repositories/movements.drizzle-repo";
+import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
+import {
+  AuthContextError,
+  requireAuth,
+} from "../../../lib/server/auth-context";
+import { reportAuthEvent } from "../../../lib/server/auth-observability";
+import {
+  ensureNoDuplicateSale,
+  validateFinancialIntegrity,
+} from "../../../lib/server/financial-integrity";
+import { resolveOwnedAccount } from "../../../lib/server/ownership-resolvers";
+import { type SessionContextResolver } from "../../../lib/server/controlled-session";
 
-export async function createSaleAction(formData: FormData) {
+type Deps = {
+  appPool?: any;
+  resolveSessionContext?: SessionContextResolver;
+  resolveOwnedAccount?: typeof resolveOwnedAccount;
+  revalidatePath?: typeof revalidatePath;
+  isFifoMovementsEngineEnabled?: typeof isFifoMovementsEngineEnabled;
+  consumeMilesUseCase?: typeof consumeMilesUseCase;
+};
+
+export async function createSaleAction(formData: FormData, deps: Deps = {}) {
   const parsed = createSaleSchema.safeParse(
     Object.fromEntries(formData.entries()),
   );
   if (!parsed.success)
     return { success: false, errors: parsed.error.flatten() };
   const input = parsed.data;
+  const sessionContext = await (
+    deps.resolveSessionContext ?? resolveControlledSessionContext
+  )({
+    accountId: input.accountId,
+    source: "sale.action",
+  });
 
-  const admClient = await admPool().connect();
+  if (!sessionContext) {
+    reportAuthEvent({
+      level: "warn",
+      code: "UNAUTHENTICATED",
+      message: "Sale action rejected before ownership check",
+      details: { accountId: input.accountId },
+    });
+    return { success: false, error: "authentication required" };
+  }
+
   try {
-    const orgRes = await admClient.query(
-      `SELECT id FROM organizations WHERE slug = $1 LIMIT 1`,
-      [input.orgSlug ?? "demo-visiomilhas"],
-    );
-    if (!orgRes.rows.length)
-      return { success: false, error: "organization not found" };
-    const orgId = orgRes.rows[0].id;
+    const auth = requireAuth(sessionContext.auth);
+    const resolveOwnedAccountFn = deps.resolveOwnedAccount ?? resolveOwnedAccount;
+    const ownedAccount = await resolveOwnedAccountFn(auth, input.accountId);
+    const orgId = ownedAccount.ownership.organizationId;
 
-    const pool = appPool();
+    if (orgId === null || orgId === undefined) {
+      return { success: false, error: "organization not found" };
+    }
+
+    const pool = (deps.appPool ?? appPool)();
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
@@ -48,6 +84,21 @@ export async function createSaleAction(formData: FormData) {
 
       const now = input.soldAt ? new Date(input.soldAt) : new Date();
 
+      if (
+        await ensureNoDuplicateSale(client, {
+          organizationId: orgId,
+          accountId: input.accountId,
+          points: Number(input.points),
+          totalAmountCents: Number(input.totalAmountCents),
+          soldAt: now,
+          description: input.description || null,
+          customerName: input.customerName || null,
+        })
+      ) {
+        await client.query("ROLLBACK");
+        return { success: false, error: "duplicate operation blocked" };
+      }
+
       const insertSale = await client.query(
         `INSERT INTO mile_sales (organization_id, program_id, account_id, customer_name, points, revenue_cents, profit_cents, sold_at, status, description, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,NOW(),NOW()) RETURNING id`,
         [
@@ -64,18 +115,18 @@ export async function createSaleAction(formData: FormData) {
         ],
       );
 
-      if (isFifoMovementsEngineEnabled()) {
-        // insert sale and commit cost/revenue info, let movements engine
-        // handle entries and balance update
-        await client.query("COMMIT");
+      if ((deps.isFifoMovementsEngineEnabled ?? isFifoMovementsEngineEnabled)()) {
+        const txRepo = createDrizzleMovementsRepoFromClient(client);
 
-        await consumeMilesUseCase({
+        await (deps.consumeMilesUseCase ?? consumeMilesUseCase)({
           organizationId: orgId,
           accountId: input.accountId,
           amount: Number(input.points),
           description: input.description || undefined,
           occurredAt: now,
-        });
+        }, txRepo);
+
+        await client.query("COMMIT");
       } else {
         await client.query(
           `INSERT INTO mile_entries (organization_id, program_id, account_id, type, direction, points, amount_cents, cost_basis_cents, occurred_at, status, description, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,NOW(),NOW())`,
@@ -102,25 +153,59 @@ export async function createSaleAction(formData: FormData) {
         await client.query("COMMIT");
       }
 
-      revalidatePath("/app/dashboard");
-      revalidatePath("/app/accounts");
-      revalidatePath("/app/entries");
-      revalidatePath("/app/sales");
+      await validateFinancialIntegrity(client, {
+        organizationId: orgId,
+        accountId: input.accountId,
+        source: "sale.action",
+        emitEvents: true,
+      });
+
+      (deps.revalidatePath ?? revalidatePath)("/app/dashboard");
+      (deps.revalidatePath ?? revalidatePath)("/app/accounts");
+      (deps.revalidatePath ?? revalidatePath)("/app/entries");
+      (deps.revalidatePath ?? revalidatePath)("/app/sales");
 
       return {
         success: true,
         saleId: insertSale.rows[0].id,
+        previousBalance: Number(acc.current_points_balance || 0),
         newBalance: impact.newBalance,
+        pointsSold: Number(input.points),
+        totalAmountCents: Number(input.totalAmountCents),
+        costBaseCents: impact.costBaseCents,
+        profitCents: impact.profitCents,
+        currentCpmCents: Number(acc.current_avg_cost_per_thousand_cents || 0),
       };
-    } catch (err: any) {
+    } catch (error) {
       await client.query("ROLLBACK");
-      throw err;
+      throw error;
     } finally {
       client.release();
     }
-  } finally {
-    admClient.release();
+  } catch (error) {
+    if (error instanceof AuthContextError) {
+      reportAuthEvent({
+        level: "warn",
+        code: error.code === "FORBIDDEN" ? "FORBIDDEN" : "UNAUTHENTICATED",
+        message: `Sale action blocked: ${error.message}`,
+        details: {
+          accountId: input.accountId,
+          status: error.status,
+        },
+      });
+      return { success: false, error: error.message };
+    }
+
+    throw error;
   }
 }
 
-export default createSaleAction;
+// Server Action wrapper: keep the implementation testable (named export)
+// and provide a thin server action default export that Next will proxy.
+export default async function createSaleActionServer(
+  formData: FormData,
+  deps: Deps = {},
+) {
+  "use server";
+  return createSaleAction(formData, deps);
+}

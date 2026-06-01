@@ -1,0 +1,178 @@
+graph:
+  name: IA-1st Engine Execution Graph
+  version: 1.0.0
+  acyclic: true
+  intake_rule: accept tasks only after registry and dependency validation are loaded
+
+stages:
+  - name: bootstrap
+    nodes:
+      - ia1st-orchestrator
+      - ia-1st-orchestrator
+    outputs:
+      - agent-registry.yaml
+      - execution-graph.yaml
+
+  - name: discovery
+    nodes:
+      - environment-discovery
+      - project-discovery
+      - business-discovery
+      - ui-discovery
+      - architecture-discovery
+      - data-model-discovery
+      - integration-discovery
+      - legacy-knowledge-discovery
+      - security-discovery
+      - infrastructure-discovery
+      - quality-discovery
+    edges:
+      - from: environment-discovery
+        to: project-discovery
+      - from: project-discovery
+        to: business-discovery
+      - from: project-discovery
+        to: ui-discovery
+      - from: project-discovery
+        to: architecture-discovery
+      - from: project-discovery
+        to: data-model-discovery
+      - from: project-discovery
+        to: integration-discovery
+      - from: project-discovery
+        to: legacy-knowledge-discovery
+      - from: project-discovery
+        to: security-discovery
+      - from: project-discovery
+        to: infrastructure-discovery
+      - from: project-discovery
+        to: quality-discovery
+
+  - name: planning
+    nodes:
+      - modernization-planning
+      - target-architecture
+    edges:
+      - from: business-discovery
+        to: modernization-planning
+      - from: ui-discovery
+        to: modernization-planning
+      - from: architecture-discovery
+        to: modernization-planning
+      - from: data-model-discovery
+        to: modernization-planning
+      - from: integration-discovery
+        to: modernization-planning
+      - from: legacy-knowledge-discovery
+        to: modernization-planning
+      - from: security-discovery
+        to: modernization-planning
+      - from: infrastructure-discovery
+        to: modernization-planning
+      - from: quality-discovery
+        to: modernization-planning
+      - from: modernization-planning
+        to: target-architecture
+
+  - name: implementation
+    nodes:
+      - implementation-orchestrator
+      - backend-modernization
+      - frontend-modernization
+      - database-migration
+      - integration-modernization
+    edges:
+      - from: target-architecture
+        to: implementation-orchestrator
+      - from: implementation-orchestrator
+        to: backend-modernization
+      - from: implementation-orchestrator
+        to: frontend-modernization
+      - from: implementation-orchestrator
+        to: database-migration
+      - from: implementation-orchestrator
+        to: integration-modernization
+
+  - name: validation
+    nodes:
+      - test-architecture
+      - automated-testing
+      - code-review
+      - security-review
+    edges:
+      - from: target-architecture
+        to: test-architecture
+      - from: modernization-planning
+        to: test-architecture
+      - from: security-discovery
+        to: test-architecture
+      - from: business-discovery
+        to: test-architecture
+      - from: test-architecture
+        to: automated-testing
+      - from: implementation-orchestrator
+        to: automated-testing
+      - from: automated-testing
+        to: code-review
+      - from: target-architecture
+        to: code-review
+      - from: implementation-orchestrator
+        to: security-review
+      - from: security-discovery
+        to: security-review
+      - from: automated-testing
+        to: security-review
+
+  - name: operations
+    nodes:
+      - deployment
+      - observability
+      - performance-optimization
+    edges:
+      - from: implementation-orchestrator
+        to: deployment
+      - from: code-review
+        to: deployment
+      - from: security-review
+        to: deployment
+      - from: automated-testing
+        to: deployment
+      - from: target-architecture
+        to: observability
+      - from: infrastructure-discovery
+        to: observability
+      - from: deployment
+        to: observability
+      - from: observability
+        to: performance-optimization
+      - from: deployment
+        to: performance-optimization
+      - from: target-architecture
+        to: performance-optimization
+
+  - name: governance
+    nodes:
+      - governance
+    edges:
+      - from: agent-registry.yaml
+        to: governance
+      - from: governance_policy.yaml
+        to: governance
+      - from: release_policy.yaml
+        to: governance
+      - from: autopilot_policy.yaml
+        to: governance
+      - from: prompt-routing-protocol.yaml
+        to: governance
+      - from: all_agent_definitions
+        to: governance
+
+validation:
+  no_cycles_detected: true
+  accepted_intake_after_validation: true
+  blocked_policies:
+    - artifact_registry.yaml
+    - governance_policy.yaml
+    - release_policy.yaml
+    - autopilot_policy.yaml
+    - prompt-routing-protocol.yaml

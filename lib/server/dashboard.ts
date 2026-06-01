@@ -1,6 +1,7 @@
 import { appPool } from "../../db/app/client";
-import { admPool } from "../../db/adm/client";
 import { isMissingRelationError } from "../data/db-errors";
+import { resolveReadScope } from "./read-scope";
+import { type SessionContext } from "./auth-context";
 
 type Metrics = {
   totalBalance: number;
@@ -8,43 +9,38 @@ type Metrics = {
   pointsToReceive: number;
 };
 
+export type RevenueTrendPoint = {
+  name: string;
+  revenueCents: number;
+  profitCents: number;
+};
+
+export type RevenueSnapshot = {
+  totalRevenueCents: number;
+  totalProfitCents: number;
+  trendLabel: string;
+  points: RevenueTrendPoint[];
+};
+
 export async function getMetrics(
-  orgSlug = "demo-visiomilhas",
+  sessionContext?: SessionContext | null,
 ): Promise<Metrics> {
-  // Resolve organization id from ADM database, then query APP database for metrics
-  const admClient = await admPool().connect();
-  let orgId: any = null;
-  try {
-    const orgRes = await admClient.query(
-      `SELECT id FROM organizations WHERE slug = $1 LIMIT 1`,
-      [orgSlug],
-    );
-    if (!orgRes.rows.length)
-      return { totalBalance: 0, avgCpmCents: 0, pointsToReceive: 0 };
-    orgId = orgRes.rows[0].id;
-  } catch (err: any) {
-    if (isMissingRelationError(err)) {
-      return { totalBalance: 0, avgCpmCents: 0, pointsToReceive: 0 };
-    }
-    throw err;
-  } finally {
-    admClient.release();
-  }
+  const { organizationId } = await resolveReadScope(sessionContext);
 
   const pool = appPool();
   const client = await pool.connect();
   try {
     const totalRes = await client.query(
       `SELECT COALESCE(SUM(current_points_balance)::bigint,0) as total FROM program_accounts WHERE organization_id = $1`,
-      [orgId],
+      [organizationId],
     );
     const avgRes = await client.query(
       `SELECT COALESCE(AVG(current_avg_cost_per_thousand_cents)::int,0) as avg FROM program_accounts WHERE organization_id = $1`,
-      [orgId],
+      [organizationId],
     );
     const pendingRes = await client.query(
       `SELECT COALESCE(SUM(points)::bigint,0) as pending FROM mile_entries WHERE organization_id = $1 AND status != 'posted'`,
-      [orgId],
+      [organizationId],
     );
 
     return {
@@ -57,75 +53,143 @@ export async function getMetrics(
   }
 }
 
-export async function getRecentEntries(orgSlug = "demo-visiomilhas") {
-  const admClient = await admPool().connect();
+function formatMonthLabel(value: Date) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    month: "short",
+  })
+    .format(value)
+    .replace(".", "")
+    .replace(/^./, (char) => char.toUpperCase());
+}
+
+function formatTrendLabel(previousProfit: number, currentProfit: number) {
+  if (previousProfit === 0) {
+    if (currentProfit === 0) return "Sem tendência";
+    return "Sem base anterior";
+  }
+
+  const delta = ((currentProfit - previousProfit) / Math.abs(previousProfit)) * 100;
+  const rounded = delta.toFixed(1);
+  return `${delta >= 0 ? "+" : ""}${rounded}%`;
+}
+
+export async function getRevenueSnapshot(
+  sessionContext?: SessionContext | null,
+  months = 6,
+): Promise<RevenueSnapshot> {
+  const { organizationId } = await resolveReadScope(sessionContext);
+
+  const pool = appPool();
+  const client = await pool.connect();
   try {
-    const orgRes = await admClient.query(
-      `SELECT id FROM organizations WHERE slug = $1 LIMIT 1`,
-      [orgSlug],
+    const summaryRes = await client.query(
+      `
+      SELECT
+        COALESCE(SUM(revenue_cents)::bigint, 0) AS revenue_total,
+        COALESCE(SUM(profit_cents)::bigint, 0) AS profit_total
+      FROM mile_sales
+      WHERE organization_id = $1
+        AND status = 'completed'
+    `,
+      [organizationId],
     );
-    if (!orgRes.rows.length) return [];
-    const orgId = orgRes.rows[0].id;
-    const pool = appPool();
-    const client = await pool.connect();
-    try {
-      const res = await client.query(
-        `SELECT me.id, me.points, me.description, me.occurred_at::text as occurred_at, me.status FROM mile_entries me WHERE me.organization_id = $1 ORDER BY me.occurred_at DESC LIMIT 5`,
-        [orgId],
-      );
-      return res.rows.map((r: any) => ({
-        id: r.id,
-        points: Number(r.points),
-        description: r.description,
-        date: r.occurred_at,
-        status: r.status,
-      }));
-    } finally {
-      client.release();
-    }
-  } catch (err: any) {
-    if (isMissingRelationError(err)) {
-      return [];
-    }
-    throw err;
+
+    const trendRes = await client.query(
+      `
+      SELECT
+        date_trunc('month', sold_at) AS month_bucket,
+        COALESCE(SUM(revenue_cents)::bigint, 0) AS revenue_total,
+        COALESCE(SUM(profit_cents)::bigint, 0) AS profit_total
+      FROM mile_sales
+      WHERE organization_id = $1
+        AND status = 'completed'
+        AND sold_at IS NOT NULL
+      GROUP BY 1
+      ORDER BY 1 DESC
+      LIMIT $2
+    `,
+      [organizationId, months],
+    );
+
+    const points = trendRes.rows
+      .slice()
+      .reverse()
+      .map((row: any) => {
+        const month = new Date(row.month_bucket);
+        return {
+          name: formatMonthLabel(month),
+          revenueCents: Number(row.revenue_total || 0),
+          profitCents: Number(row.profit_total || 0),
+        };
+      });
+
+    const latest = points[points.length - 1];
+    const previous = points[points.length - 2];
+
+    return {
+      totalRevenueCents: Number(summaryRes.rows[0]?.revenue_total || 0),
+      totalProfitCents: Number(summaryRes.rows[0]?.profit_total || 0),
+      trendLabel: latest && previous
+        ? formatTrendLabel(previous.profitCents, latest.profitCents)
+        : "Sem tendência",
+      points,
+    };
   } finally {
-    admClient.release();
+    client.release();
   }
 }
 
-export async function getRecentPurchases(orgSlug = "demo-visiomilhas") {
-  const admClient = await admPool().connect();
+export async function getRecentEntries(sessionContext?: SessionContext | null) {
+  const { organizationId } = await resolveReadScope(sessionContext);
+  const pool = appPool();
+  const client = await pool.connect();
   try {
-    const orgRes = await admClient.query(
-      `SELECT id FROM organizations WHERE slug = $1 LIMIT 1`,
-      [orgSlug],
+    const res = await client.query(
+      `SELECT me.id, me.points, me.description, me.occurred_at::text as occurred_at, me.status FROM mile_entries me WHERE me.organization_id = $1 ORDER BY me.occurred_at DESC LIMIT 5`,
+      [organizationId],
     );
-    if (!orgRes.rows.length) return [];
-    const orgId = orgRes.rows[0].id;
-
-    const pool = appPool();
-    const client = await pool.connect();
-    try {
-      const res = await client.query(
-        `SELECT id, points, amount_cents, status FROM mile_purchases WHERE organization_id = $1 ORDER BY purchased_at DESC LIMIT 5`,
-        [orgId],
-      );
-      return res.rows.map((r: any) => ({
-        id: r.id,
-        points: Number(r.points),
-        valueCents: Number(r.amount_cents),
-        status: r.status,
-      }));
-    } finally {
-      client.release();
-    }
+    return res.rows.map((r: any) => ({
+      id: r.id,
+      points: Number(r.points),
+      description: r.description,
+      date: r.occurred_at,
+      status: r.status,
+    }));
   } catch (err: any) {
     if (isMissingRelationError(err)) {
       return [];
     }
     throw err;
   } finally {
-    admClient.release();
+    client.release();
+  }
+}
+
+export async function getRecentPurchases(
+  sessionContext?: SessionContext | null,
+) {
+  const { organizationId } = await resolveReadScope(sessionContext);
+
+  const pool = appPool();
+  const client = await pool.connect();
+  try {
+    const res = await client.query(
+      `SELECT id, points, amount_cents, status FROM mile_purchases WHERE organization_id = $1 ORDER BY purchased_at DESC LIMIT 5`,
+      [organizationId],
+    );
+    return res.rows.map((r: any) => ({
+      id: r.id,
+      points: Number(r.points),
+      valueCents: Number(r.amount_cents),
+      status: r.status,
+    }));
+  } catch (err: any) {
+    if (isMissingRelationError(err)) {
+      return [];
+    }
+    throw err;
+  } finally {
+    client.release();
   }
 }
 

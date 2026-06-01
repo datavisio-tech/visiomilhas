@@ -1,3 +1,89 @@
+# IMPLEMENTATION_PLAN - MVP1 (VisioMilhas)
+
+## 4.3-C — Campaign Catalog Engine
+
+- Criar o domínio `src/modules/campaigns` com contratos, engine, providers e UI de preparação para futuro autofill.
+- Consolidar o schema APP com `CampaignType`, `CampaignStatus`, `partner_campaigns` estendido e `campaign_snapshots`.
+- Manter o seed inicial em `db/seed/campaigns-seed.json` com exemplos de campanhas parceiras e atualização idempotente.
+- Não implementar scraping automático nesta release; os providers permanecem vazios para receber a integração depois.
+- Validar o conjunto com `npm run lint`, `npm run typecheck` e `git diff --check` antes do fechamento.
+
+## 4.3-B.2.A — Purchases Cockpit Operacional Completo
+
+- Transformar `Purchases` em cockpit Kanban operacional com colunas `REGISTERED`, `TRACKED`, `PENDING_CREDIT`, `RECEIVED` e `PROBLEM`.
+- Priorizar drag & drop com persistência via `POST /api/purchases/change-status`.
+- Manter tabela como visualização secundária e abrir drawer de timeline/auditoria nos cards.
+- Garantir que `RECEIVED` gere `PURCHASE_BONUS` de forma idempotente.
+- Validar a jornada MCP completa com `npm run purchases -- emailteste01` no runtime real.
+
+## 4.2-B — Programs Operational Cockpit
+
+- Separar Programs em `src/modules/programs` com camadas de domínio, aplicação, infraestrutura e apresentação.
+- Transformar `/app/programs` em cockpit operacional com header da conta, ações rápidas, abas, extrato, gráficos por período e sidebar contextual.
+- Preservar o estado operacional na URL com `accountId`, `tab` e `period`.
+- Reutilizar os formulários existentes em diálogos contextuais ao invés de duplicar fluxos de operação.
+- Validar o fluxo completo no runtime real com Chrome DevTools MCP antes de considerar a etapa fechada.
+
+### 4.2-B.1 — Programs UX Refinement (Plano de implementação)
+
+- Ajustar header: reduzir altura, compactar tipografia e espaçamentos, incluir breadcrumb e ação `Trocar conta`.
+- Mover `AccountOperationalSelector` para dentro do header (modo compacto) e remover cartão separado.
+- Remover KPIs duplicados: manter visão executiva no header e indicadores operacionais em `ProgramKPIs` nos cards.
+- Reorganizar aba `Resumo` para apresentar `ProgramKPIs`, `TransactionTable` (extrato resumido) e depois `ProgramChart`.
+- Substituir `ProgramTimeline` pela `TransactionTable` em toda a UI onde timeline era usada.
+- Implementar sidebar direita sticky com cards compactos para `Conta`, `Pendências` e `Assinaturas`.
+- Revisar responsividade para larguras 1920/1440/1366 e tablet garantindo header + KPIs + extrato sem rolagem inicial.
+- Abrir PR menor com as mudanças visuais, rodar CI (lint/typecheck) e executar `npm run programs:test -- emailteste01` para validar runtime.
+- Ajuste em andamento: o header foi condensado e os cards operacionais agora priorizam resultado, pendências e fluxo do período, enquanto a sidebar passa a refletir estado, pendências e assinaturas em blocos compactos.
+
+# IMPLEMENTATION_PLAN - MVP1 (VisioMilhas)
+
+Fase 2.4-K: SaaS Access & Subscription Enforcement
+
+- Criar `SubscriptionAccessContext` server-side separado de auth, ownership e read scope.
+- Preservar a separacao arquitetural: dados administrativos SaaS no `SAAS_DB=controle_adm_saas_datavisio` e dados operacionais no `APP_DB=visiomilhas_app`.
+- Implementar gating server-side com estados `ACTIVE`, `TRIAL`, `NO_SUBSCRIPTION`, `CANCELED` e `SUSPENDED`.
+- Criar `/subscribe` como etapa obrigatoria do fluxo para usuarios sem acesso comercial valido.
+- Expandir observabilidade com subscription access granted/blocked/redirect, trial active e suspended.
+- Evitar Stripe real, checkout real, RBAC complexo, middleware global e breaking changes de schema operacional.
+
+Fase 2.4-L: Commercial Trial Activation Runtime
+
+- Criar `activateTrialForOrganization()` server-side com persistencia comercial.
+- Adicionar endpoint `/api/subscription/activate-trial` para ativacao de trial.
+- Persistir `access_state`, `activated_at`, `trial_started_at`, `trial_expires_at`, `plan_type` e `tenant_state` no SAAS_DB.
+- Atualizar `/subscribe` com CTA para ativar trial e redirecionar para `/app/dashboard`.
+- Manter gating server-side e observar estados `TRIAL`, `ACTIVE`, `EXPIRED`, `CANCELED`, `SUSPENDED`.
+
+Fase 2.2-F: Transitional Surface Cleanup
+
+- Evitar middleware global, RBAC, ACL, permission framework, auth rewrite e big bang migration.
+
+Fase 2.2-G: Transitional Finalization & Recovery-Only Fallback
+
+- Tornar o fallback recovery-only explícito no boundary de leitura e manter o runtime normal hardened.
+- Consolidar Better Auth nas últimas superfícies de leitura estáveis.
+- Monitorar hotspots e fallback near-zero com `auth-observability.ts` e a matriz operacional.
+- Classificar superfícies como transitional, stabilized e hardened com base em uso real.
+- Preservar o fake adapter para dev/test/recovery, sem permitir uso silencioso em runtime normal.
+- Evitar middleware global, RBAC, ACL, permission framework, auth rewrite e big bang migration.
+
+Fase 2.2-I: AI Knowledge & Skill Consolidation
+
+- Consolidar a hierarquia oficial entre docs, specs, skills e agents sem criar arquitetura paralela em `.claude`.
+- Atualizar o operating model para deixar claro o que pertence a contexto, contrato, especializacao operacional e orchestration.
+- Sincronizar skills e agents com as specs oficiais quando houver sobreposicao de responsabilidade.
+- Detectar drift por duplicacao, conflito ou regra antiga que contradiz o boundary oficial.
+- Evitar framework de agentes, orchestration engine ou runtime IA.
+
+Fase 2.2-J: AI Governance Versioning
+
+- Consolidar `AI_OPERATING_MODEL_VERSION=2.2-I` como baseline oficial ativa.
+- Versionar skills e agents com metadados simples de compatibilidade e status operacional.
+- Criar matriz de compatibilidade entre operating model, skills, agents e governança de auth/recovery/ownership.
+- Documentar regras de drift e quando bump de versão é obrigatório.
+- Evitar semver complexo, compatibilidade automática ou tooling pesado.
+
 ## 1.3.34.3 — reindex do workflow manual por novo filename
 
 - O workflow manual de produção foi renomeado para `production-deploy-manual.yml`.
@@ -11,6 +97,171 @@
 - A confirmação textual `DEPLOY` passou a ser exigida logo após o checkout, antes de qualquer SSH/sync.
 - A estratégia de tag atual foi preservada para evitar complexidade desnecessária.
 - Próximo passo: publicar a correção em PR e somente depois considerar o primeiro dispatch controlado.
+
+## 2.3-C — Initial User Onboarding Flow
+
+- Implementar `/onboarding` com server action para provisionamento idempotente de organização pessoal (adm DB) e recursos iniciais no app DB (program + account).
+- Integrar provisionamento não-blocking na resolução de sessão e redirecionamentos server-side quando usuário autenticado não possui organização.
+- Não aplicar migrations nem alterar infra; tudo deve usar tabelas existentes e ser idempotente.
+
+## 2.3-D — Onboarding Telemetry & Auth Flow Stabilization
+
+- Instrumentar `auth-observability` com eventos mínimos de onboarding (`started`, `completed`, `failed`).
+- Consolidar UX operacional de onboarding com loading, erro amigável e retry seguro.
+- Reduzir risco operacional: guards simples, deduplicação incremental e validações server-side.
+- Preparar staging real documentando readiness onboarding/auth/OAuth/observability/deploy sem alterar infraestrutura.
+
+## 2.3-E — Staging Validation & OAuth Runtime Hardening
+
+- Validar staging real com Google OAuth, callback, logout, refresh e retry onboarding.
+- Reduzir duplicidade e race conditions por guards incrementais e slug determinístico por usuário.
+- Expandir observabilidade de auth/onboarding para callback failures, redirect loops e recovery flows.
+- Classificar readiness em stable, transitional e recovery-only antes do primeiro rollout controlado.
+
+## 2.3-G — First Real Staging Validation & OAuth Operational Audit
+
+- Validar staging real com Google OAuth, callback, sessão, logout, refresh e retry onboarding sem regressão.
+- Auditar runtime OAuth com metadata operacional expandida (`runtimeState`, `retryState`, `recoveryState`, `flowStage`, `environmentTag`).
+- Consolidar checklist pré-deploy controlado para primeiros usuários de teste.
+- Não alterar infraestrutura, deploy, middleware, billing ou arquitetura nova.
+
+## 2.4-A — Controlled Real Staging Rollout
+
+- Executar rollout controlado real com usuário de teste, validando Google OAuth, callback, sessão, logout, refresh e onboarding.
+- Observar runtime OAuth com browser context, environment tag, retry/recovery state e duplicate prevention.
+- Consolidar checklist do primeiro deploy controlado e observar hotspots antes de ampliar acesso.
+- Evitar qualquer mudança estrutural em deploy, infraestrutura, middleware ou auth rewrite.
+
+## 2.4-B — Real Interface Validation & Browser Runtime Audit
+
+- Validar visualmente home, sign-in, callback, dashboard, onboarding, logout e reload no navegador.
+- Corrigir apenas o que quebrar a navegação browser-first, com loading/error states explícitos.
+- Manter Better Auth dominante e o fallback recovery-only preservado.
+- Evitar redesign, middleware global, infraestrutura, RBAC e mudanças de contrato além da entrada pública de sign-in.
+
+## 2.4-D — Better Auth Bootstrap Guard & Operational Recovery
+
+- Implementar guard mínimo em `lib/auth.ts` para capturar falhas de bootstrap sem lançar durante import.
+- Ajustar `app/api/auth/[...all]/route.ts` para responder JSON 503 controlado quando o auth estiver indisponivel.
+- Expandir `lib/server/auth-observability.ts` com códigos de evento: `AUTH_BOOTSTRAP_FAILED`, `AUTH_ENV_INVALID`, `OAUTH_RUNTIME_ERROR`.
+- Validar browser flows localmente e em staging após provisionar variaveis de ambiente.
+
+Critérios de aceite:
+
+- Runtime não gera mais 500 vazio.
+- Falhas de bootstrap viram estado operacional explícito e evento de telemetria.
+- Better Auth continua dominante quando envs corretos estiverem presentes.
+
+## 2.4-E — Better Auth Drizzle Adapter Runtime Fix
+
+- Implementar schema mínimo para o adapter Drizzle e anexá-lo ao cliente admin.
+- Validar que o adapter não lança `model "verification" not found`.
+- Passar schema explicitamente ao `drizzleAdapter` como medida redundante.
+- Executar validação ponta-a-ponta de OAuth em staging real após migrations.
+
+## 2.4-F — Better Auth Database Provisioning & OAuth Persistence
+
+- Criar migration ADM para tabelas `ba_users`, `ba_sessions`, `ba_accounts`, `ba_verification`.
+- Aplicar migration em staging e validar persistência real do OAuth.
+- Confirmar login, callback, logout, refresh e reopen no browser sem loops.
+- Ajustar Google Console se necessário evitar `redirect_uri_mismatch`.
+
+## 2.4-H — Session 3 — Better Auth Drizzle Schema Alignment
+
+- Alinhar o schema lógico exportado para Better Auth com os nomes esperados pelo adapter: `user`, `session`, `account`, `verification`.
+- Preservar as tabelas físicas existentes (`ba_users`, `ba_sessions`, `ba_accounts`, `ba_verification`) sem alterar migration, ownership ou arquitetura.
+- Consumir o namespace do schema diretamente em `lib/auth.ts` e manter compatibilidade no client Drizzle administrativo.
+- Revalidar lint, typecheck, testes e diff-check após o ajuste.
+- Tentar novamente o fluxo OAuth real apenas se houver credencial Google válida disponível; caso contrário, registrar o bloqueio externo sem mascarar o estado do runtime.
+
+## 2.4-I — Onboarding Runtime Consistency Hardening
+
+- Hidratar `organizationId` no `SessionContext` quando o onboarding já tiver provisionado ownership.
+- Tornar `resolveReadScope()` onboarding-aware, redirecionando para `/app/onboarding` quando a organização ainda não existir.
+- Adicionar boundary explícito no dashboard para evitar crash e registrar telemetria operacional antes do redirect.
+- Expandir observabilidade para registrar estado de onboarding, recovery, ownership, browser context e session lifecycle.
+- Revalidar browser runtime sem alterar auth, banco, Docker, deploy, RBAC ou arquitetura.
+
+## 2.4-J — Session Lifecycle & Onboarding Hardening
+
+- Substituir logout manual por `authClient.signOut()` para usar o contrato oficial do Better Auth.
+- Registrar sucesso/falha de logout e invalidação de sessão no handler de auth.
+- Instrumentar session restore, refresh e browser reopen como parte do lifecycle operacional.
+- Manter o boundary onboarding-aware e recovery-aware sem alterar banco, deploy, arquitetura ou UX estrutural.
+- Revalidar ciclo login → onboarding → dashboard → logout → refresh → reopen quando houver sessão Google válida no browser.
+
+## 2.4-G — Real Google OAuth Staging Stabilization & Observability Expansion
+
+Objetivo: Resolver bloqueador de OAuth e estabilizar callback ponta-a-ponta.
+
+Status: ✅ Parcialmente Completo (bloqueador identificado, em espera de Google Console update)
+
+Itens Concluídos:
+
+- ✅ Database: Confirmado 4 tabelas Better Auth em ADM
+- ✅ Runtime: Callback URI gerado corretamente (`http://localhost:3000/api/auth/callback/google`)
+- ✅ Observabilidade: 3 novos event codes (OAUTH_REDIRECT_URI_MISMATCH, OAUTH_CALLBACK_SUCCESS, SESSION_PERSISTENCE_CONFIRMED)
+- ✅ Error Detection: Melhorada detecção de `redirect_uri_mismatch` na rota
+- ✅ Environment Tracking: Todos eventos rastreiam environment tag e timestamp
+
+Bloqueador Identificado:
+
+Google Cloud Console não tem URIs localhost registradas. Necessário adicionar:
+
+```
+Authorized redirect URIs:
+- http://localhost:3000/api/auth/callback/google
+- http://localhost:3001/api/auth/callback/google
+
+Authorized JavaScript origins:
+- http://localhost:3000
+- http://localhost:3001
+```
+
+Próxima Etapa:
+
+1. Atualizar Google Cloud Console com URIs localhost
+2. Testar fluxo OAuth completo no navegador
+3. Validar persistência em ba_sessions
+4. Fazer commit final com sucesso OAuth real
+5. Avançar para staging real com usuário de teste
+
+Critérios de aceite 2.4-G:
+
+- [ ] Google Console URIs atualizadas
+- [ ] Fluxo OAuth completo funcional (login → callback → onboarding → dashboard)
+- [ ] Logout funcional
+- [ ] Refresh funcional
+- [ ] Reopen browser mantém sessão
+- [ ] ba_sessions com dados reais
+- [ ] ba_users com dados reais
+- [ ] Sem 500 errors
+- [ ] Observabilidade rastreando eventos corretos
+
+- Adicionar mapeamento mínimo do schema esperado pelo adapter (`users`, `sessions`, `accounts`, `verification`) sem alterar o domínio.
+- Anexar o schema ao cliente Drizzle admin (`drizzle(pool, { schema })`) e passar o schema explicitamente ao `drizzleAdapter`.
+- Validar browser-first flows localmente e em staging após provisionar migrations/tabelas.
+
+Critérios de aceite:
+
+- Adapter Better Auth funcional sem erro de "model not found".
+- OAuth Google funcionando com callback e persistência de sessão.
+
+## 2.4-F — Better Auth Database Provisioning & OAuth Persistence
+
+- Criar migration ADM com as tabelas do Better Auth (`ba_users`, `ba_sessions`, `ba_accounts`, `ba_verification`).
+- Garantir que o schema runtime reflita os campos reais do Better Auth (ids string, tokens, timestamps, verification).
+- Expandir observabilidade para eventos de tabela/migration/persistência.
+- Validar login, callback, sessão persistida, logout, refresh e reopen em staging após aplicar migration.
+
+Observação operacional:
+
+- Se o OAuth falhar com `redirect_uri_mismatch`, ajustar os URIs de callback no Google Console antes de repetir a validação.
+
+Critérios de aceite:
+
+- Tabelas Better Auth provisionadas no ADM.
+- OAuth Google funcional com persistência de sessão.
 
 Atualização 1.3.14:
 
@@ -98,12 +349,125 @@ Fase 0: documentação e setup
 - Inicializar scaffold Next.js + TypeScript + Tailwind
 - Configurar .env.example, .gitignore
 
+Fase 0.5: stack IA-First operacional
+
+- Consolidar docs/ai-context como fonte de verdade operacional
+- Criar docs/specs com specs enxutas e versionadas
+- Criar docs/ai-skills com skills reutilizaveis e controladas
+- Definir padroes de prompt e fluxo de trabalho IA-First
+- Registrar agentes especializados apenas onde houver ganho real
+
+Fase 2.1-A: auth context + ownership contracts
+
+- Definir AuthContext e OwnershipContext sem runtime de auth
+- Consolidar boundaries obrigatórias para routes, actions, services e repositories
+- Reduzir dependencia de organizationId como eixo de autorizacao
+- Documentar strategy de Better Auth e Google OAuth sem instalar dependencias
+- Preparar rollout incremental e rollback seguro
+
+Fase 2.1-B: helpers reais de auth/ownership
+
+- Implementar helpers internos para criar, resolver e exigir AuthContext e OwnershipContext
+- Manter os helpers independentes de Better Auth
+- Centralizar validação de ownership por userId e admin interno
+- Preparar o terreno para um future adapter de auth, nao para a biblioteca em si
+
+Fase 2.1-C: boundary integration sem provider
+
+- Integrar os helpers nas mutações e rotas mais criticas
+- Usar fake auth adapters controlados para simular boundary
+- Proteger primeiro compras, vendas e transferencias
+- Deixar dashboard, entries e accounts para a proxima leitura critica
+- Manter middleware global fora do escopo desta fase
+- Nao alterar schema nesta etapa
+
+Fase 2.1-D: read enforcement
+
+- Remover slug e params da entrada de leitura
+- Passar sessionContext explicitamente para services de leitura
+- Derivar organizationId no servidor
+- Proteger dashboard, accounts, entries, purchases, sales e transfers na leitura
+- Manter middleware global fora do escopo
+
 Fase 1: auth, tenant e onboarding
 
-- Implementar Auth.js (email/senha) + Google OAuth
-- Middleware de proteção e checagem de tenant/membership
-- Criação automática de `organization` no primeiro registro + papel `owner`
+- Implementar Better Auth com Google OAuth
+- Middleware de proteção e checagem de ownership
+- Sessão server-side e helpers de auth
+- Criação automatizada de ownership/conta principal no onboarding
 - Criar subscription trialing de 15 dias
+- Manter organization_id apenas como compatibilidade arquitetural quando necessário
+- Permissoes iniciais: usuario comum e admin interno
+
+Fase 2.2: Better Auth foundation
+
+- Criar a instância Better Auth com Drizzle e cookies seguros
+- Expor o route handler App Router de auth
+- Resolver sessão server-side por `auth.api.getSession`
+- Mapear o payload externo para `SessionContext` sem alterar os helpers centrais
+- Preservar fake-auth-adapter e read-scope até o rollout da sessão real estabilizar
+- Preparar Google OAuth como primeiro provider
+
+Fase 2.2-B: Controlled Session Migration
+
+- Migrar `purchases`, `sales` e `transfers` para `resolveCurrentBetterAuthSessionContext()` via resolvedor controlado
+- Manter fake-auth como fallback operacional e rollback rápido
+- Adicionar logs mínimos para auth/session/ownership
+- Cobrir o novo fluxo com testes de boundary e de fallback
+
+Fase 2.2-C: Ownership Hardening
+
+- Remover `orgSlug` dos contratos de escrita e derivar `organizationId` no servidor a partir da ownership resolvida.
+- Validar origem e destino em transferências sob o mesmo escopo de ownership.
+- Manter `controlled-session.ts` como entrada única para boundaries migradas.
+- Reduzir a confiança em input de cliente sem espalhar middleware global.
+- Preparar a redução gradual do fake adapter sem criar RBAC enterprise.
+
+Fase 2.2-D: Better Auth Operational Consolidation
+
+- Tornar Better Auth o caminho primário de sessão para os fluxos já migrados.
+- Manter fake-auth-adapter como transitional para desenvolvimento local, testes e recovery controlado.
+- Consolidar observabilidade de fallback com origem, motivo e timestamp por operação.
+- Continuar a migração incremental das rotas restantes sem big bang.
+- Documentar critérios futuros para remoção gradual do fallback quando a estabilidade for suficiente.
+
+Fase 2.2-E: Fallback Reduction & Stabilization
+
+- Medir uso real do fallback em produção e em ambientes controlados.
+- Mover as rotas restantes uma por uma para o caminho controlado por Better Auth.
+- Reduzir gradualmente os caminhos transitional conforme a observabilidade permitir.
+- Manter rollback simples e explícito enquanto o fallback ainda for necessário.
+- Preparar a retirada futura do fake adapter apenas após estabilidade sustentada.
+- Expandir observabilidade com source, reason, firstSeen e lastSeen por superfície.
+- Consolidar a matriz operacional com status de Better Auth, fallback usage, ownership status, rollout status e stabilization level.
+- Considerar remoção futura apenas quando o fallback ficar near-zero e sem incidentes operacionais relevantes.
+- Permanecer sem middleware global, RBAC, ACL, auth microservice ou reescrita ampla do domínio.
+
+Fase 2.2-F: Transitional Surface Cleanup
+
+Fase 2.3-A: SaaS B2C Onboarding Foundation
+
+- Objetivo: preparar onboarding B2C mínimo com Google OAuth, sessão server-side persistente, criação automática de conta pessoal e proteção de rotas/Server Actions.
+- Critérios: login Google funcional, sessão persistente, ownership derivada, onboarding mínimo funcionando, runtime hardened preservado.
+- Itens de entrega iniciais:
+  - Integração do fluxo de login via `Better Auth` (já presente em `lib/auth.ts` e `app/api/auth/[...all]/route.ts`).
+  - Cabeçalho global exibindo estado de sessão e links de login/logout (`components/layout/app-header.tsx`).
+  - Página de onboarding mínima e handlers para criação de conta (próxima subfase).
+  - Documentação de readiness atualizada e matriz de checagem de pré-lançamento.
+- Restrições: sem RBAC, sem middleware global, sem alterações de infra ou schema nesta etapa.
+
+Próximos passos técnicos:
+
+1. Implementar handler server-side idempotente para criar conta pessoal após callback de login (transação, verificação de existência).
+2. Criar `/onboarding` com fluxo simples de perfil e criação de conta, e redirecionamento seguro após sucesso.
+3. Cobrir fluxo com testes unitários e integração mínima em staging.
+
+- Identificar as últimas superfícies transitional em páginas, routes, actions, services e componentes server-side.
+- Reduzir dependências diretas ao fake adapter nas assinaturas públicas; preferir a camada controlada como boundary de entrada.
+- Explicitar hotspots de fallback na observabilidade para apoiar estabilização por superfície.
+- Classificar estados operacionais como transitional, stabilized e hardened sem mudar o domínio.
+- Preparar o fake adapter para uso dev/test/recovery-only, mas só formalizar isso quando o fallback de runtime estiver near-zero.
+- Evitar middleware global, RBAC, ACL, permission framework, auth rewrite e big bang migration.
 
 Fase 1.5: domínio e validações (atual)
 
@@ -141,11 +505,20 @@ Fase 8: billing/trial
 
 - Estrutura Stripe (customers, webhooks), plan seeds
 - Banner de trial e lógica de migração para free_limited
+- Billing individual recorrente como prioridade de produto
 
 Fase 9: deploy e hardening
 
 - GitHub Actions (lint/typecheck/build)
 - Preparar deploy remoto seguro (secrets, proxy reverse)
+
+Fase 10: governanca IA-First incremental
+
+- Criar e evoluir specs por dominio antes de grandes refatoracoes
+- Criar e revisar skills de apoio por area tecnica
+- Registrar checkpoints operacionais em cada ciclo relevante
+- Usar prompts padronizados para diagnostico, implementacao e validacao
+- Consolidar o operating model em `AI_OPERATING_MODEL.md` como fonte de verdade para futuros SaaS DataVisio
 
 Observação:
 

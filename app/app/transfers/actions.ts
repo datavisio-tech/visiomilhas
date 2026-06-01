@@ -1,31 +1,85 @@
 "use server";
 import { createTransferSchema } from "../../../lib/validations/transfers";
 import { appPool } from "../../../db/app/client";
-import { admPool } from "../../../db/adm/client";
 import { calculateTransferImpact } from "../../../lib/domain/miles-calculations";
 import { revalidatePath } from "next/cache";
 import { isFifoMovementsEngineEnabled } from "../../../lib/featureFlags";
 import { transferMilesUseCase } from "../../../lib/services/movements.use-cases";
+import { createDrizzleMovementsRepoFromClient } from "../../../lib/repositories/movements.drizzle-repo";
+import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
+import {
+  AuthContextError,
+  requireAuth,
+} from "../../../lib/server/auth-context";
+import { reportAuthEvent } from "../../../lib/server/auth-observability";
+import {
+  ensureNoDuplicateTransfer,
+  validateFinancialIntegrity,
+} from "../../../lib/server/financial-integrity";
+import { resolveOwnedAccount } from "../../../lib/server/ownership-resolvers";
+import { type SessionContextResolver } from "../../../lib/server/controlled-session";
 
-export async function createTransferAction(formData: FormData) {
+type Deps = {
+  appPool?: any;
+  resolveSessionContext?: SessionContextResolver;
+  resolveOwnedAccount?: typeof resolveOwnedAccount;
+  revalidatePath?: typeof revalidatePath;
+  isFifoMovementsEngineEnabled?: typeof isFifoMovementsEngineEnabled;
+  transferMilesUseCase?: typeof transferMilesUseCase;
+};
+
+export async function createTransferAction(
+  formData: FormData,
+  deps: Deps = {},
+) {
   const parsed = createTransferSchema.safeParse(
     Object.fromEntries(formData.entries()),
   );
   if (!parsed.success)
     return { success: false, errors: parsed.error.flatten() };
   const input = parsed.data;
+  const sessionContext = await (
+    deps.resolveSessionContext ?? resolveControlledSessionContext
+  )({
+    accountId: input.fromAccountId,
+    source: "transfer.action",
+  });
 
-  const admClient = await admPool().connect();
+  if (!sessionContext) {
+    reportAuthEvent({
+      level: "warn",
+      code: "UNAUTHENTICATED",
+      message: "Transfer action rejected before ownership check",
+      details: { accountId: input.fromAccountId },
+    });
+    return { success: false, error: "authentication required" };
+  }
+
   try {
-    const orgRes = await admClient.query(
-      `SELECT id FROM organizations WHERE slug = $1 LIMIT 1`,
-      [input.orgSlug ?? "demo-visiomilhas"],
+    const auth = requireAuth(sessionContext.auth);
+    const resolveOwnedAccountFn = deps.resolveOwnedAccount ?? resolveOwnedAccount;
+    const ownedFromAccount = await resolveOwnedAccountFn(
+      auth,
+      input.fromAccountId,
     );
-    if (!orgRes.rows.length)
-      return { success: false, error: "organization not found" };
-    const orgId = orgRes.rows[0].id;
+    const ownedToAccount = await resolveOwnedAccountFn(auth, input.toAccountId);
+    const orgId = ownedFromAccount.ownership.organizationId;
 
-    const pool = appPool();
+    if (orgId === null || orgId === undefined) {
+      return { success: false, error: "organization not found" };
+    }
+
+    if (
+      ownedToAccount.ownership.organizationId !== null &&
+      ownedToAccount.ownership.organizationId !== orgId
+    ) {
+      return {
+        success: false,
+        error: "accounts must belong to the same organization",
+      };
+    }
+
+    const pool = (deps.appPool ?? appPool)();
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
@@ -62,6 +116,23 @@ export async function createTransferAction(formData: FormData) {
         ? new Date(input.transferredAt)
         : new Date();
 
+      if (
+        await ensureNoDuplicateTransfer(client, {
+          organizationId: orgId,
+          fromAccountId: input.fromAccountId,
+          toAccountId: input.toAccountId,
+          pointsSent: Number(input.pointsSent),
+          pointsReceived: Number(impact.pointsReceived),
+          feeCents: Number(input.feeCents || 0),
+          bonusPercent: Number(input.bonusPercent || 0),
+          transferredAt: now,
+          description: input.description || null,
+        })
+      ) {
+        await client.query("ROLLBACK");
+        return { success: false, error: "duplicate operation blocked" };
+      }
+
       const insertTransfer = await client.query(
         `INSERT INTO mile_transfers (organization_id, from_account_id, to_account_id, points_sent, points_received, bonus_percentage, transfer_fee_cents, transferred_at, status, description, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,NOW(),NOW()) RETURNING id`,
         [
@@ -78,19 +149,19 @@ export async function createTransferAction(formData: FormData) {
         ],
       );
 
-      if (isFifoMovementsEngineEnabled()) {
-        // commit transfer record and delegate entry/lot updates and balance
-        // updates to the movements engine
-        await client.query("COMMIT");
+      if ((deps.isFifoMovementsEngineEnabled ?? isFifoMovementsEngineEnabled)()) {
+        const txRepo = createDrizzleMovementsRepoFromClient(client);
 
-        await transferMilesUseCase({
+        await (deps.transferMilesUseCase ?? transferMilesUseCase)({
           organizationId: orgId,
           fromAccountId: input.fromAccountId,
           toAccountId: input.toAccountId,
           amount: Number(input.pointsSent),
           description: input.description || undefined,
           occurredAt: now,
-        });
+        }, txRepo);
+
+        await client.query("COMMIT");
       } else {
         await client.query(
           `INSERT INTO mile_entries (organization_id, program_id, account_id, type, direction, points, occurred_at, status, description, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),NOW())`,
@@ -143,20 +214,52 @@ export async function createTransferAction(formData: FormData) {
         await client.query("COMMIT");
       }
 
-      revalidatePath("/app/dashboard");
-      revalidatePath("/app/accounts");
-      revalidatePath("/app/entries");
-      revalidatePath("/app/transfers");
+      await validateFinancialIntegrity(client, {
+        organizationId: orgId,
+        source: "transfer.action",
+        emitEvents: true,
+      });
 
-      return { success: true, transferId: insertTransfer.rows[0].id };
-    } catch (err: any) {
+      (deps.revalidatePath ?? revalidatePath)("/app/dashboard");
+      (deps.revalidatePath ?? revalidatePath)("/app/accounts");
+      (deps.revalidatePath ?? revalidatePath)("/app/entries");
+      (deps.revalidatePath ?? revalidatePath)("/app/transfers");
+
+      return {
+        success: true,
+        transferId: insertTransfer.rows[0].id,
+        previousOriginBalance: Number(fromAcc.current_points_balance || 0),
+        previousDestinationBalance: Number(toAcc.current_points_balance || 0),
+        newOriginBalance: impact.newOriginBalance,
+        newDestinationBalance: impact.newDestinationBalance,
+        pointsSent: Number(input.pointsSent),
+        pointsReceived: impact.pointsReceived,
+        bonusPercent: Number(input.bonusPercent || 0),
+        feeCents: Number(input.feeCents || 0),
+        originCpmCents: Number(fromAcc.current_avg_cost_per_thousand_cents || 0),
+        destinationCpmCents: Number(toAcc.current_avg_cost_per_thousand_cents || 0),
+      };
+    } catch (error) {
       await client.query("ROLLBACK");
-      throw err;
+      throw error;
     } finally {
       client.release();
     }
-  } finally {
-    admClient.release();
+  } catch (error) {
+    if (error instanceof AuthContextError) {
+      reportAuthEvent({
+        level: "warn",
+        code: error.code === "FORBIDDEN" ? "FORBIDDEN" : "UNAUTHENTICATED",
+        message: `Transfer action blocked: ${error.message}`,
+        details: {
+          accountId: input.fromAccountId,
+          status: error.status,
+        },
+      });
+      return { success: false, error: error.message };
+    }
+
+    throw error;
   }
 }
 

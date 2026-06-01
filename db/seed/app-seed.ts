@@ -1,5 +1,9 @@
 import { appPool } from "../../db/app/client";
 import { DEMO_APP } from "./demo-data";
+import LOYALTY_CATALOG from "../../data/loyalty-programs.json";
+import { seedPartners } from "./partners-seed";
+import { seedCampaigns } from "./campaigns-seed";
+import { seedSamplePurchases } from "./purchases-sample-seed";
 
 const CLUBS = [
   { name: "Clube Livelo", programSlug: "livelo" },
@@ -23,6 +27,41 @@ export async function seedApp(organizationId: number): Promise<void> {
         await client.query(
           `INSERT INTO loyalty_programs (organization_id, name, slug, type, created_at, updated_at, is_active) VALUES ($1, $2, $3, $4, NOW(), NOW(), true)`,
           [organizationId, prog.name, prog.slug, prog.type],
+        );
+      }
+    }
+
+    // seed canonical loyalty catalog (data/loyalty-programs.json)
+    for (const p of LOYALTY_CATALOG as any[]) {
+      const slug = p.slug;
+      const q = await client.query(
+        `SELECT id FROM loyalty_programs WHERE slug = $1 AND organization_id = $2 LIMIT 1`,
+        [slug, organizationId],
+      );
+      if (!q.rows.length) {
+        const type = (p.program_type || p.type || "").toString().toLowerCase();
+        const country = p.country_code || null;
+        const color = p.brand_color || null;
+        const isSystemDefault = Boolean(p.is_featured || p.is_system_default);
+        const metadata = {
+          short_name: p.short_name || null,
+          description: p.description || null,
+          icon: p.icon || null,
+        };
+
+        await client.query(
+          `INSERT INTO loyalty_programs (organization_id, name, slug, type, country, color, is_system_default, is_active, metadata, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())`,
+          [
+            organizationId,
+            p.name,
+            slug,
+            type,
+            country,
+            color,
+            isSystemDefault,
+            true,
+            JSON.stringify(metadata),
+          ],
         );
       }
     }
@@ -213,6 +252,12 @@ export async function seedApp(organizationId: number): Promise<void> {
     }
 
     await client.query("COMMIT");
+    // seed partner stores
+    await seedPartners(organizationId);
+    // seed partner campaigns
+    await seedCampaigns(organizationId);
+    // seed sample purchases (evidences + history)
+    await seedSamplePurchases(organizationId);
   } catch (err) {
     await client.query("ROLLBACK");
     throw err;

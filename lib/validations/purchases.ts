@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 export const createPurchaseSchema = z.object({
-  orgSlug: z.string().optional(),
   accountId: z.string().transform((s) => Number(s)),
   programId: z
     .string()

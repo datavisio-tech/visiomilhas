@@ -1,79 +1,52 @@
+import React from "react";
+import HeroSection from "../components/landing/hero-section";
+import BenefitsSection from "../components/landing/benefits-section";
+import HowItWorksSection from "../components/landing/how-it-works-section";
+import MockupsSection from "../components/landing/mockups-section";
+import FinalCtaSection from "../components/landing/final-cta-section";
+import LandingFooter from "../components/landing/footer";
+import ShadcnButton from "../components/ui/shadcn-button";
+
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white">
-      <header className="border-b p-6 flex items-center justify-between">
-        <div className="text-2xl font-bold text-indigo-600">VisioMilhas</div>
-        <nav className="space-x-4">
-          <a href="#features" className="text-gray-700">
-            Recursos
-          </a>
-          <a href="#pricing" className="text-gray-700">
-            Preços
-          </a>
-          <a href="/app/dashboard" className="text-indigo-600 font-semibold">
-            Entrar
-          </a>
-        </nav>
+    <main className="bg-slate-950 text-white">
+      <header className="sticky top-0 z-50 border-b border-white/8 bg-slate-950/70 px-6 py-4 backdrop-blur-2xl lg:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-400 text-sm font-semibold text-white shadow-[0_0_24px_rgba(124,58,237,0.35)]">
+              V
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-white">VisioMilhas</div>
+              <div className="text-xs text-white/45">Premium SaaS para milhas</div>
+            </div>
+          </div>
+
+          <nav className="hidden items-center gap-6 text-sm text-white/65 md:flex">
+            <a href="#features" className="transition hover:text-white">
+              Recursos
+            </a>
+            <a href="#mockups" className="transition hover:text-white">
+              Painéis interativos
+            </a>
+            <ShadcnButton href="/app/dashboard" variant="outline" className="px-4 py-2 text-sm">
+              Ver plataforma
+            </ShadcnButton>
+          </nav>
+        </div>
       </header>
 
-      <section className="max-w-5xl mx-auto p-8">
-        <div className="text-center py-12">
-          <h1 className="text-4xl font-bold mb-4">
-            Controle suas milhas, custos e vendas em um só lugar.
-          </h1>
-          <p className="text-gray-600 mb-6">
-            Acompanhe saldos, calcule o custo médio do milheiro, registre
-            compras, vendas e transferências e entenda seu lucro real.
-          </p>
-          <div className="space-x-3">
-            <a
-              href="/app/dashboard"
-              className="px-4 py-2 bg-indigo-600 text-white rounded"
-            >
-              Começar teste grátis de 15 dias
-            </a>
-            <a href="/app/dashboard" className="px-4 py-2 border rounded">
-              Ver demonstração
-            </a>
-          </div>
-        </div>
+      <HeroSection />
+      <div id="features">
+        <BenefitsSection />
+      </div>
+      <HowItWorksSection />
+      <div id="mockups">
+        <MockupsSection />
+      </div>
 
-        <section id="features" className="grid grid-cols-3 gap-4 mb-12">
-          <div className="bg-gray-50 p-6 rounded">Controle de saldo</div>
-          <div className="bg-gray-50 p-6 rounded">Custo médio do milheiro</div>
-          <div className="bg-gray-50 p-6 rounded">Compra e venda de milhas</div>
-        </section>
-
-        <section id="modules" className="mb-12">
-          <h2 className="text-2xl font-semibold mb-4">Módulos</h2>
-          <div className="grid grid-cols-4 gap-4">
-            <div className="bg-white p-4 rounded border">Dashboard</div>
-            <div className="bg-white p-4 rounded border">Programas</div>
-            <div className="bg-white p-4 rounded border">Contas</div>
-            <div className="bg-white p-4 rounded border">Lançamentos</div>
-            <div className="bg-white p-4 rounded border">Compras</div>
-            <div className="bg-white p-4 rounded border">Vendas</div>
-            <div className="bg-white p-4 rounded border">Transferências</div>
-            <div className="bg-white p-4 rounded border">Clubes</div>
-          </div>
-        </section>
-
-        <section id="pricing" className="text-center p-8 bg-indigo-50 rounded">
-          <h3 className="text-xl font-semibold mb-2">Trial full por 15 dias</h3>
-          <p className="text-gray-700">
-            Experimente o PRO por 15 dias. Depois, plano PRO ou versão Free
-            limitada.
-          </p>
-          <div className="mt-4">
-            <a
-              href="/app/dashboard"
-              className="px-4 py-2 bg-indigo-600 text-white rounded"
-            >
-              Começar teste grátis
-            </a>
-          </div>
-        </section>
-      </section>
+      <FinalCtaSection />
+      <LandingFooter />
     </main>
   );
 }

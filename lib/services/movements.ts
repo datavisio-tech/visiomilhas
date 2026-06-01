@@ -99,6 +99,8 @@ export type MileEntryRecord = {
   source?: string | null;
   status?: string;
   metadata?: Record<string, unknown> | null;
+  relatedEntityType?: string | null;
+  relatedEntityId?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
   consumedLotId?: number | null;
@@ -136,6 +138,8 @@ export type TransferRecord = {
   description?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
+  sourceEntryId?: number | null;
+  destinationEntryId?: number | null;
 };
 
 export type MovementsRepo = {
@@ -203,6 +207,9 @@ export function createMovementService(repo: MovementsRepo) {
       metadata: data.metadata,
       createdAt: new Date(),
       updatedAt: new Date(),
+      consumedLotId: null,
+      consumedPoints: null,
+      lotSnapshot: null,
     });
 
     const lot = await repo.insertLot({
@@ -298,7 +305,19 @@ export function createMovementService(repo: MovementsRepo) {
   async function transferMiles(input: TransferMilesInput) {
     const data = transferMilesInputSchema.parse(input);
 
-    // For now: consume from source and create transfer record; creation of lot on destination is pending design
+    const destinationAccountId = data.toAccountId ?? null;
+
+    if (destinationAccountId !== null) {
+      const destinationAccount =
+        await repo.findAccountById(destinationAccountId);
+      if (!destinationAccount) {
+        throw new AccountNotFoundError(
+          `account ${destinationAccountId} not found`,
+        );
+      }
+    }
+
+    // Consume from source first so the source balance and FIFO lots are updated atomically.
     const consumed = await consumeMiles({
       accountId: data.fromAccountId,
       amount: data.amount,
@@ -307,6 +326,41 @@ export function createMovementService(repo: MovementsRepo) {
       metadata: data.metadata,
     });
 
+    let destinationEntryId: number | null = null;
+    if (destinationAccountId !== null) {
+      const destinationEntry = await repo.insertEntry({
+        organizationId: data.organizationId,
+        accountId: destinationAccountId,
+        type: "transfer",
+        direction: "credit",
+        points: data.amount,
+        occurredAt: data.occurredAt ?? new Date(),
+        description: data.description,
+        source: "transfer",
+        status: "posted",
+        metadata: data.metadata,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      destinationEntryId = destinationEntry.id;
+
+      await repo.insertLot({
+        organizationId: data.organizationId,
+        accountId: destinationAccountId,
+        sourceEntryId: destinationEntry.id,
+        acquiredPoints: data.amount,
+        remainingPoints: data.amount,
+        issuedAt: data.occurredAt ?? new Date(),
+        expiresAt: null,
+        status: "available",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        metadata: data.metadata,
+      });
+
+      await repo.updateProgramAccountBalance(destinationAccountId, data.amount);
+    }
     const transferRecord = repo.insertTransfer
       ? await repo.insertTransfer({
           organizationId: data.organizationId,
@@ -319,6 +373,8 @@ export function createMovementService(repo: MovementsRepo) {
           description: data.description,
           createdAt: new Date(),
           updatedAt: new Date(),
+          sourceEntryId: consumed.movementId ?? null,
+          destinationEntryId,
         })
       : { id: -1 };
 

@@ -1,0 +1,328 @@
+[
+  {
+    "slug": "livelo",
+    "name": "Livelo",
+    "short_name": "Livelo",
+    "country_code": "BR",
+    "program_type": "REWARDS",
+    "description": "Programa brasileiro de recompensas e transferência de pontos.",
+    "icon": "livelo",
+    "brand_color": "#ec008c",
+    "is_featured": true
+  },
+  {
+    "slug": "latam-pass",
+    "name": "LATAM Pass",
+    "short_name": "LATAM",
+    "country_code": "BR",
+    "program_type": "AIRLINE",
+    "description": "Programa de fidelidade da LATAM Airlines.",
+    "icon": "latam",
+    "brand_color": "#4b0082",
+    "is_featured": true
+  },
+  {
+    "slug": "smiles",
+    "name": "Smiles",
+    "short_name": "Smiles",
+    "country_code": "BR",
+    "program_type": "AIRLINE",
+    "description": "Programa de milhas da GOL Linhas Aéreas.",
+    "icon": "smiles",
+    "brand_color": "#ff6a00",
+    "is_featured": true
+  },
+  {
+    "slug": "azul-fidelidade",
+    "name": "Azul Fidelidade",
+    "short_name": "Azul",
+    "country_code": "BR",
+    "program_type": "AIRLINE",
+    "description": "Programa de pontos e milhas da Azul Linhas Aéreas.",
+    "icon": "azul",
+    "brand_color": "#00a8e1",
+    "is_featured": true
+  },
+  {
+    "slug": "esfera",
+    "name": "Esfera",
+    "short_name": "Esfera",
+    "country_code": "BR",
+    "program_type": "BANK",
+    "description": "Programa de recompensas do Santander.",
+    "icon": "esfera",
+    "brand_color": "#ff0000",
+    "is_featured": true
+  },
+  {
+    "slug": "dotz",
+    "name": "Dotz",
+    "short_name": "Dotz",
+    "country_code": "BR",
+    "program_type": "CASHBACK",
+    "description": "Programa brasileiro de cashback e pontos.",
+    "icon": "dotz",
+    "brand_color": "#ff6600",
+    "is_featured": true
+  },
+  {
+    "slug": "iupp",
+    "name": "Iupp",
+    "short_name": "Iupp",
+    "country_code": "BR",
+    "program_type": "BANK",
+    "description": "Programa de recompensas do Itaú.",
+    "icon": "iupp",
+    "brand_color": "#ff7a00"
+  },
+  {
+    "slug": "atomos-c6",
+    "name": "Átomos C6",
+    "short_name": "Átomos",
+    "country_code": "BR",
+    "program_type": "BANK",
+    "description": "Programa de pontos do C6 Bank.",
+    "icon": "c6",
+    "brand_color": "#111111"
+  },
+  {
+    "slug": "inter-loop",
+    "name": "Inter Loop",
+    "short_name": "Loop",
+    "country_code": "BR",
+    "program_type": "BANK",
+    "description": "Programa de pontos e cashback do Banco Inter.",
+    "icon": "inter",
+    "brand_color": "#ff7a00"
+  },
+  {
+    "slug": "coopera",
+    "name": "Coopera",
+    "short_name": "Coopera",
+    "country_code": "BR",
+    "program_type": "BANK",
+    "description": "Programa de fidelidade do Sicoob.",
+    "icon": "coopera",
+    "brand_color": "#00a859"
+  },
+  {
+    "slug": "nubank-rewards",
+    "name": "Nubank Rewards",
+    "short_name": "Nubank",
+    "country_code": "BR",
+    "program_type": "CREDIT_CARD",
+    "description": "Programa de recompensas do Nubank.",
+    "icon": "nubank",
+    "brand_color": "#8a05be"
+  },
+  {
+    "slug": "xp-visa-infinite",
+    "name": "XP Visa Infinite",
+    "short_name": "XP",
+    "country_code": "BR",
+    "program_type": "CREDIT_CARD",
+    "description": "Programa de benefícios e cashback da XP.",
+    "icon": "xp",
+    "brand_color": "#000000"
+  },
+  {
+    "slug": "bradesco-livelo",
+    "name": "Bradesco Livelo",
+    "short_name": "Bradesco",
+    "country_code": "BR",
+    "program_type": "BANK",
+    "description": "Integração de cartões Bradesco com Livelo.",
+    "icon": "bradesco",
+    "brand_color": "#cc092f"
+  },
+  {
+    "slug": "caixa-pontos",
+    "name": "Programa Pontos Caixa",
+    "short_name": "Caixa",
+    "country_code": "BR",
+    "program_type": "BANK",
+    "description": "Programa de pontos da Caixa Econômica Federal.",
+    "icon": "caixa",
+    "brand_color": "#0066b3"
+  },
+  {
+    "slug": "safra-rewards",
+    "name": "Safra Rewards",
+    "short_name": "Safra",
+    "country_code": "BR",
+    "program_type": "BANK",
+    "description": "Programa de recompensas do Banco Safra.",
+    "icon": "safra",
+    "brand_color": "#003b5c"
+  },
+  {
+    "slug": "sicredi-recompensas",
+    "name": "Sicredi Recompensas",
+    "short_name": "Sicredi",
+    "country_code": "BR",
+    "program_type": "BANK",
+    "description": "Programa de benefícios e pontos Sicredi.",
+    "icon": "sicredi",
+    "brand_color": "#64b32c"
+  },
+  {
+    "slug": "all-accor",
+    "name": "ALL Accor",
+    "short_name": "ALL",
+    "country_code": "FR",
+    "program_type": "HOTEL",
+    "description": "Programa global de fidelidade da rede Accor.",
+    "icon": "accor",
+    "brand_color": "#d4af37"
+  },
+  {
+    "slug": "hilton-honors",
+    "name": "Hilton Honors",
+    "short_name": "Hilton",
+    "country_code": "US",
+    "program_type": "HOTEL",
+    "description": "Programa de fidelidade da rede Hilton Hotels.",
+    "icon": "hilton",
+    "brand_color": "#002d72"
+  },
+  {
+    "slug": "marriott-bonvoy",
+    "name": "Marriott Bonvoy",
+    "short_name": "Bonvoy",
+    "country_code": "US",
+    "program_type": "HOTEL",
+    "description": "Programa de fidelidade da Marriott.",
+    "icon": "marriott",
+    "brand_color": "#a6192e"
+  },
+  {
+    "slug": "ihg-one-rewards",
+    "name": "IHG One Rewards",
+    "short_name": "IHG",
+    "country_code": "US",
+    "program_type": "HOTEL",
+    "description": "Programa global de hotéis IHG.",
+    "icon": "ihg",
+    "brand_color": "#d71920"
+  },
+  {
+    "slug": "world-of-hyatt",
+    "name": "World of Hyatt",
+    "short_name": "Hyatt",
+    "country_code": "US",
+    "program_type": "HOTEL",
+    "description": "Programa de fidelidade Hyatt.",
+    "icon": "hyatt",
+    "brand_color": "#6d2077"
+  },
+  {
+    "slug": "tap-miles-go",
+    "name": "TAP Miles&Go",
+    "short_name": "TAP",
+    "country_code": "PT",
+    "program_type": "AIRLINE",
+    "description": "Programa de milhas da TAP Air Portugal.",
+    "icon": "tap",
+    "brand_color": "#006341"
+  },
+  {
+    "slug": "flying-blue",
+    "name": "Flying Blue",
+    "short_name": "Flying Blue",
+    "country_code": "FR",
+    "program_type": "AIRLINE",
+    "description": "Programa da Air France e KLM.",
+    "icon": "flyingblue",
+    "brand_color": "#003da5"
+  },
+  {
+    "slug": "aadvantage",
+    "name": "AAdvantage",
+    "short_name": "American",
+    "country_code": "US",
+    "program_type": "AIRLINE",
+    "description": "Programa de milhas da American Airlines.",
+    "icon": "aa",
+    "brand_color": "#0078d2"
+  },
+  {
+    "slug": "mileageplus",
+    "name": "MileagePlus",
+    "short_name": "United",
+    "country_code": "US",
+    "program_type": "AIRLINE",
+    "description": "Programa da United Airlines.",
+    "icon": "united",
+    "brand_color": "#002244"
+  },
+  {
+    "slug": "executive-club",
+    "name": "Executive Club",
+    "short_name": "BA Club",
+    "country_code": "GB",
+    "program_type": "AIRLINE",
+    "description": "Programa da British Airways.",
+    "icon": "britishairways",
+    "brand_color": "#075aaa"
+  },
+  {
+    "slug": "connectmiles",
+    "name": "ConnectMiles",
+    "short_name": "Copa",
+    "country_code": "PA",
+    "program_type": "AIRLINE",
+    "description": "Programa da Copa Airlines.",
+    "icon": "copa",
+    "brand_color": "#0033a0"
+  },
+  {
+    "slug": "skywards",
+    "name": "Emirates Skywards",
+    "short_name": "Skywards",
+    "country_code": "AE",
+    "program_type": "AIRLINE",
+    "description": "Programa de milhas da Emirates.",
+    "icon": "emirates",
+    "brand_color": "#d71920"
+  },
+  {
+    "slug": "krisflyer",
+    "name": "KrisFlyer",
+    "short_name": "Singapore",
+    "country_code": "SG",
+    "program_type": "AIRLINE",
+    "description": "Programa da Singapore Airlines.",
+    "icon": "singapore",
+    "brand_color": "#ffb81c"
+  },
+  {
+    "slug": "iberia-plus",
+    "name": "Iberia Plus",
+    "short_name": "Iberia",
+    "country_code": "ES",
+    "program_type": "AIRLINE",
+    "description": "Programa da Iberia Airlines.",
+    "icon": "iberia",
+    "brand_color": "#d71920"
+  },
+  {
+    "slug": "qatar-privilege-club",
+    "name": "Qatar Privilege Club",
+    "short_name": "Qatar",
+    "country_code": "QA",
+    "program_type": "AIRLINE",
+    "description": "Programa da Qatar Airways.",
+    "icon": "qatar",
+    "brand_color": "#5c0d34"
+  },
+  {
+    "slug": "multiplus-legacy",
+    "name": "Multiplus Legacy",
+    "short_name": "Multiplus",
+    "country_code": "BR",
+    "program_type": "REWARDS",
+    "description": "Estrutura antiga do Multiplus, mantida para migrações históricas.",
+    "icon": "multiplus",
+    "brand_color": "#0057b8"
+  }
+]

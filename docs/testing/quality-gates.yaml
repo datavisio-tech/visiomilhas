@@ -1,0 +1,32 @@
+# Quality Gates
+# Generated: 2026-05-31
+
+gates:
+  - name: lint
+    required: true
+    action_on_fail: fail_pr
+  - name: typecheck
+    required: true
+    action_on_fail: fail_pr
+  - name: unit_tests
+    required: true
+    minimum_coverage: 90
+    action_on_fail: fail_pr
+  - name: integration_tests
+    required: true
+    minimum_coverage: 80
+    action_on_fail: fail_pr
+  - name: contract_tests
+    required: true
+    action_on_fail: fail_pr
+  - name: security_scan
+    required: true
+    action_on_fail: fail_pr
+  - name: code_review
+    required: true
+    approvers_required: 1
+    action_on_fail: block_merge
+
+notes:
+  - "PRs that fail mandatory gates must be blocked until fixes or approved exceptions are granted."
+  - "CI pipelines should publish gate results to PR checks with clear failure reasons."

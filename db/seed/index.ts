@@ -1,5 +1,10 @@
+import dotenv from "dotenv";
+import dotenvExpand from "dotenv-expand";
 import { seedAdm } from "./adm-seed";
 import { seedApp } from "./app-seed";
+// Load .env and expand interpolations so seeds can read APP/ADM URLs
+const myEnv = dotenv.config();
+dotenvExpand(myEnv as any);
 import { admPool, closeAdmPool } from "../../db/adm/client";
 import { appPool, closeAppPool } from "../../db/app/client";
 

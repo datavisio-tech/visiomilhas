@@ -1,41 +1,37 @@
 export const dynamic = "force-dynamic";
 
+import { redirect } from "next/navigation";
 import PageHeader from "../../../components/ui/page-header";
-import { getPurchasesOverview } from "../../../lib/data/purchases";
-import { getAccountsOverview } from "../../../lib/data/accounts";
-import PurchaseForm from "../../../components/forms/purchase-form";
+import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
+import { PurchasesDashboardViewModel } from "../../../src/modules/purchases/presentation/purchases-dashboard.viewmodel";
+import PurchasesCockpit from "../../../src/modules/purchases/ui/PurchasesCockpit.client";
+import NewPurchaseDrawer from "../../../src/modules/purchases/ui/NewPurchaseDrawer.client";
 
 export default async function PurchasesPage() {
-  const purchases = await getPurchasesOverview();
-  const accounts = await getAccountsOverview();
+  const sessionContext = await resolveControlledSessionContext({
+    source: "purchases.page",
+    allowFallback: false,
+  });
+
+  if (!sessionContext) redirect("/sign-in?callbackUrl=/app/purchases");
+
+  const organizationId = sessionContext.ownership.organizationId ?? 1;
+  const vm = new PurchasesDashboardViewModel(organizationId);
+  const [kpis, list] = await Promise.all([vm.kpis(), vm.list({}, 50, 0)]);
 
   return (
-    <div>
-      <PageHeader title="Compras" subtitle="Gerencie compras de pontos" />
-      <div className="grid grid-cols-3 gap-4">
-        <div className="col-span-1">
-          <PurchaseForm accounts={accounts} />
-        </div>
-        <div className="col-span-2">
-          <div className="grid grid-cols-2 gap-4">
-            {purchases.length === 0 ? (
-              <div className="col-span-2 bg-white p-4 rounded border text-gray-600">
-                Nenhuma compra encontrada.
-              </div>
-            ) : (
-              purchases.map((p: any) => (
-                <div key={p.id} className="bg-white p-4 rounded border">
-                  <div className="font-semibold">{p.status}</div>
-                  <div className="text-sm">{p.points.toLocaleString()} pts</div>
-                  <div className="text-sm">
-                    R$ {(p.valueCents / 100).toFixed(2)}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
+    <div className="space-y-4">
+      <PageHeader
+        eyebrow="Ferramentas"
+        title="Compras Bonificadas"
+        subtitle="Controle suas compras bonificadas e acompanhe o crédito dos seus pontos."
+        actions={<NewPurchaseDrawer organizationId={organizationId} />}
+      />
+      <PurchasesCockpit
+        organizationId={organizationId}
+        initialKpis={kpis}
+        initialList={list}
+      />
     </div>
   );
 }

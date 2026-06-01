@@ -152,9 +152,9 @@ describe("movements service (in-memory)", () => {
     // origin reduced
     const afterA = await svc.getAvailableMilesBalance(1);
     expect(afterA.availablePoints).toBe(beforeA.availablePoints - 50);
-    // destination: current service doesn't auto-create lots on destination in this stage
+    // destination receives a mirrored credit lot
     const afterB = await svc.getAvailableMilesBalance(2);
-    expect(afterB.availablePoints).toBe(beforeB.availablePoints);
+    expect(afterB.availablePoints).toBe(beforeB.availablePoints + 50);
   });
 
   it("transfer rejects when insufficient balance", async () => {
