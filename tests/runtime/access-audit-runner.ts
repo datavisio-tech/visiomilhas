@@ -202,12 +202,14 @@ async function run() {
       }
     }
 
-    if (
-      signInNoSub?.ok ||
-      report.checks.some(
-        (item) => item.scenario === "SIGN_UP_ATTEMPT_NO_SUB" && item.result?.ok,
-      )
-    ) {
+    const signUpNoSubSucceeded = report.checks.some(function (item) {
+      return (
+        item.scenario === "SIGN_UP_ATTEMPT_NO_SUB" &&
+        Boolean(item.result && item.result.ok)
+      );
+    });
+
+    if (Boolean(signInNoSub && signInNoSub.ok) || signUpNoSubSucceeded) {
       await navigatePage(client, `${baseUrl}/app/dashboard`);
       await waitForPageState(
         client,
