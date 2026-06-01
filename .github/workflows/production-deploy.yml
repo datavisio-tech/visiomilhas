@@ -151,6 +151,16 @@ jobs:
           SSH_PORT: 22
           SSH_USER: root
 
+      - name: Ensure swarm public network exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "docker network inspect network_public >/dev/null 2>&1 || docker network create --driver overlay --attachable network_public"
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: 22
+          SSH_USER: root
+
       - name: Sync source to server
         shell: bash
         run: |
@@ -282,3 +292,20 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 22
           SSH_USER: root
+
+      - name: Validate public URL via Traefik
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            status="$(curl -k -s -o /dev/null -w '%{http_code}' --max-time 20 https://visiomilhas.visiochat.cloud/sign-in || true)"
+            if [ "${status}" = "200" ]; then
+              echo "Public URL is reachable through Traefik."
+              exit 0
+            fi
+            echo "Public URL attempt ${attempt} returned HTTP ${status}, retrying..."
+            sleep 5
+          done
+          echo "Public URL not reachable through Traefik after retries."
+          curl -k -I https://visiomilhas.visiochat.cloud/sign-in || true
+          exit 1
