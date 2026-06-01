@@ -45,16 +45,6 @@ jobs:
           fi
           cat config/production-public.env >> "$GITHUB_ENV"
 
-      - name: Derive SSH host from public production config
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ -z "${POSTGRES_HOST:-}" ]; then
-            echo "Missing POSTGRES_HOST in public production config"
-            exit 1
-          fi
-          echo "SSH_HOST=${POSTGRES_HOST}" >> "$GITHUB_ENV"
-
       - name: Validate production deploy confirmation
         shell: bash
         run: |
@@ -99,6 +89,7 @@ jobs:
 
           echo "Required production secrets are present."
         env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 65002
           SSH_USER: gitdatavisiodeploy
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -119,6 +110,7 @@ jobs:
           chmod 600 ~/.ssh/visiomilhas_deploy_key
           ssh-keyscan -p "${SSH_PORT}" "${SSH_HOST}" >> ~/.ssh/known_hosts
         env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 65002
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
@@ -128,6 +120,7 @@ jobs:
           set -euo pipefail
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "mkdir -p '${REMOTE_DIR}' && test -w '${REMOTE_DIR}'"
         env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 65002
           SSH_USER: gitdatavisiodeploy
 
@@ -161,6 +154,7 @@ jobs:
             -e "ssh -i ~/.ssh/visiomilhas_deploy_key -p ${SSH_PORT}" \
             ./ "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/"
         env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 65002
           SSH_USER: gitdatavisiodeploy
 
@@ -193,6 +187,7 @@ jobs:
           scp -i ~/.ssh/visiomilhas_deploy_key -P "${SSH_PORT}" "${env_file}" "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/.env.production.tmp"
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && mv .env.production.tmp .env.production && chmod 600 .env.production && test -s .env.production"
         env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 65002
           SSH_USER: gitdatavisiodeploy
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
@@ -208,6 +203,7 @@ jobs:
           set -euo pipefail
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && docker build -t '${IMAGE_NAME}:${GITHUB_SHA}' . && VISIOMILHAS_IMAGE_TAG='${GITHUB_SHA}' docker stack deploy -c stack.visiomilhas.yml '${STACK_NAME}'"
         env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 65002
           SSH_USER: gitdatavisiodeploy
 
