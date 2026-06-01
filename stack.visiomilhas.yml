@@ -30,13 +30,13 @@ x-visiomilhas-common: &visiomilhas-common
         cpus: "0.25"
         memory: 256M
     labels:
-      traefik.enable: "true"
-      traefik.docker.network: "traefik_public"
-      traefik.http.routers.visiomilhas.rule: "Host(`visiomilhas.visiochat.cloud`)"
-      traefik.http.routers.visiomilhas.entrypoints: "websecure"
-      traefik.http.routers.visiomilhas.tls: "true"
-      traefik.http.routers.visiomilhas.tls.certresolver: "le"
-      traefik.http.services.visiomilhas.loadbalancer.server.port: "3000"
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_public"
+      - "traefik.http.routers.visiomilhas.rule=Host(`visiomilhas.visiochat.cloud`)"
+      - "traefik.http.routers.visiomilhas.entrypoints=websecure"
+      - "traefik.http.routers.visiomilhas.tls=true"
+      - "traefik.http.routers.visiomilhas.tls.certresolver=le"
+      - "traefik.http.services.visiomilhas.loadbalancer.server.port=3000"
 
 services:
   visiomilhas_app:
@@ -46,3 +46,4 @@ services:
 networks:
   traefik_public:
     external: true
+    attachable: true

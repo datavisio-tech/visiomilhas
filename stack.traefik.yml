@@ -43,6 +43,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.rule=Host(`traefik.visiochat.cloud`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls=true"
       - "traefik.http.routers.traefik.tls.certresolver=le"
       - "traefik.http.routers.traefik.service=api@internal"
       - "traefik.http.services.traefik.loadbalancer.passHostHeader=true"
@@ -70,3 +71,4 @@ volumes:
 networks:
   traefik_public:
     external: true
+    attachable: true
