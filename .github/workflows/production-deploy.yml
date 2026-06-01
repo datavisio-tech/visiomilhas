@@ -30,8 +30,8 @@ jobs:
       IMAGE_NAME: datavisio/visiomilhas
       STACK_NAME: visiomilhas
       SERVICE_NAME: visiomilhas_visiomilhas_app
-      SSH_PORT: 65002
-      SSH_USER: gitdatavisiodeploy
+      SSH_PORT: 22
+      SSH_USER: root
 
     steps:
       - name: Checkout
@@ -94,8 +94,8 @@ jobs:
           echo "Required production secrets are present."
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: 65002
-          SSH_USER: gitdatavisiodeploy
+          SSH_PORT: 22
+          SSH_USER: root
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
@@ -135,7 +135,7 @@ jobs:
           fi
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: 65002
+          SSH_PORT: 22
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Ensure remote directory exists
@@ -145,8 +145,8 @@ jobs:
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "mkdir -p '${REMOTE_DIR}' && test -w '${REMOTE_DIR}'"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: 65002
-          SSH_USER: gitdatavisiodeploy
+          SSH_PORT: 22
+          SSH_USER: root
 
       - name: Sync source to server
         shell: bash
@@ -179,8 +179,8 @@ jobs:
             ./ "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: 65002
-          SSH_USER: gitdatavisiodeploy
+          SSH_PORT: 22
+          SSH_USER: root
 
       - name: Render production env on server
         shell: bash
@@ -212,8 +212,8 @@ jobs:
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && mv .env.production.tmp .env.production && chmod 600 .env.production && test -s .env.production"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: 65002
-          SSH_USER: gitdatavisiodeploy
+          SSH_PORT: 22
+          SSH_USER: root
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           MONGODB_SERVER_IP: ${{ vars.MONGODB_SERVER_IP || secrets.MONGODB_SERVER_IP }}
@@ -228,8 +228,8 @@ jobs:
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && docker build -t '${IMAGE_NAME}:${GITHUB_SHA}' . && VISIOMILHAS_IMAGE_TAG='${GITHUB_SHA}' docker stack deploy -c stack.visiomilhas.yml '${STACK_NAME}'"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: 65002
-          SSH_USER: gitdatavisiodeploy
+          SSH_PORT: 22
+          SSH_USER: root
 
       - name: Validate deployment
         shell: bash
@@ -239,5 +239,5 @@ jobs:
           curl -fsS --retry 5 --retry-delay 5 "${APP_URL}/" > /dev/null
           echo "Production smoke test passed for ${IMAGE_NAME}:${GITHUB_SHA}."
         env:
-          SSH_PORT: 65002
-          SSH_USER: gitdatavisiodeploy
+          SSH_PORT: 22
+          SSH_USER: root
