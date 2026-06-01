@@ -24,7 +24,7 @@ jobs:
     environment: production
 
     env:
-      REMOTE_DIR: ${{ secrets.REMOTE_APP_DIR }}
+      REMOTE_DIR: ${{ vars.REMOTE_APP_DIR }}
       IMAGE_NAME: datavisio/visiomilhas
       STACK_NAME: visiomilhas
       SERVICE_NAME: visiomilhas_visiomilhas_app
@@ -57,6 +57,8 @@ jobs:
             NEXT_PUBLIC_APP_URL
             NODE_ENV
             USE_FIFO_MOVEMENTS_ENGINE
+            PLANO
+            PLANO_ANUAL
             AUTH_SECRET
             GOOGLE_CLIENT_ID
             GOOGLE_CLIENT_SECRET
@@ -93,15 +95,17 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          APP_NAME: ${{ secrets.APP_NAME }}
-          APP_URL: ${{ secrets.APP_URL }}
-          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
-          NODE_ENV: ${{ secrets.NODE_ENV }}
-          USE_FIFO_MOVEMENTS_ENGINE: ${{ secrets.USE_FIFO_MOVEMENTS_ENGINE }}
+          APP_NAME: ${{ vars.APP_NAME }}
+          APP_URL: ${{ vars.APP_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+          NODE_ENV: ${{ vars.NODE_ENV }}
+          USE_FIFO_MOVEMENTS_ENGINE: ${{ vars.USE_FIFO_MOVEMENTS_ENGINE }}
+          PLANO: ${{ vars.PLANO }}
+          PLANO_ANUAL: ${{ vars.PLANO_ANUAL }}
           AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
@@ -126,9 +130,9 @@ jobs:
           set -euo pipefail
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          printf '%s\n' "${PRODUCTION_SSH_PRIVATE_KEY}" > ~/.ssh/visiomilhas_deploy_key
+          printf '%s\n' "${SSH_PRIVATE_KEY}" > ~/.ssh/visiomilhas_deploy_key
           chmod 600 ~/.ssh/visiomilhas_deploy_key
-          ssh-keyscan -p "${PRODUCTION_SSH_PORT}" "${PRODUCTION_SSH_HOST}" >> ~/.ssh/known_hosts
+          ssh-keyscan -p "${SSH_PORT}" "${SSH_HOST}" >> ~/.ssh/known_hosts
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
@@ -220,15 +224,17 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
-          APP_NAME: ${{ secrets.APP_NAME }}
-          APP_URL: ${{ secrets.APP_URL }}
-          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
-          NODE_ENV: ${{ secrets.NODE_ENV }}
-          USE_FIFO_MOVEMENTS_ENGINE: ${{ secrets.USE_FIFO_MOVEMENTS_ENGINE }}
+          APP_NAME: ${{ vars.APP_NAME }}
+          APP_URL: ${{ vars.APP_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+          NODE_ENV: ${{ vars.NODE_ENV }}
+          USE_FIFO_MOVEMENTS_ENGINE: ${{ vars.USE_FIFO_MOVEMENTS_ENGINE }}
+          PLANO: ${{ vars.PLANO }}
+          PLANO_ANUAL: ${{ vars.PLANO_ANUAL }}
           AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
