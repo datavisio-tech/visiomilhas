@@ -26,7 +26,7 @@ jobs:
     environment: production
 
     env:
-      REMOTE_DIR: ${{ vars.REMOTE_APP_DIR }}
+      REMOTE_DIR: ${{ secrets.REMOTE_APP_DIR }}
       IMAGE_NAME: datavisio/visiomilhas
       STACK_NAME: visiomilhas
       SERVICE_NAME: visiomilhas_visiomilhas_app
@@ -34,6 +34,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Load public production config
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f config/production-public.env ]; then
+            echo "Missing config/production-public.env"
+            exit 1
+          fi
+          cat config/production-public.env >> "$GITHUB_ENV"
 
       - name: Validate production deploy confirmation
         shell: bash
@@ -52,6 +62,7 @@ jobs:
         run: |
           set -euo pipefail
           required=(
+            REMOTE_DIR
             SSH_HOST
             SSH_PORT
             SSH_USER
@@ -99,17 +110,15 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          APP_NAME: ${{ vars.APP_NAME }}
-          APP_URL: ${{ vars.APP_URL }}
-          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
-          NODE_ENV: ${{ vars.NODE_ENV }}
-          USE_FIFO_MOVEMENTS_ENGINE: ${{ vars.USE_FIFO_MOVEMENTS_ENGINE }}
-          PLANO: ${{ vars.PLANO }}
-          PLANO_ANUAL: ${{ vars.PLANO_ANUAL }}
+          APP_NAME: ${{ secrets.APP_NAME }}
+          APP_URL: ${{ secrets.APP_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+          NODE_ENV: ${{ secrets.NODE_ENV }}
+          USE_FIFO_MOVEMENTS_ENGINE: ${{ secrets.USE_FIFO_MOVEMENTS_ENGINE }}
           AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
@@ -228,17 +237,15 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
-          APP_NAME: ${{ vars.APP_NAME }}
-          APP_URL: ${{ vars.APP_URL }}
-          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
-          NODE_ENV: ${{ vars.NODE_ENV }}
-          USE_FIFO_MOVEMENTS_ENGINE: ${{ vars.USE_FIFO_MOVEMENTS_ENGINE }}
-          PLANO: ${{ vars.PLANO }}
-          PLANO_ANUAL: ${{ vars.PLANO_ANUAL }}
+          APP_NAME: ${{ secrets.APP_NAME }}
+          APP_URL: ${{ secrets.APP_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+          NODE_ENV: ${{ secrets.NODE_ENV }}
+          USE_FIFO_MOVEMENTS_ENGINE: ${{ secrets.USE_FIFO_MOVEMENTS_ENGINE }}
           AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
@@ -278,4 +285,4 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
-          APP_URL: ${{ vars.APP_URL }}
+          APP_URL: ${{ secrets.APP_URL }}
