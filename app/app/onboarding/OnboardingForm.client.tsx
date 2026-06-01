@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState } from "react";
 
 type OnboardingFormClientProps = {
@@ -21,8 +21,12 @@ export default function OnboardingFormClient({ onboardingState, flowStage }: Onb
       const res = await fetch('/api/onboarding', { method: 'POST' });
       const data = await res.json();
       if (res.ok && data.ok) {
-        setSuccess(data.status === "recovered" ? "Recuperamos seu onboarding com segurança." : "Onboarding concluído com sucesso.");
-        window.location.href = '/subscribe';
+        setSuccess(
+          data.status === "recovered"
+            ? "Recuperamos sua base operacional com segurança. Redirecionando para Contas..."
+            : "Base operacional preparada. Redirecionando para Contas...",
+        );
+        window.location.href = '/app/accounts';
         return;
       }
       setError(data.error ?? 'unknown_error');
@@ -48,7 +52,7 @@ export default function OnboardingFormClient({ onboardingState, flowStage }: Onb
           </span>
         </div>
         <div className="mt-2 text-xs leading-5 text-slate-500">
-          O botão abaixo cria ou recupera a base operacional sem expor detalhes técnicos ao usuário.
+          O botão abaixo prepara a base e leva você para Contas, sem expor detalhes técnicos ao usuário.
         </div>
       </div>
 
@@ -72,8 +76,8 @@ export default function OnboardingFormClient({ onboardingState, flowStage }: Onb
         {loading
           ? "Validando..."
           : onboardingState === "partial"
-            ? "Recuperar base operacional"
-            : "Criar base operacional"}
+            ? "Abrir contas"
+            : "Preparar base e abrir contas"}
       </button>
 
       <div className="mt-3 text-sm leading-6 text-slate-600">
@@ -82,3 +86,5 @@ export default function OnboardingFormClient({ onboardingState, flowStage }: Onb
     </div>
   );
 }
+
+

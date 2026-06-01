@@ -12,7 +12,7 @@ import type {
   TransferRecord,
   PointLot,
 } from "../services/movements";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 /**
  * Cria um MovementsRepo concreto usando Drizzle (node-postgres).
@@ -46,6 +46,8 @@ export function createDrizzleMovementsRepo(db = appDb()) {
         description: entry.description ?? null,
         source: entry.source ?? null,
         status: entry.status ?? "posted",
+        relatedEntityType: entry.relatedEntityType ?? null,
+        relatedEntityId: entry.relatedEntityId ?? null,
         metadata: entry.metadata ?? undefined,
         createdAt: entry.createdAt ?? new Date(),
         updatedAt: entry.updatedAt ?? new Date(),
@@ -89,6 +91,35 @@ export function createDrizzleMovementsRepo(db = appDb()) {
       .update(mile_point_lots)
       .set({ remainingPoints: remaining })
       .where(eq(mile_point_lots.id, lotId));
+  }
+
+  async function closeLotsBySourceEntryId(sourceEntryId: number) {
+    await db
+      .update(mile_point_lots)
+      .set({
+        remainingPoints: 0,
+        status: "reversed" as any,
+        updatedAt: new Date(),
+      })
+      .where(eq(mile_point_lots.sourceEntryId, sourceEntryId));
+  }
+
+  async function reopenLotsBySourceEntryId(sourceEntryId: number) {
+    const rows = await db
+      .select()
+      .from(mile_point_lots)
+      .where(eq(mile_point_lots.sourceEntryId, sourceEntryId));
+
+    for (const row of rows as any[]) {
+      await db
+        .update(mile_point_lots)
+        .set({
+          remainingPoints: row.acquiredPoints,
+          status: "available" as any,
+          updatedAt: new Date(),
+        })
+        .where(eq(mile_point_lots.id, row.id));
+    }
   }
 
   async function updateProgramAccountBalance(
@@ -138,6 +169,46 @@ export function createDrizzleMovementsRepo(db = appDb()) {
     return filtered;
   }
 
+  async function findEntryByRelatedEntity(
+    relatedEntityType: string,
+    relatedEntityId: string,
+  ) {
+    const rows = await db
+      .select()
+      .from(mile_entries)
+      .where(
+        and(
+          eq(mile_entries.relatedEntityType, relatedEntityType),
+          eq(mile_entries.relatedEntityId, relatedEntityId),
+        ),
+      )
+      .limit(1);
+    return (rows as any[])[0] ?? null;
+  }
+
+  async function markEntryReversed(entryId: number, reversalEntryId?: number) {
+    await db
+      .update(mile_entries)
+      .set({
+        reversedAt: new Date(),
+        status: "reversed" as any,
+        reversalOfEntryId: reversalEntryId ?? undefined,
+      })
+      .where(eq(mile_entries.id, entryId));
+  }
+
+  async function markEntryRestored(entryId: number) {
+    await db
+      .update(mile_entries)
+      .set({
+        reversedAt: null,
+        status: "posted" as any,
+        reversalOfEntryId: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(mile_entries.id, entryId));
+  }
+
   async function insertTransfer(transfer: TransferRecord) {
     const res = await db
       .insert(mile_transfers)
@@ -171,9 +242,14 @@ export function createDrizzleMovementsRepo(db = appDb()) {
     insertEntry,
     insertLot,
     updateLotRemaining,
+    closeLotsBySourceEntryId,
+    reopenLotsBySourceEntryId,
     updateProgramAccountBalance,
     getAvailableLots,
     insertTransfer,
+    findEntryByRelatedEntity,
+    markEntryReversed,
+    markEntryRestored,
     runInTransaction,
   } as any;
 }

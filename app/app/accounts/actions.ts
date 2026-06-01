@@ -14,8 +14,14 @@ import {
 const accountFormSchema = z.object({
   programId: z.coerce.number().int().positive(),
   nickname: z.string().trim().max(255).optional().or(z.literal("")),
-  initialBalance: z.coerce.number().int().min(0).optional().default(0),
-  initialCpm: z.coerce.number().min(0).optional().default(0),
+  initialBalance: z.preprocess(
+    normalizeIntegerLikeInput,
+    z.number().int().min(0).optional().default(0),
+  ),
+  initialCpm: z.preprocess(
+    normalizeDecimalLikeInput,
+    z.number().min(0).optional().default(0),
+  ),
   addInitialBalance: z
     .union([z.literal("on"), z.literal("true"), z.literal("1")])
     .optional(),
@@ -31,6 +37,33 @@ const accountFormSchema = z.object({
 function normalizeNickname(value?: string | null) {
   const nickname = value?.trim();
   return nickname ? nickname : null;
+}
+
+function normalizeIntegerLikeInput(value: unknown) {
+  if (typeof value === "number") return Math.trunc(value);
+  if (typeof value !== "string") return 0;
+
+  const normalized = value.trim().replace(/\s/g, "").replace(/[.,]/g, "");
+  if (!normalized) return 0;
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? Math.trunc(parsed) : 0;
+}
+
+function normalizeDecimalLikeInput(value: unknown) {
+  if (typeof value === "number") return value;
+  if (typeof value !== "string") return 0;
+
+  const trimmed = value.trim();
+  if (!trimmed) return 0;
+
+  const normalized =
+    trimmed.includes(",") && trimmed.includes(".")
+      ? trimmed.replace(/\./g, "").replace(",", ".")
+      : trimmed.replace(",", ".");
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 async function writeInitialBalanceEntry(params: {
@@ -139,9 +172,10 @@ export async function createAccountAction(formData: FormData) {
     const displayName = buildAccountDisplayName(programName, nickname);
     const initialBalance = input.addInitialBalance ? input.initialBalance : 0;
     const initialCpm = input.addInitialBalance ? input.initialCpm : 0;
+    const initialCpmCents = toMoneyCents(initialCpm);
     const costBasisCents = calculateInitialCostBasisCents(
       initialBalance,
-      initialCpm,
+      initialCpmCents,
     );
 
     const insertAccount = await client.query(
@@ -164,7 +198,7 @@ export async function createAccountAction(formData: FormData) {
         displayName,
         initialBalance,
         costBasisCents,
-        initialCpm,
+        initialCpmCents,
         "active",
       ],
     );
@@ -178,7 +212,7 @@ export async function createAccountAction(formData: FormData) {
         programId: input.programId,
         accountId,
         balance: initialBalance,
-        cpmCents: initialCpm,
+        cpmCents: initialCpmCents,
       });
     }
 
@@ -247,7 +281,7 @@ export async function updateAccountAction(formData: FormData) {
     await client.query("BEGIN");
 
     const accountRes = await client.query(
-      `SELECT pa.id, pa.program_id, lp.name as program_name FROM program_accounts pa LEFT JOIN loyalty_programs lp ON pa.program_id = lp.id WHERE pa.id = $1 AND pa.organization_id = $2 LIMIT 1 FOR UPDATE`,
+      `SELECT pa.id, pa.program_id FROM program_accounts pa WHERE pa.id = $1 AND pa.organization_id = $2 LIMIT 1 FOR UPDATE`,
       [input.accountId, organizationId],
     );
 
@@ -256,31 +290,44 @@ export async function updateAccountAction(formData: FormData) {
       return { success: false, error: "account not found" };
     }
 
-    const existing = accountRes.rows[0];
-    const programName = getProgramDisplayName(existing.program_name);
+    const selectedProgramRes = await client.query(
+      `SELECT id, name FROM loyalty_programs WHERE id = $1 AND organization_id = $2 LIMIT 1`,
+      [input.programId, organizationId],
+    );
+
+    if (!selectedProgramRes.rows.length) {
+      await client.query("ROLLBACK");
+      return { success: false, error: "program not found" };
+    }
+
+    const selectedProgram = selectedProgramRes.rows[0];
+    const programName = getProgramDisplayName(selectedProgram.name);
     const nickname = normalizeNickname(input.nickname);
     const displayName = buildAccountDisplayName(programName, nickname);
     const balance = input.initialBalance ?? 0;
     const cpm = input.initialCpm ?? 0;
+    const cpmCents = toMoneyCents(cpm);
     const isActive = input.isActive ? "active" : "inactive";
-    const costBasisCents = calculateInitialCostBasisCents(balance, cpm);
+    const costBasisCents = calculateInitialCostBasisCents(balance, cpmCents);
 
     await client.query(
       `UPDATE program_accounts
-       SET nickname = $1,
-           holder_name = $2,
-           current_points_balance = $3,
-           current_cost_basis_cents = $4,
-           current_avg_cost_per_thousand_cents = $5,
-           status = $6,
+       SET program_id = $1,
+           nickname = $2,
+           holder_name = $3,
+           current_points_balance = $4,
+           current_cost_basis_cents = $5,
+           current_avg_cost_per_thousand_cents = $6,
+           status = $7,
            updated_at = NOW()
-       WHERE id = $7 AND organization_id = $8`,
+       WHERE id = $8 AND organization_id = $9`,
       [
+        selectedProgram.id,
         nickname,
         displayName,
         balance,
         costBasisCents,
-        cpm,
+        cpmCents,
         isActive,
         input.accountId,
         organizationId,
@@ -295,10 +342,12 @@ export async function updateAccountAction(formData: FormData) {
     return {
       success: true,
       accountId: input.accountId,
+      programId: Number(selectedProgram.id),
+      programName,
       displayName,
       nickname,
       currentBalance: balance,
-      currentCpm: cpm,
+      currentCpm: cpmCents,
       isActive: isActive === "active",
     };
   } catch (error) {
@@ -351,6 +400,94 @@ export async function inactivateAccountAction(formData: FormData) {
   }
 }
 
+export async function activateAccountAction(formData: FormData) {
+  const accountId = Number(formData.get("accountId"));
+  if (!Number.isFinite(accountId) || accountId <= 0) {
+    return { success: false, error: "account id is required" };
+  }
+
+  const sessionContext = await resolveControlledSessionContext({
+    source: "accounts.activate",
+    accountId,
+    allowFallback: false,
+  });
+
+  if (!sessionContext) {
+    return { success: false, error: "authentication required" };
+  }
+
+  const organizationId = sessionContext.ownership.organizationId;
+  if (!organizationId) {
+    return { success: false, error: "organization not found" };
+  }
+
+  const auth = requireAuth(sessionContext.auth);
+  await resolveOwnedAccount(auth, accountId);
+
+  const pool = appPool();
+  const client = await pool.connect();
+
+  try {
+    await client.query(
+      `UPDATE program_accounts SET status = 'active', updated_at = NOW() WHERE id = $1 AND organization_id = $2`,
+      [accountId, organizationId],
+    );
+
+    revalidatePath("/app/accounts");
+    revalidatePath("/app/dashboard");
+
+    return { success: true, accountId };
+  } finally {
+    client.release();
+  }
+}
+
 export async function softDeleteAccountAction(formData: FormData) {
-  return inactivateAccountAction(formData);
+  const accountId = Number(formData.get("accountId"));
+  if (!Number.isFinite(accountId) || accountId <= 0) {
+    return { success: false, error: "account id is required" };
+  }
+
+  const sessionContext = await resolveControlledSessionContext({
+    source: "accounts.delete",
+    accountId,
+    allowFallback: false,
+  });
+
+  if (!sessionContext) {
+    return { success: false, error: "authentication required" };
+  }
+
+  const organizationId = sessionContext.ownership.organizationId;
+  if (!organizationId) {
+    return { success: false, error: "organization not found" };
+  }
+
+  const auth = requireAuth(sessionContext.auth);
+  await resolveOwnedAccount(auth, accountId);
+
+  const pool = appPool();
+  const client = await pool.connect();
+
+  try {
+    await client.query(
+      `UPDATE program_accounts SET status = 'deleted', updated_at = NOW() WHERE id = $1 AND organization_id = $2`,
+      [accountId, organizationId],
+    );
+
+    revalidatePath("/app/accounts");
+    revalidatePath("/app/dashboard");
+
+    return { success: true, accountId };
+  } finally {
+    client.release();
+  }
+}
+
+function toMoneyCents(value: number) {
+  if (!Number.isFinite(value) || value <= 0) {
+    return 0;
+  }
+
+  return Math.round(value * 100);
 }

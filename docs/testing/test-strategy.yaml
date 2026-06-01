@@ -1,0 +1,39 @@
+# Test Strategy
+# Generated: 2026-05-31
+
+overview:
+  description: "Estratégia de testes alinhada ao plano de modernização."
+  objectives:
+    - Garantir qualidade e integridade funcional durante migração.
+    - Detectar regressões precocemente.
+    - Assegurar cobertura mínima por nível de teste.
+
+coverage_targets: &coverage_targets
+  unit: 90
+  integration: 80
+  e2e_critical_flows: 100
+
+mandatory_tests:
+  contract_tests: true
+  security_tests: true
+  regression_tests: true
+  performance_tests_for_critical_modules: true
+
+execution:
+  ci_integration: true
+  parallel_validation: true
+  fast_feedback_for_developers: true
+  nightly_full_regression: true
+
+quality_gates_reference: ../testing/quality-gates.yaml
+coverage_policy_reference: ../testing/coverage-policy.yaml
+
+ci_recommendations:
+  - run lint and typecheck on PRs
+  - run unit tests on every push
+  - run integration + contract tests on merge to main
+  - run e2e smoke on staging before release
+
+notes:
+  - E2E 100% applies only to flows marked as critical (ex: checkout, auth, payments).
+  - Performance tests required for modules flagged as critical in `target-architecture.yaml`.

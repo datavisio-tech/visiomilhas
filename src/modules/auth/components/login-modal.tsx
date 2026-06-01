@@ -150,7 +150,7 @@ export default function LoginModal({
               onClick={onContinueWithGoogle}
               disabled={loading}
             >
-              Continuar com Google
+              Entrar com Google
             </ShadcnButton>
             <ShadcnButton
               type="submit"

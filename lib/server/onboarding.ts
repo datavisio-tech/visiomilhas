@@ -189,7 +189,6 @@ export async function ensureInitialOrganizationAndAccount(
   const appClient = await app.connect();
 
   let createdProgram = false;
-  let createdAccount = false;
 
   try {
     // Ensure a default program exists for this organization
@@ -217,32 +216,12 @@ export async function ensureInitialOrganizationAndAccount(
       createdProgram = true;
     }
 
-    // Ensure a program account exists for this organization+program
-    const accRes = await appClient.query(
-      `SELECT id FROM program_accounts WHERE organization_id = $1 AND program_id = $2 LIMIT 1`,
-      [organizationId, programId],
-    );
-
-    let accountId: number | null = null;
-    if (accRes.rows.length > 0) {
-      accountId = Number(accRes.rows[0].id);
-    } else {
-      const holderName = (email ?? "").split("@")[0] || `user-${globalUserId}`;
-      const insertAcc = await appClient.query(
-        `INSERT INTO program_accounts (organization_id, program_id, nickname, holder_name, current_points_balance, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW()) RETURNING id`,
-        [organizationId, programId, "Minha conta", holderName, 0, "active"],
-      );
-      accountId = Number(insertAcc.rows[0].id);
-      createdAccount = true;
-    }
-
     return {
       organizationId,
       programId: programId ?? undefined,
-      accountId: accountId ?? undefined,
       status: createdOrganization
         ? "created"
-        : createdProgram || createdAccount
+        : createdProgram
           ? "recovered"
           : "already-provisioned",
     };

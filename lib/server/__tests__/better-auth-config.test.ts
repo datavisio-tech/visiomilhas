@@ -32,6 +32,23 @@ describe("resolveBetterAuthEnvironment", () => {
     ]);
   });
 
+  it("prefers the dev server port when PORT is set", () => {
+    const env = resolveBetterAuthEnvironment({
+      BETTER_AUTH_SECRET: "test-secret",
+      GOOGLE_CLIENT_ID: "google-client-id",
+      GOOGLE_CLIENT_SECRET: "google-client-secret",
+      PORT: "3001",
+      APP_URL: "http://localhost:3000",
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000",
+    });
+
+    expect(env.baseURL).toBe("http://localhost:3001");
+    expect(env.trustedOrigins).toEqual([
+      "http://localhost:3001",
+      "http://localhost:3000",
+    ]);
+  });
+
   it("requires auth and Google env vars", () => {
     expect(() =>
       resolveBetterAuthEnvironment({

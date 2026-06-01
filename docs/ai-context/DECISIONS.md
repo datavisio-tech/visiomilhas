@@ -1,5 +1,95 @@
 # DECISIONS - VisioMilhas
 
+# 2026-06-01 — Subscription UX Refinement
+
+- Decisão: a experiência `/subscribe` deve tratar o VisioMilhas como ERP operacional financeiro para milhas, não apenas como gerenciador de milhas.
+- Decisão: a página pode exibir valores comerciais apenas via variáveis de ambiente `PLANO` e `PLANO_ANUAL`, mantendo a migração futura para `controle_adm_saas_datavisio` aberta.
+- Decisão: o refinamento é estritamente de UX/copy; não altera Better Auth, guards de assinatura, multi-tenancy, Stripe, checkout, billing real ou persistência de planos.
+- Decisão: `NO_SUB` deve ser explicado ao usuário como modo somente leitura, preservando dados e removendo apenas permissões de alteração.
+
+# 2026-05-31 — purchases-analytics-stabilization
+
+- Decisão: o KPI de Purchases deve continuar agregado por `status` e filtrado por `organizationId` no server render.
+- Decisão: a correção do `42803` deve permanecer mínima e localizada na query, sem criar novos fluxos de negócio.
+- Decisão: `accountId` pode existir como filtro opcional no KPI, mas a página atual segue operando no escopo por organização até haver UX explícita para seleção de conta.
+
+# 2026-05-31 — purchases-journey-stabilization
+
+- Decisão: a jornada de Purchases deve resolver a conta operacional real pelo runtime e nunca usar `accountId`/`programId` fixos na fixture.
+- Decisão: o `programId` enviado para criação de compra deve ser derivado da própria conta operacional selecionada, e o backend continua sendo a fonte de verdade final.
+- Decisão: se o seletor estiver vazio, a fixture pode preparar uma conta operacional de teste, mas sempre com o mesmo tenant e com dados consistentes entre conta e programa.
+
+# 2026-05-31 — subscription-access-stabilization
+
+- Decisão: o estado `NO_SUB` precisa ser auditado com um usuário fresco, sem ativar trial no mesmo fluxo de validação.
+- Decisão: o runner de auditoria pode preparar dados de teste, mas não deve promover o caso `NO_SUB` antes da coleta de evidências read-only.
+- Decisão: `NO_SUB` é um estado real do domínio e deve permanecer observável como `NO_SUBSCRIPTION` com escrita bloqueada.
+- Decisão: `TRIAL` e `ACTIVE` continuam sendo os únicos estados com escrita liberada nas rotas de Purchases.
+
+# 2026-05-31 — alinhamento de origem do runtime MCP
+
+- Decisão: a origem do runtime local precisa ser derivada do `PORT` em desenvolvimento para evitar `INVALID_ORIGIN` no Better Auth.
+- Decisão: `BETTER_AUTH_URL`, `APP_URL`, `NEXT_PUBLIC_APP_URL` e `trustedOrigins` devem permanecer coerentes com o servidor Next ativo.
+- Decisão: o runtime MCP deve continuar usando o comportamento real do produto, sem bypass, fake auth ou `allowFallback` como solução definitiva.
+- Decisão: o cenário `NO_SUB` continua sendo um gap de produto/runtime enquanto o primeiro acesso de subscription promove o usuário para `TRIAL`.
+
+# 2026-05-30 — Campaign Catalog Engine 4.3-C
+
+- Decisão: o catálogo de campanhas parceiras deve viver em `src/modules/campaigns`, separado dos módulos operacionais de Purchases e Programs.
+- Decisão: a primeira versão do motor será dirigida por seed JSON e providers vazios, sem scraping automático nesta release.
+- Decisão: `partner_campaigns` deve guardar metadados de parceiro, programa, tipo, status e origem para servir de base ao autofill futuro da compra bonificada.
+- Decisão: `campaign_snapshots` é a tabela oficial para preservar histórico de observações do catálogo sem misturar esse dado com o registro principal.
+
+# 2026-05-30 — Purchases como cockpit operacional 4.3-B.2.A
+
+- Decisão: Purchases passa a ser tratado como cockpit operacional baseado em Kanban, não como tabela primária.
+- Decisão: o fluxo de status oficial é `REGISTERED -> TRACKED -> PENDING_CREDIT -> RECEIVED` e qualquer etapa pode ir para `PROBLEM`.
+- Decisão: `RECEIVED` deve criar `PURCHASE_BONUS` de maneira idempotente e refletir atualização contábil no programa e na conta destino.
+- Decisão: o `organizationId` do cockpit deve vir do servidor e ser repassado ao cliente para manter a UI e as mutações no tenant correto.
+- Decisão: o runtime MCP deve validar o fluxo completo no ambiente real, sem mocks, usando Chrome DevTools MCP.
+
+# 2026-05-29 — Programs como cockpit operacional 4.2-B
+
+- Decisão: `Programs` deixa de ser apenas uma visão contextual e passa a ser o cockpit operacional da conta.
+- Decisão: `accountId`, `tab` e `period` devem ser persistidos na URL para permitir refresh e troca de conta sem perda de contexto.
+- Decisão: a camada de Programs deve viver em `src/modules/programs`, separando domínio, aplicação, infraestrutura e apresentação.
+- Decisão: quick actions devem reutilizar os formulários existentes de compra, venda e transferência, sem criar um segundo motor de mutações.
+- Decisão: o extrato operacional deve ser um contrato estruturado com saldo pós-movimento, CPM e valor financeiro por linha.
+
+### 2026-05-29 — 4.2-B.1 Decisions (Programs UX Refinement)
+
+- Decisão: reduzir a altura do header (~40%) para priorizar o conteúdo operacional sem perder a presença de marca.
+- Decisão: mover o seletor de conta para dentro do header e oferecer a ação explícita `Trocar conta` apontando para `/app/accounts`.
+- Decisão: evitar duplicação de KPIs — header contém visão executiva condensada; cards permanecem para indicadores operacionais detalhados.
+- Decisão: o `Resumo` passa a priorizar `KPIs` → `Extrato operacional resumido` → `Gráficos`; os gráficos são complementares.
+- Decisão: substituir a `Timeline` por uma `TransactionTable` com colunas operacionais padronizadas (`Data`, `Operação`, `Tipo`, `Pontos`, `Valor`, `CPM`, `Status`).
+- Decisão: sidebar contextual fixa à direita (sticky) com cards compactos para `Conta`, `Pendências` e `Assinaturas`.
+- Decisão: breadcrumb e controle de troca de conta devem existir no header para otimizar navegação e reduzir camadas.
+- Decisão: os cards operacionais do corpo devem priorizar resultado, pendências, compras do período, vendas do período e transferências abertas, deixando gráficos como suporte visual.
+
+# DECISIONS - VisioMilhas
+
+# 2026-05-29 — separação rígida de `/sign-in` 3.7-E
+
+- Decisão: a coluna esquerda passa a ser exclusivamente de marketing/conversão, concentrando headline, preview e storytelling do produto.
+- Decisão: a coluna direita passa a ser exclusivamente de autenticação, sem qualquer conteúdo de produto ou prova social operacional.
+- Decisão: o logo VisioMilhas, o título, os botões de login e os links de criação/recuperação devem permanecer na direita como os únicos elementos de interface do acesso.
+- Decisão: a aparência da área direita deve permanecer clara, minimalista e neutra, reforçando confiança sem competir com a coluna de marketing.
+
+# 2026-05-29 — refinamento premium de `/sign-in` 3.7-D
+
+- Decisão: a headline `Controle suas milhas como um operador profissional.` é a melhor escolha para o posicionamento premium atual, por comunicar domínio operacional sem soar genérica ou agressiva demais.
+- Decisão: a separação marketing/operação deve ser suavizada com gradiente e glow central para evitar a sensação de layout colado.
+- Decisão: o preview de marketing pode usar KPIs e movimentações fictícias como prova visual, desde que isso fique claramente sem dependência de backend.
+- Decisão: o card operacional deve ganhar microcopy de confiança e hover sutil, mantendo o foco em autenticação.
+
+# 2026-05-29 — separação visual de `/sign-in` 3.7-C
+
+- Decisão: manter o comportamento atual de auth intacto e alterar apenas a composição visual da tela `/sign-in`.
+- Decisão: o desktop deve comunicar dois contextos distintos, com marketing escuro à esquerda e operação clara à direita.
+- Decisão: o lado operacional deve usar leitura mais leve, card branco e preview mockado para reforçar o contexto de acesso ao produto.
+- Decisão: tablet e mobile devem empilhar com a autenticação antes do conteúdo de marketing.
+
 # 2026-05-28 — Hub de autenticação unificado 3.7-B
 
 - Decisão: manter Google OAuth como caminho principal em `/sign-in` e adicionar fallback por e-mail/senha via modais, sem criar páginas públicas extras.

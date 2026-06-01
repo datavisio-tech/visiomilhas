@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import PrimaryButton from "./button";
 
 type EmptyStateProps = {
   title: string;
@@ -47,12 +47,7 @@ export default function EmptyState({
       ) : null}
       {actionLabel && actionHref ? (
         <div className="mt-6">
-          <Link
-            href={actionHref}
-            className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 hover:shadow-card"
-          >
-            {actionLabel}
-          </Link>
+          <PrimaryButton href={actionHref}>{actionLabel}</PrimaryButton>
         </div>
       ) : null}
     </div>

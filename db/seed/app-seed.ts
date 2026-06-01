@@ -1,6 +1,9 @@
 import { appPool } from "../../db/app/client";
 import { DEMO_APP } from "./demo-data";
 import LOYALTY_CATALOG from "../../data/loyalty-programs.json";
+import { seedPartners } from "./partners-seed";
+import { seedCampaigns } from "./campaigns-seed";
+import { seedSamplePurchases } from "./purchases-sample-seed";
 
 const CLUBS = [
   { name: "Clube Livelo", programSlug: "livelo" },
@@ -249,6 +252,12 @@ export async function seedApp(organizationId: number): Promise<void> {
     }
 
     await client.query("COMMIT");
+    // seed partner stores
+    await seedPartners(organizationId);
+    // seed partner campaigns
+    await seedCampaigns(organizationId);
+    // seed sample purchases (evidences + history)
+    await seedSamplePurchases(organizationId);
   } catch (err) {
     await client.query("ROLLBACK");
     throw err;

@@ -34,8 +34,12 @@ export default function ProgramOption({ program, onClick, selected }: Props) {
       </div>
 
       <div className="flex-1">
-        <div className="text-sm font-medium text-slate-900">{program.name}</div>
-        <div className="text-xs text-slate-500">{program.slug ?? ""}</div>
+        <div className="text-sm font-medium text-slate-900 select-text">
+          {program.name}
+        </div>
+        <div className="text-xs text-slate-500 select-text">
+          {program.slug ?? ""}
+        </div>
       </div>
 
       {!program.isActive ? (

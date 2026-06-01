@@ -17,6 +17,8 @@ export type AccountOverview = {
   isActive: boolean;
   balance: number;
   cpmCents: number;
+  createdAt: string | null;
+  updatedAt: string | null;
 };
 
 export type AccountProgramOption = {
@@ -44,12 +46,15 @@ export async function getAccountsOverview(
         pa.status,
         pa.current_points_balance,
         pa.current_avg_cost_per_thousand_cents,
+        pa.created_at,
+        pa.updated_at,
         lp.name as program_name,
         lp.slug as program_slug,
         lp.color as program_color
       FROM program_accounts pa
       LEFT JOIN loyalty_programs lp ON pa.program_id = lp.id
       WHERE pa.organization_id = $1
+        AND pa.status <> 'deleted'
       ORDER BY pa.status DESC, lp.name NULLS LAST, pa.nickname NULLS LAST, pa.id DESC
       LIMIT 100`,
       [organizationId],
@@ -64,6 +69,8 @@ export async function getAccountsOverview(
       isActive: String(r.status || "inactive") === "active",
       balance: Number(r.current_points_balance || 0),
       cpmCents: Number(r.current_avg_cost_per_thousand_cents || 0),
+      createdAt: r.created_at ? new Date(r.created_at).toISOString() : null,
+      updatedAt: r.updated_at ? new Date(r.updated_at).toISOString() : null,
       program: r.program_name || null,
       programSlug: r.program_slug || null,
       programColor: r.program_color || null,

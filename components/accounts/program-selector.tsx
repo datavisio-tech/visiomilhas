@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { AccountProgramOption } from "../../lib/data/accounts";
 import ProgramOption from "./program-option";
+import LOYALTY_CATALOG from "../../data/loyalty-programs.json";
 
 /* eslint-disable no-unused-vars */
 type Props = {
@@ -23,6 +24,12 @@ export default function ProgramSelector({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
+  const [selectedFallback, setSelectedFallback] = useState<{
+    id: string;
+    name: string;
+    slug?: string | null;
+    color?: string | null;
+  } | null>(null);
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -34,15 +41,47 @@ export default function ProgramSelector({
     return () => document.removeEventListener("click", onDoc);
   }, []);
 
-  const selected = programs.find(
-    (p) => String(p.id) === String(selectedProgramId),
-  );
+  const selected =
+    programs.find((p) => String(p.id) === String(selectedProgramId)) ??
+    (selectedFallback && String(selectedFallback.id) === String(selectedProgramId)
+      ? selectedFallback
+      : null);
 
-  const filtered = programs.filter((p) => {
-    const q = filter.trim().toLowerCase();
+  useEffect(() => {
+    if (!selectedProgramId) {
+      setSelectedFallback(null);
+      return;
+    }
+
+    const matched = programs.find((p) => String(p.id) === String(selectedProgramId));
+    if (matched) {
+      setSelectedFallback(null);
+    }
+  }, [programs, selectedProgramId]);
+
+  // build merged list: DB programs first, then catalog items not present in DB
+  const catalog = (LOYALTY_CATALOG as any[]).map((p) => ({
+    __catalog: true,
+    key: `catalog:${p.slug}`,
+    id: `catalog:${p.slug}`,
+    name: p.name,
+    slug: p.slug,
+    color: p.brand_color || null,
+    isActive: true,
+  }));
+
+  const merged = [
+    ...programs,
+    ...catalog.filter(
+      (c) => !programs.some((db) => String(db.slug) === String(c.slug)),
+    ),
+  ];
+
+  const q = filter.trim().toLowerCase();
+  const filtered = merged.filter((p: any) => {
     if (!q) return true;
     return (
-      p.name.toLowerCase().includes(q) ||
+      (p.name || "").toLowerCase().includes(q) ||
       (p.slug || "").toLowerCase().includes(q)
     );
   });
@@ -59,14 +98,16 @@ export default function ProgramSelector({
       >
         <div className="flex items-center gap-3">
           <div className="flex-1">
-            <div className="text-sm text-slate-900">
+            <div className="text-sm text-slate-900 select-text">
               {selected ? (
                 selected.name
               ) : (
                 <span className="text-slate-400">Selecione</span>
               )}
             </div>
-            <div className="text-xs text-slate-500">{selected?.slug ?? ""}</div>
+            <div className="text-xs text-slate-500 select-text">
+              {selected?.slug ?? ""}
+            </div>
           </div>
 
           <div className="text-xs text-slate-500">▾</div>
@@ -92,17 +133,51 @@ export default function ProgramSelector({
               </div>
             ) : (
               filtered.map((program) => (
-                <div
-                  key={program.id}
-                  onClick={() => {
-                    onChange(String(program.id));
-                    setOpen(false);
-                  }}
-                >
-                  <ProgramOption
-                    program={program}
-                    selected={String(program.id) === String(selectedProgramId)}
-                  />
+                <div key={program.id}>
+                  <div
+                    onClick={async () => {
+                      // if catalog item (id starts with 'catalog:') create in DB first
+                      if (String(program.id).startsWith("catalog:")) {
+                        try {
+                          const res = await fetch(
+                            "/api/loyalty-programs/create",
+                            {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ slug: program.slug }),
+                            },
+                          );
+                          const json = await res.json();
+                          if (json?.success && json.programId) {
+                            setSelectedFallback({
+                              id: String(json.programId),
+                              name: program.name,
+                              slug: program.slug,
+                              color: program.color,
+                            });
+                            onChange(String(json.programId));
+                          } else {
+                            // fallback: do nothing
+                            // eslint-disable-next-line no-console
+                            console.error("failed to create program", json);
+                          }
+                        } catch (err) {
+                          // eslint-disable-next-line no-console
+                          console.error(err);
+                        }
+                      } else {
+                        onChange(String(program.id));
+                      }
+                      setOpen(false);
+                    }}
+                  >
+                    <ProgramOption
+                      program={program as any}
+                      selected={
+                        String(program.id) === String(selectedProgramId)
+                      }
+                    />
+                  </div>
                 </div>
               ))
             )}

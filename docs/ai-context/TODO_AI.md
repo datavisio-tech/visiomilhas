@@ -1,4 +1,109 @@
+# Subscription UX Refinement — ✅ COMPLETE
+
+**Status**: ✅ `/subscribe` refinado para explicar trial, planos e política de acesso
+
+**Realizado**:
+
+- ✅ Hero principal com teste grátis de 15 dias e continuidade por preço mensal vindo de `PLANO`
+- ✅ Cards de Trial Gratuito, Plano Mensal e Plano Anual
+- ✅ Plano mensal vindo de `process.env.PLANO`
+- ✅ Plano anual vindo de `process.env.PLANO_ANUAL`
+- ✅ Matriz de acesso explicando login, trial, assinante e modo somente leitura
+- ✅ CTA principal simplificado para `Começar teste grátis`
+
+**Próxima Ação**:
+
+- Migrar os metadados comerciais para `controle_adm_saas_datavisio` quando o módulo administrativo de planos for priorizado.
+
+# purchases-analytics-stabilization — ✅ COMPLETE
+
+**Status**: ✅ erro SQL dos KPIs de Purchases eliminado e runtime revalidado
+
+**Realizado**:
+
+- ✅ Query de KPI agrupada por `status`
+- ✅ `42803` removido sem quebrar a página de Purchases
+- ✅ `npm run purchases:test -- emailteste04` validado em `http://localhost:3002`
+
+**Próxima Ação**:
+
+- Encerrar a release Purchases após consolidar a documentação e manter a dívida antiga de typecheck separada
+
+# purchases-journey-stabilization — ✅ COMPLETE
+
+**Status**: ✅ jornada de Purchases estabilizada no runtime real com conta/programa consistentes
+
+**Realizado**:
+
+- ✅ Runner de Purchases passou a descobrir a conta operacional real via `/api/accounts`
+- ✅ `programId` da compra passou a ser derivado da conta selecionada, removendo o mismatch que gerava 422
+- ✅ Validação runtime passou com `npm run purchases:test -- emailteste04` em `http://localhost:3002`
+
+**Próxima Ação**:
+
+- Limpar os erros antigos de typecheck em `tests/runtime/access-audit-runner.ts` e `tests/runtime/accounts/journey.ts`
+
 # TODO_AI - Pendências e próximas ações
+
+## 4.3-C — Campaign Catalog Engine — ✅ COMPLETE
+
+**Status**: ✅ domínio, schema e seeds iniciais prontos para o catálogo de campanhas parceiras
+
+**Realizado**:
+
+- ✅ `src/modules/campaigns` criado com domain, application, infrastructure, ui, tests e mcp
+- ✅ `CampaignType` e `CampaignStatus` adicionados ao schema APP
+- ✅ `partner_campaigns` estendida para guardar parceiro, programa, status, tipo e origem
+- ✅ `campaign_snapshots` criada para histórico de captura
+- ✅ `db/seed/campaigns-seed.json` criada com exemplos iniciais e seed idempotente
+- ✅ Providers vazios preparados para Livelo, Azul, Smiles, LATAM Pass e Esfera
+
+**Próxima Ação**:
+
+- Integrar o picker de campanhas ao fluxo de compra bonificada quando o autofill fizer parte da UX oficial
+
+## 4.3-B.2.A — Purchases Cockpit Operacional Completo — ✅ COMPLETE
+
+- ✅ Kanban operacional como visualização principal
+- ✅ Drag & drop com persistência de status
+- ✅ Criação de compra bonificada no cockpit
+- ✅ `RECEIVED` gera `PURCHASE_BONUS` com idempotência
+- ✅ Jornada MCP atualizada e validada no runtime real
+- ✅ `npm run lint`, `npm run typecheck` e `npm run purchases -- emailteste01` executados
+
+**Próxima ação**:
+
+- Implementar timeline/auditoria detalhada e, depois, evidências
+
+# TODO_AI - Pendências e próximas ações
+
+## 4.2-B — Programs Operational Cockpit — ✅ COMPLETE
+
+**Status**: ✅ cockpit operacional implementado e validado no runtime real
+
+**Realizado**:
+
+- ✅ `src/modules/programs` criado com domínio, aplicação, infraestrutura e apresentação
+- ✅ `/app/programs` virou entrada fina para o cockpit operacional
+- ✅ Header da conta, ações rápidas, tabs, extrato, gráficos por período e sidebar contextual adicionados
+- ✅ Quick actions reutilizam os formulários existentes de compra, venda e transferência em diálogos
+- ✅ `accountId`, `tab` e `period` persistem na URL
+- ✅ Teste MCP `npm run programs:test -- emailteste01` passou
+
+**Próxima Ação**:
+
+- Manter Programs como base operacional para evoluções futuras de extrato, filtros e novos indicadores
+
+## 4.2-B.1 — Programs UX Refinement (Próximas Ações)
+
+- [x] Reduzir header (~40%) e mover seletor de conta para dentro do header (modo compacto)
+- [x] Remover duplicação de KPIs (header vs cards)
+- [x] Reorganizar aba `Resumo` (KPIs → Extrato resumido → Gráficos)
+- [x] Substituir timeline por tabela operacional com colunas padronizadas
+- [x] Reintroduzir sidebar contextual fixa à direita (compacta)
+- [x] Adicionar breadcrumb e ação `Trocar conta` no header
+- [x] Validar responsividade em 1920/1440/1366/tablet
+- [x] Rodar `npm run programs:test -- emailteste01` e corrigir regressões
 
 # 3.7-B — Auth Modal Unification — ✅ COMPLETE
 

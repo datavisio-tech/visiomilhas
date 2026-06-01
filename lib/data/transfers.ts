@@ -6,6 +6,7 @@ import { type SessionContext } from "../server/auth-context";
 export async function getTransfersOverview(
   sessionContext?: SessionContext | null,
   limit = 50,
+  accountId?: number | null,
 ) {
   const { organizationId } = await resolveReadScope(sessionContext);
 
@@ -15,20 +16,27 @@ export async function getTransfersOverview(
     const q = `
       SELECT mt.id, mt.points_sent, mt.points_received, mt.bonus_percentage, mt.transfer_fee_cents, mt.transferred_at::text as transferred_at, mt.status, mt.description,
              fpl.name as from_program_name, fpa.nickname as from_account_nickname,
-             tpl.name as to_program_name, tpa.nickname as to_account_nickname
+             tpl.name as to_program_name, tpa.nickname as to_account_nickname,
+             mt.from_account_id, mt.to_account_id
       FROM mile_transfers mt
       LEFT JOIN loyalty_programs fpl ON mt.from_program_id = fpl.id
       LEFT JOIN program_accounts fpa ON mt.from_account_id = fpa.id
       LEFT JOIN loyalty_programs tpl ON mt.to_program_id = tpl.id
       LEFT JOIN program_accounts tpa ON mt.to_account_id = tpa.id
       WHERE mt.organization_id = $1
+      ${accountId ? "AND (mt.from_account_id = $3 OR mt.to_account_id = $3)" : ""}
       ORDER BY mt.transferred_at DESC
       LIMIT $2
     `;
 
-    const res = await client.query(q, [organizationId, limit]);
+    const params = accountId
+      ? [organizationId, limit, accountId]
+      : [organizationId, limit];
+    const res = await client.query(q, params);
     return res.rows.map((r: any) => ({
       id: r.id,
+      fromAccountId: r.from_account_id ? Number(r.from_account_id) : null,
+      toAccountId: r.to_account_id ? Number(r.to_account_id) : null,
       pointsSent: Number(r.points_sent || 0),
       pointsReceived: Number(r.points_received || 0),
       bonusPercent: Number(r.bonus_percentage || 0),

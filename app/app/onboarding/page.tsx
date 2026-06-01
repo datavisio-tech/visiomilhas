@@ -1,9 +1,8 @@
-import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
+﻿import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import PrimaryButton from "../../../components/ui/button";
 import PageHeader from "../../../components/ui/page-header";
-import EmptyState from "../../../components/ui/empty-state";
 import { getOnboardingStateByEmail } from "../../../lib/server/onboarding";
 import OnboardingFormClient from "./OnboardingForm.client";
 
@@ -19,36 +18,36 @@ export default async function OnboardingPage() {
 
   const email = sessionContext.auth.email ?? null;
   const onboardingState = await getOnboardingStateByEmail(email);
-  const currentStep = onboardingState === "not-started" ? 1 : 2;
+  const currentStep = onboardingState === "ready" ? 4 : 1;
 
   const steps = [
     {
       id: 1,
-      title: "Criar conta/programa",
+      title: "Criar conta operacional",
       description:
-        "Estruture a base operacional com um programa e uma conta padrão para começar a operar.",
-      href: "/app/programs",
-    },
-    {
-      id: 2,
-      title: "Registrar primeira compra",
-      description:
-        "Alimente o saldo operacional com a primeira compra para ativar o fluxo do produto.",
-      href: "/app/purchases",
-    },
-    {
-      id: 3,
-      title: "Conferir contas",
-      description:
-        "Revise a base criada antes de seguir para a operação principal.",
+        "Abra Contas, escolha o programa certo e defina o apelido da operação para começar com a base limpa.",
       href: "/app/accounts",
     },
     {
-      id: 4,
-      title: "Executar primeira venda",
+      id: 2,
+      title: "Registrar saldo inicial",
       description:
-        "Feche o ciclo inicial e confirme que o MVP já está pronto para uso real.",
-      href: "/app/sales",
+        "Se já houver pontos, lance o saldo inicial para refletir a posição real da conta.",
+      href: "/app/accounts",
+    },
+    {
+      id: 3,
+      title: "Lançar compras e pontos",
+      description:
+        "Use compras bonificadas ou aquisição de pontos para alimentar a operação com origem rastreável.",
+      href: "/app/purchases",
+    },
+    {
+      id: 4,
+      title: "Acompanhar o cockpit",
+      description:
+        "Depois da primeira conta, revise movimentos, saldo e resultado operacional no cockpit.",
+      href: "/app/programs",
     },
   ];
 
@@ -61,9 +60,9 @@ export default async function OnboardingPage() {
       <PageHeader
         eyebrow="Primeira configuração"
         title="Onboarding operacional guiado"
-        subtitle="Siga um fluxo curto e claro para deixar o SaaS pronto para uso: criar base, registrar compra, validar saldo e operar a primeira venda."
+        subtitle="Comece pela conta operacional: nela vivem saldo, CPM, compras e o histórico que sustenta a operação."
         actions={
-          <PrimaryButton href="/app/dashboard">Ir para dashboard</PrimaryButton>
+          <PrimaryButton href="/app/accounts">Ir para contas</PrimaryButton>
         }
       />
 
@@ -126,38 +125,31 @@ export default async function OnboardingPage() {
             <h2 className="mt-2 text-lg font-semibold text-slate-950">
               {onboardingState === "not-started"
                 ? "Você ainda não começou"
-                : "Base operacional parcial"}
+                : "Falta criar a primeira conta"}
             </h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               {onboardingState === "not-started"
-                ? "Criar a primeira conta/programa é o próximo passo para liberar o dashboard e registrar a primeira compra."
-                : "A estrutura existe parcialmente. Recupere o que falta e valide o saldo antes de seguir para vendas."}
+                ? "Abra Contas e siga o passo a passo para estruturar a primeira base operacional."
+                : "A organização já existe. Agora crie a conta operacional e lance o saldo inicial para começar a operar."}
             </p>
           </div>
 
-          <EmptyState
-            title={
-              onboardingState === "not-started"
-                ? "Crie a base operacional"
-                : "Recupere a base operacional"
-            }
-            description={
-              onboardingState === "not-started"
-                ? "O fluxo abaixo orienta a criação da primeira conta e do primeiro programa para sair do modo de preparação e começar a operar."
-                : "A estrutura existe parcialmente. Confirme a conta, revise a base e siga para a primeira compra com segurança."
-            }
-            actionLabel={
-              onboardingState === "not-started"
-                ? "Abrir programas"
-                : "Abrir contas"
-            }
-            actionHref={
-              onboardingState === "not-started"
-                ? "/app/programs"
-                : "/app/accounts"
-            }
-            supportingText="fluxo guiado"
-          />
+          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+            <div className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+              Como começar
+            </div>
+            <div className="mt-3 text-base font-semibold text-slate-950">
+              Abra Contas para criar sua primeira base operacional
+            </div>
+            <ol className="mt-4 space-y-3 text-sm leading-6 text-slate-600">
+              <li>1. Clique em Nova conta.</li>
+              <li>2. Escolha um programa e dê um apelido claro para a conta.</li>
+              <li>3. Se já houver saldo, registre-o antes de seguir para compras.</li>
+            </ol>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <PrimaryButton href="/app/accounts">Abrir contas</PrimaryButton>
+            </div>
+          </div>
 
           <OnboardingFormClient
             onboardingState={onboardingState}
@@ -168,3 +160,4 @@ export default async function OnboardingPage() {
     </div>
   );
 }
+

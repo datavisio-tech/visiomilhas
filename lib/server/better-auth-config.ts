@@ -25,9 +25,25 @@ function uniqueOrigins(values: Array<string | undefined>): string[] {
   ];
 }
 
+function resolveLocalDevelopmentOrigin(
+  env: Record<string, string | undefined>,
+): string | undefined {
+  if (env.NODE_ENV === "production") {
+    return undefined;
+  }
+
+  const port = env.PORT?.trim();
+  if (!port) {
+    return undefined;
+  }
+
+  return `http://localhost:${port}`;
+}
+
 function resolveBaseURL(env: Record<string, string | undefined>): string {
   return (
     env.BETTER_AUTH_URL?.trim() ||
+    resolveLocalDevelopmentOrigin(env) ||
     env.APP_URL?.trim() ||
     env.NEXT_PUBLIC_APP_URL?.trim() ||
     "http://localhost:3000"
@@ -58,10 +74,12 @@ export function resolveBetterAuthEnvironment(
   const resolvedGoogleClientSecret = googleClientSecret as string;
 
   const baseURL = resolveBaseURL(env);
+  const localDevelopmentOrigin = resolveLocalDevelopmentOrigin(env);
   const trustedOrigins = uniqueOrigins([
     normalizeOrigin(baseURL),
     normalizeOrigin(env.APP_URL),
     normalizeOrigin(env.NEXT_PUBLIC_APP_URL),
+    normalizeOrigin(localDevelopmentOrigin),
     env.NODE_ENV === "production"
       ? undefined
       : normalizeOrigin("http://localhost:3000"),

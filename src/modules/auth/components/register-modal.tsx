@@ -218,7 +218,7 @@ export default function RegisterModal({
               onClick={onContinueWithGoogle}
               disabled={loading}
             >
-              Cadastrar com Google
+              Entrar com Google
             </ShadcnButton>
             <ShadcnButton
               type="submit"

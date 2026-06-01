@@ -47,11 +47,11 @@ export default function TrialBanner({
           badge: "Trial ativo",
         }
       : {
-          title: title ?? "Ative sua assinatura mensal",
+          title: title ?? "Ative seu teste grátis de 15 dias",
           description:
             description ??
-            "Por R$ 4,99/mês, você libera o dashboard e mantém a operação em ordem.",
-          badge: "R$ 4,99/mês",
+            "Sem cobrança agora. Ao ativar, você libera o dashboard completo e recebe aviso antes do fim do período.",
+          badge: "Trial grátis",
         };
 
   if (variant === "trial") {
@@ -62,16 +62,17 @@ export default function TrialBanner({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100">
-                Acesso premium para testes
+                Trial grátis disponível
               </div>
             </div>
 
             <h3 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
-              Sua operação premium está liberada.
+              Seu acesso de teste está pronto para ser ativado.
             </h3>
 
             <p className="mt-2 text-sm text-slate-600">
-              Acompanhe saldo, margem e movimentações sem limitações.
+              Acompanhe saldo, margem e movimentações por 15 dias, sem cobrança
+              agora.
             </p>
           </div>
 
@@ -100,7 +101,7 @@ export default function TrialBanner({
               href="/subscribe"
               className="inline-flex items-center gap-3 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
             >
-              Ativar plano por R$ 4,99/mês
+              Ativar trial grátis
             </a>
           </div>
         </div>
@@ -123,13 +124,13 @@ export default function TrialBanner({
           {variant === "subscription" ? (
             <div className="flex flex-wrap gap-2 text-xs font-medium text-slate-600">
               <span className="rounded-full bg-white px-3 py-1 shadow-sm ring-1 ring-slate-200">
-                Sem plano complexo
+                Sem cobrança agora
               </span>
               <span className="rounded-full bg-white px-3 py-1 shadow-sm ring-1 ring-slate-200">
-                Liberação imediata
+                15 dias de teste
               </span>
               <span className="rounded-full bg-white px-3 py-1 shadow-sm ring-1 ring-slate-200">
-                R$ 4,99 por mês
+                Depois você decide
               </span>
             </div>
           ) : null}
@@ -138,7 +139,7 @@ export default function TrialBanner({
         <div className="flex items-center gap-3 lg:flex-col lg:items-end lg:text-right">
           <div className="rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-200">
             <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-              Mensalidade
+              Ativação
             </div>
             <div className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
               {content.badge}
@@ -147,7 +148,7 @@ export default function TrialBanner({
           <div
             className={`${badgeStyles} rounded-full px-4 py-2 text-xs font-semibold text-nowrap flex-shrink-0`}
           >
-            {variant === "subscription" ? "Assine agora" : content.badge}
+            {variant === "subscription" ? "Ativar trial" : content.badge}
           </div>
         </div>
       </div>

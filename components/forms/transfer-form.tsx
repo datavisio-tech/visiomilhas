@@ -14,9 +14,31 @@ type Account = {
   program: string | null;
   balance: number;
   cpmCents?: number;
+  isActive?: boolean;
 };
 
-export default function TransferForm({ accounts }: { accounts: Account[] }) {
+export default function TransferForm({
+  accounts,
+  defaultAccountId,
+}: {
+  accounts: Account[];
+  defaultAccountId?: number;
+}) {
+  return (
+    <TransferFormInner
+      accounts={accounts}
+      defaultAccountId={defaultAccountId}
+    />
+  );
+}
+
+function TransferFormInner({
+  accounts,
+  defaultAccountId,
+}: {
+  accounts: Account[];
+  defaultAccountId?: number;
+}) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [inspectionFrom, setInspectionFrom] = useState<any | null>(null);
@@ -24,6 +46,9 @@ export default function TransferForm({ accounts }: { accounts: Account[] }) {
   const [replayInspection, setReplayInspection] = useState<any | null>(null);
   const [operation, setOperation] = useState<any | null>(null);
   const router = useRouter();
+  const activeAccounts = accounts.filter(
+    (account) => account.isActive !== false,
+  );
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -89,9 +114,14 @@ export default function TransferForm({ accounts }: { accounts: Account[] }) {
       <h3 className="font-semibold">Nova Transferência</h3>
       <div>
         <label className="text-sm">Origem</label>
-        <select name="fromAccountId" required className="w-full">
+        <select
+          name="fromAccountId"
+          required
+          className="w-full"
+          defaultValue={defaultAccountId ? String(defaultAccountId) : ""}
+        >
           <option value="">Selecione</option>
-          {accounts.map((a) => (
+          {activeAccounts.map((a) => (
             <option key={a.id} value={a.id}>
               {a.nickname} {a.program ? ` — ${a.program}` : ""} — {a.balance}{" "}
               pts
@@ -103,7 +133,7 @@ export default function TransferForm({ accounts }: { accounts: Account[] }) {
         <label className="text-sm">Destino</label>
         <select name="toAccountId" required className="w-full">
           <option value="">Selecione</option>
-          {accounts.map((a) => (
+          {activeAccounts.map((a) => (
             <option key={a.id} value={a.id}>
               {a.nickname} {a.program ? ` — ${a.program}` : ""} — {a.balance}{" "}
               pts

@@ -7,7 +7,10 @@ import DashboardChart from "../../../components/dashboard/dashboard-chart";
 import EmptyState from "../../../components/ui/empty-state";
 import PageHeader from "../../../components/ui/page-header";
 import TrialBanner from "../../../components/layout/trial-banner";
-import { getMetrics } from "../../../lib/server/dashboard";
+import {
+  getMetrics,
+  getRevenueSnapshot,
+} from "../../../lib/server/dashboard";
 import { resolveControlledSessionContext } from "../../../lib/server/controlled-session";
 import { resolveSubscriptionAccessContext } from "../../../lib/server/subscription-access";
 import {
@@ -187,8 +190,10 @@ export default async function DashboardPage() {
   const organizationId = effectiveSessionContext.ownership.organizationId;
   const pool = appPool();
 
-  const [metrics, purchases, sales, transfers, integrity] = await Promise.all([
+  const [metrics, revenueSnapshot, purchases, sales, transfers, integrity] =
+    await Promise.all([
     getMetrics(effectiveSessionContext),
+    getRevenueSnapshot(effectiveSessionContext),
     getPurchasesOverview(effectiveSessionContext, 5),
     getSalesOverview(effectiveSessionContext, 5),
     getTransfersOverview(effectiveSessionContext, 5),
@@ -199,14 +204,8 @@ export default async function DashboardPage() {
     }),
   ]);
 
-  const revenueCents = sales.reduce(
-    (sum, sale) => sum + (sale.revenueCents || 0),
-    0,
-  );
-  const profitCents = sales.reduce(
-    (sum, sale) => sum + (sale.profitCents || 0),
-    0,
-  );
+  const revenueCents = revenueSnapshot.totalRevenueCents;
+  const profitCents = revenueSnapshot.totalProfitCents;
   const grossMargin =
     revenueCents > 0
       ? `${((profitCents / revenueCents) * 100).toFixed(1)}%`
@@ -354,7 +353,15 @@ export default async function DashboardPage() {
               Atualizado há {latestUpdate}
             </div>
           </div>
-          <DashboardChart />
+          <DashboardChart
+            data={revenueSnapshot.points.map((point) => ({
+              name: point.name,
+              revenue: point.revenueCents,
+              profit: point.profitCents,
+            }))}
+            revenueTotalCents={revenueSnapshot.totalRevenueCents}
+            trendLabel={revenueSnapshot.trendLabel}
+          />
         </section>
 
         <section className="rounded-card border border-slate-200 bg-white p-card-p-lg shadow-card">

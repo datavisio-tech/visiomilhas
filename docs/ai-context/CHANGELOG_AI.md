@@ -1,3 +1,241 @@
+# 2026-06-01 — Subscription UX Refinement Phase 2 — ✅ COMPLETE
+
+### Status: `/subscribe` evoluiu para uma tela de ativação e conversão com hero dominante, benefícios operacionais e reforço de confiança
+
+**Achievements**:
+
+1. **Conversion Hero** — ✅ COMPLETE
+
+- O hero foi centralizado com foco em ativação.
+- A proposta de valor passou a comunicar clareza operacional para contas, compras bonificadas, saldos e resultados.
+- O CTA principal ganhou mais protagonismo visual e ficou alinhado ao início do trial.
+
+2. **Value Blocks** — ✅ COMPLETE
+
+- Criada a seção `O que você desbloqueia` com cards para Contas Operacionais, Compras Bonificadas, Controle de Saldos e Resultado Operacional.
+- Os cards usam ícones e linguagem objetiva para reforçar percepção de valor.
+
+3. **Trust & Pricing** — ✅ COMPLETE
+
+- O reforço de confiança agora aparece junto do CTA.
+- O plano mensal ganhou badge de `Mais popular`.
+- O plano anual ganhou destaque comercial com `Melhor economia`.
+
+# 2026-06-01 — Subscription UX Refinement — ✅ COMPLETE
+
+### Status: `/subscribe` passou a explicar trial, planos mensal/anual e modo somente leitura com foco em ERP operacional financeiro
+
+**Achievements**:
+
+1. **Subscribe Clarity** — ✅ COMPLETE
+
+- A página agora comunica o teste grátis de 15 dias, ausência de cobrança imediata e ausência de cartão obrigatório.
+- A copy posiciona o VisioMilhas como ERP operacional financeiro para milhas.
+- O CTA principal foi simplificado para `Começar teste grátis`.
+
+2. **Plan Visibility** — ✅ COMPLETE
+
+- O plano mensal passou a consumir `process.env.PLANO`.
+- O plano anual passou a consumir `process.env.PLANO_ANUAL`.
+- Nenhum valor de preço foi hardcoded na UI da página.
+
+3. **Access Policy Explanation** — ✅ COMPLETE
+
+- A matriz `NOT_AUTH`, `TRIAL`, `ACTIVE` e `NO_SUB` foi explicada visualmente.
+- A tela deixa claro que o usuário não perde dados ao ficar sem assinatura ativa; ele permanece em modo somente leitura.
+
+# 2026-05-31 — RELEASE purchases-analytics-stabilization — ✅ COMPLETE
+
+### Status: o erro SQL dos KPIs de Purchases foi corrigido e o carregamento da página voltou a operar com agregação válida por status
+
+**Achievements**:
+
+1. **KPI SQL Fix** — ✅ COMPLETE
+
+- A query de KPI de Purchases passou a usar `GROUP BY status`
+- O erro Postgres `42803` foi eliminado sem remover o filtro por `organizationId`
+- O `accountId` foi deixado como filtro opcional, sem alterar o comportamento atual da página
+
+2. **Runtime Validation** — ✅ COMPLETE
+
+- `npm run purchases:test -- emailteste04` passou em `http://localhost:3002`
+- A página de Purchases voltou a renderizar com o carregamento dos KPIs sem erro SQL
+
+3. **Quality Gate** — ✅ COMPLETE
+
+- `npm run lint` continua com warnings conhecidos de `<img>` nas UIs de Purchases
+- `npm run typecheck` continua falhando apenas em erros antigos de `tests/runtime/access-audit-runner.ts` e `tests/runtime/accounts/journey.ts`
+
+# 2026-05-31 — RELEASE purchases-journey-stabilization — ✅ COMPLETE
+
+### Status: a jornada runtime de Purchases foi estabilizada para resolver conta operacional real, derivar o programa a partir da conta e evitar mismatch de account/program
+
+**Achievements**:
+
+1. **Runtime Journey Fix** — ✅ COMPLETE
+
+- O runner de Purchases passou a descobrir a conta operacional pelo runtime real em vez de usar `accountId`/`programId` fixos
+- A criação da compra agora reutiliza o `programId` da própria conta selecionada, eliminando o 422 de incompatibilidade
+
+2. **Runtime Validation** — ✅ COMPLETE
+
+- `npm run purchases:test -- emailteste04` passou em `http://localhost:3002` após liberar o conflito da porta 3001
+- A jornada validou Accounts -> Programs -> Purchases -> Movement -> FIFO Lot -> Balance -> Dashboard no runtime real
+
+3. **Quality Gate** — ✅ COMPLETE
+
+- `npm run lint` continua limpo, com warnings pré-existentes de `<img>` em Purchases UI
+- `npm run typecheck` continua falhando apenas em erros antigos de `tests/runtime/access-audit-runner.ts` e `tests/runtime/accounts/journey.ts`
+
+# 2026-05-30 — RELEASE 4.3-B.3 — Purchases Accounting Atomicity — ✅ COMPLETE
+
+### Status: Compra Bonificada passou a registrar entry, lote FIFO e saldo operacional na mesma transação, com reversão e restauração de `PROBLEM -> RECEIVED`
+
+**Achievements**:
+
+1. **Atomic Accounting** — ✅ COMPLETE
+
+- `RECEIVED` agora cria `PURCHASE_BONUS`, lote FIFO e atualiza `program_accounts.currentPointsBalance` na mesma transação
+- `PURCHASE_BONUS` persiste `related_entity_type` e `related_entity_id` para rastreio e idempotência
+
+2. **Reversal & Recovery** — ✅ COMPLETE
+
+- `RECEIVED -> PROBLEM/APPROVED` fecha o lote, marca a entry original como reversed e desfaz o saldo
+- `PROBLEM -> RECEIVED` restaura a entry, reabre o lote e recompõe o saldo operacional
+
+3. **Validation** — ✅ COMPLETE
+
+- `npm exec vitest run tests/integration/purchases.accounting.test.ts` passou com 3 testes
+- `npm run lint` passou com warnings pré-existentes de `<img>` apenas
+- `npm run typecheck` ainda falha em `tests/runtime/accounts/journey.ts` por redeclarações já existentes no workspace
+
+# 2026-05-30 — RELEASE 4.3-B.2.A — Purchases Cockpit Operacional Completo — ✅ COMPLETE
+
+### Status: Purchases convertido em cockpit Kanban operacional, com criação de compra, drag & drop, persistência de status e validação MCP real
+
+**Achievements**:
+
+1. **Kanban Operational View** — ✅ COMPLETE
+
+- O cockpit de Purchases passou a priorizar Kanban como visualização principal
+- A tabela permaneceu como leitura secundária
+- O cartão exibe loja, produto, programa, conta, valor, multiplicador, pontos previstos e datas operacionais
+
+2. **Drag & Drop & Persistence** — ✅ COMPLETE
+
+- Mover card chama `POST /api/purchases/change-status`
+- O status é persistido e a UI é atualizada sem reload manual
+- O `RECEIVED` segue criando `PURCHASE_BONUS` de forma idempotente
+
+3. **MCP Runtime** — ✅ COMPLETE
+
+- Jornada atualizada para criar compra, mover card e validar o fluxo operacional no runtime real
+- Validação executada com `npm run purchases -- emailteste01`
+
+4. **Validation** — ✅ COMPLETE
+
+- `npm run lint` passou
+- `npm run typecheck` passou
+- `npm run purchases -- emailteste01` passou
+
+# 2026-05-29 — Validação operacional oficial de autenticação — ✅ COMPLETE
+
+### Status: criada a bateria recorrente de validação da autenticação no runtime real com Chrome DevTools MCP
+
+**Achievements**:
+
+1. **Testing Docs** — ✅ COMPLETE
+
+- Criado `docs/testing/AUTH_TEST_USERS.md` com usuários sintéticos de referência e padrão expansível
+- Criado `docs/testing/AUTH_INTEGRATION_CHECKLIST.md` com rotina operacional para cadastro, login, logout, persistência, rotas protegidas, organização e Better Auth
+- Criado `docs/testing/AUTH_RUNTIME_REPORT_TEMPLATE.md` para registrar os resultados de cada rodada
+
+2. **Operational Rule** — ✅ COMPLETE
+
+- Toda mudança em autenticação, sessão, onboarding ou proteção de rotas passa a exigir a bateria antes de qualquer merge para `main`
+- A validação deve ocorrer no runtime real de desenvolvimento, sem ambiente paralelo, mocks, Playwright, Cypress ou banco extra
+
+3. **Context Update** — ✅ COMPLETE
+
+- `docs/ai-context/PROJECT_CONTEXT.md` foi atualizado com a regra oficial de validação operacional
+
+# 2026-05-29 — Fase 3.7-E — Sign-In Marketing/Auth Split Hardening — ✅ COMPLETE
+
+# 2026-05-29 — Fase 3.7-E — Sign-In Marketing/Auth Split Hardening — ✅ COMPLETE
+
+### Status: `/sign-in` consolidado com marketing à esquerda e autenticação pura à direita
+
+**Achievements**:
+
+1. **Column Separation** — ✅ COMPLETE
+
+- A coluna esquerda permaneceu dedicada à conversão, com headline, subheadline, mockup e storytelling do produto
+- A coluna direita foi reduzida a uma superfície de autenticação mínima, sem conteúdo de marketing ou preview operacional
+
+2. **Auth Surface** — ✅ COMPLETE
+
+- Mantidos apenas logo, título, Google, divisor, login por e-mail, links de criação/recuperação e termos/privacidade
+- O visual da direita ficou neutro, claro e consistente com acesso ao produto
+
+3. **Validation** — ✅ COMPLETE
+
+- `npm run lint` passou
+- `npm run typecheck` passou
+- `npm run test` passou com 82 testes
+- `git diff --check` ficou limpo
+
+# 2026-05-29 — Fase 3.7-D — Sign-In Premium Continuity Polish — ✅ COMPLETE
+
+### Status: `/sign-in` refinado para parecer uma única plataforma premium, com transição suave entre marketing e operação
+
+**Achievements**:
+
+1. **Visual Continuity** — ✅ COMPLETE
+
+- A transição entre as colunas foi suavizada com gradiente horizontal e glow central discreto
+- O lado operacional permanece claro, mas passa a nascer visualmente do mesmo contexto da área de marketing
+
+2. **Operational Preview** — ✅ COMPLETE
+
+- O mini preview ganhou feed de últimas movimentações para parecer uma captura real de dashboard
+- Os dados continuam totalmente mockados e sem dependência de backend
+
+3. **Copy & Trust** — ✅ COMPLETE
+
+- Headline ajustada para `Controle suas milhas como um operador profissional.`
+- Prova social operacional adicionada no hero e sinais de confiança reforçados no card de login
+
+4. **Validation** — ✅ COMPLETE
+
+- `npm run lint` passou
+- `npm run typecheck` passou
+- `npm run test` passou com 82 testes
+- `git diff --check` ficou limpo
+
+# 2026-05-29 — Fase 3.7-C — Sign-In Marketing/Operação Split — ✅ COMPLETE
+
+### Status: `/sign-in` reorganizado em duas leituras visuais, com marketing escuro à esquerda e operação clara à direita
+
+**Achievements**:
+
+1. **Layout Split** — ✅ COMPLETE
+
+- A tela pública passou a usar grid de duas colunas no desktop, preservando o hero de marketing à esquerda
+- A coluna operacional ganhou fundo claro, borda lateral e card branco para reforçar o contexto de uso
+
+2. **Operational Card** — ✅ COMPLETE
+
+- CTA principal atualizado para `Entrar com Google`
+- CTA secundário por e-mail mantido como fallback visual mais direto
+- Mini preview operacional adicionado com leitura de dashboard mockado
+
+3. **Validation** — ✅ COMPLETE
+
+- `npm run lint` passou
+- `npm run typecheck` passou
+- `npm run test` passou com 82 testes
+- `git diff --check` ficou limpo
+
 # 2026-05-28 — Fase 3.7-B — Auth Modal Unification — ✅ COMPLETE
 
 ### Status: `/sign-in` consolidado como hub de autenticação Google-first com fallback por credenciais
@@ -90,6 +328,129 @@
 | Validation      | ✅     | Suíte focada passou                      |
 
 # CHANGELOG_AI
+
+# CHANGELOG_AI
+
+# 2026-05-31 — subscription-access-stabilization — NO_SUB observável e auditável
+
+### Status: o estado `NO_SUB` passou a ser observável em runtime real com usuário fresco, sem bypass e sem alterar auth/sessão/MCP
+
+**Achievements**:
+
+1. **Subscription Access Audit** — ✅ COMPLETE
+
+- A auditoria passou a separar `NO_SUB` de `TRIAL` e `ACTIVE` com usuários reais de teste
+- `NO_SUB` agora fica visível como `accessState: NO_SUBSCRIPTION` e bloqueia escrita em Purchases
+
+2. **Runtime Evidence** — ✅ COMPLETE
+
+- `NOT_AUTH` continua redirecionando para `/sign-in`
+- `TRIAL` e `ACTIVE` continuam com acesso completo para escrita em Purchases
+- A causa raiz de `INVALID_ORIGIN` permaneceu documentada e a correção de origem continua válida
+
+3. **Audit Harness Fix** — ✅ COMPLETE
+
+- O runner de auditoria foi ajustado para não promover o usuário `NO_SUB` antes da coleta
+- Um usuário fresco (`emailteste05@teste.com`) foi usado para tornar o estado read-only observável
+
+# 2026-05-31 — Runtime MCP Purchases — origem alinhada e jornada validada
+
+### Status: a divergência `INVALID_ORIGIN` foi corrigida no runtime local e a jornada real de Purchases voltou a executar com sessão, assinatura e escrita válidas
+
+**Achievements**:
+
+1. **Auth Origin Alignment** — ✅ COMPLETE
+
+- O resolver de auth passou a priorizar a origem do runtime em desenvolvimento via `PORT`
+- `BETTER_AUTH_URL`, `APP_URL`, `NEXT_PUBLIC_APP_URL` e `trustedOrigins` ficaram coerentes com o servidor Next local
+
+2. **Runtime MCP Purchases** — ✅ COMPLETE
+
+- `npm run purchases:test` voltou a passar após alinhar a origem e liberar o browser MCP
+- O fluxo real login → sessão → subscription → purchases foi validado no runtime
+
+3. **Scenario Evidence** — ✅ COMPLETE
+
+- `NO_AUTH` continua redirecionando para `/sign-in`
+- `TRIAL` e `ACTIVE` conseguem escrever em Purchases
+- `NO_SUB` ainda deriva para `TRIAL` no runtime atual, então o estado read-only independente permanece como pendência de produto/runtime
+
+# 2026-05-30 — RELEASE 4.3-C — Campaign Catalog Engine — ✅ COMPLETE
+
+### Status: novo domínio de campanhas parceiras consolidado com schema, seed JSON, providers vazios e preparação para autofill futuro sem scraping automático
+
+**Achievements**:
+
+1. **Domain Split** — ✅ COMPLETE
+
+- Criado `src/modules/campaigns` com camadas de domínio, aplicação, infraestrutura, UI, testes e MCP
+- Definidos enums de campanha e contrato do provider para manter o motor extensível
+
+2. **Database & Seeds** — ✅ COMPLETE
+
+- `partner_campaigns` foi estendido com os novos campos de catálogo
+- `campaign_snapshots` foi criada para preservar histórico de captura
+- `db/seed/campaigns-seed.json` entrou como seed inicial idempotente com exemplos de Livelo, Azul, Smiles, LATAM Pass e Esfera
+
+3. **Future Autofill Prep** — ✅ COMPLETE
+
+- Providers vazios foram criados para Livelo, Azul, Smiles, LATAM Pass e Esfera
+- O campo de seleção de campanhas está preparado para futura integração com compra bonificada, sem scraping automático nesta fase
+
+# 2026-05-29 — Fase 4.2-B — Programs Operational Cockpit — ✅ COMPLETE
+
+### Status: `Programs` promovido a cockpit operacional da conta, com extrato, gráficos por período e navegação persistida na URL
+
+**Achievements**:
+
+1. **Module Split** — ✅ COMPLETE
+
+- Criado `src/modules/programs` com camadas de domínio, aplicação, infraestrutura e apresentação
+- `app/app/programs/page.tsx` virou entrada fina para o módulo novo
+
+2. **Cockpit UI** — ✅ COMPLETE
+
+- Header operacional da conta, ações rápidas, abas e sidebar contextual implementados
+- Extrato operacional com tabela, filtros e detalhe do lançamento
+- Gráficos operacionais com período persistido em `period`
+
+3. **Runtime Validation** — ✅ COMPLETE
+
+- `npm run programs:test -- emailteste01` passou no runtime real com Chrome DevTools MCP
+- Cobriu login page, Accounts → Programs, header, troca de conta, extrato, gráficos, pendências, assinaturas, refresh e roundtrip para sign-in
+
+## 2026-05-29 — 4.2-B.1 — Programs UX Refinement — ✅ COMPLETE
+
+### Status: refinamento visual do cockpit para alinhar com padrão premium das outras telas (Accounts, Purchases, Sales, Transfers)
+
+**Achievements**:
+
+1. **Header Compacto** — ✅ COMPLETE
+
+- Header reduzido e reorganizado com breadcrumb, seletor de conta embutido e ação `Trocar conta`
+- KPIs executivos agora ficam condensados no topo, evitando duplicação com os cards operacionais
+
+2. **Operação Primeiro** — ✅ COMPLETE
+
+- Aba `Resumo` continua priorizando `KPIs` → `Extrato` → `Gráficos`
+- Sidebar contextual voltou em modo sticky com blocos de `Conta`, `Pendências` e `Assinaturas`
+- Cards operacionais passaram a destacar resultado, pendências, compras, vendas e transferências abertas
+
+3. **Validation** — ✅ COMPLETE
+
+- `npm run lint` passou
+- `npm run typecheck` passou
+- `npm run programs:test -- emailteste01` passou no runtime real com Chrome DevTools MCP
+
+- Header reduzido e seletor de conta movido para dentro do header; ação `Trocar conta` adicionada.
+- Aba `Resumo` reorganizada: KPIs → Extrato operacional resumido → Gráficos.
+- Timeline substituída por tabela operacional com colunas: `Data`, `Operação`, `Tipo`, `Pontos`, `Valor`, `CPM`, `Status`.
+- Sidebar contextual reintroduzida à direita em versão compacta e sticky.
+- Responsividade revisada e ajustes de altura/espacamento para reduzir necessidade de rolagem nas larguras 1920/1440/1366 e tablet.
+
+Validação:
+
+- `npm run programs:test -- emailteste01` (runtime MCP) deve ser executado após PR; verificar troca de conta, persistência de URL, carregamento do extrato e troca de abas.
 
 # 2026-05-26 — Fase 3.0-A — Milhas Ledger Runtime Foundation — ✅ COMPLETE
 

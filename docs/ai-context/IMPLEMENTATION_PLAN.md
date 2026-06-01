@@ -1,5 +1,43 @@
 # IMPLEMENTATION_PLAN - MVP1 (VisioMilhas)
 
+## 4.3-C — Campaign Catalog Engine
+
+- Criar o domínio `src/modules/campaigns` com contratos, engine, providers e UI de preparação para futuro autofill.
+- Consolidar o schema APP com `CampaignType`, `CampaignStatus`, `partner_campaigns` estendido e `campaign_snapshots`.
+- Manter o seed inicial em `db/seed/campaigns-seed.json` com exemplos de campanhas parceiras e atualização idempotente.
+- Não implementar scraping automático nesta release; os providers permanecem vazios para receber a integração depois.
+- Validar o conjunto com `npm run lint`, `npm run typecheck` e `git diff --check` antes do fechamento.
+
+## 4.3-B.2.A — Purchases Cockpit Operacional Completo
+
+- Transformar `Purchases` em cockpit Kanban operacional com colunas `REGISTERED`, `TRACKED`, `PENDING_CREDIT`, `RECEIVED` e `PROBLEM`.
+- Priorizar drag & drop com persistência via `POST /api/purchases/change-status`.
+- Manter tabela como visualização secundária e abrir drawer de timeline/auditoria nos cards.
+- Garantir que `RECEIVED` gere `PURCHASE_BONUS` de forma idempotente.
+- Validar a jornada MCP completa com `npm run purchases -- emailteste01` no runtime real.
+
+## 4.2-B — Programs Operational Cockpit
+
+- Separar Programs em `src/modules/programs` com camadas de domínio, aplicação, infraestrutura e apresentação.
+- Transformar `/app/programs` em cockpit operacional com header da conta, ações rápidas, abas, extrato, gráficos por período e sidebar contextual.
+- Preservar o estado operacional na URL com `accountId`, `tab` e `period`.
+- Reutilizar os formulários existentes em diálogos contextuais ao invés de duplicar fluxos de operação.
+- Validar o fluxo completo no runtime real com Chrome DevTools MCP antes de considerar a etapa fechada.
+
+### 4.2-B.1 — Programs UX Refinement (Plano de implementação)
+
+- Ajustar header: reduzir altura, compactar tipografia e espaçamentos, incluir breadcrumb e ação `Trocar conta`.
+- Mover `AccountOperationalSelector` para dentro do header (modo compacto) e remover cartão separado.
+- Remover KPIs duplicados: manter visão executiva no header e indicadores operacionais em `ProgramKPIs` nos cards.
+- Reorganizar aba `Resumo` para apresentar `ProgramKPIs`, `TransactionTable` (extrato resumido) e depois `ProgramChart`.
+- Substituir `ProgramTimeline` pela `TransactionTable` em toda a UI onde timeline era usada.
+- Implementar sidebar direita sticky com cards compactos para `Conta`, `Pendências` e `Assinaturas`.
+- Revisar responsividade para larguras 1920/1440/1366 e tablet garantindo header + KPIs + extrato sem rolagem inicial.
+- Abrir PR menor com as mudanças visuais, rodar CI (lint/typecheck) e executar `npm run programs:test -- emailteste01` para validar runtime.
+- Ajuste em andamento: o header foi condensado e os cards operacionais agora priorizam resultado, pendências e fluxo do período, enquanto a sidebar passa a refletir estado, pendências e assinaturas em blocos compactos.
+
+# IMPLEMENTATION_PLAN - MVP1 (VisioMilhas)
+
 Fase 2.4-K: SaaS Access & Subscription Enforcement
 
 - Criar `SubscriptionAccessContext` server-side separado de auth, ownership e read scope.
@@ -16,7 +54,6 @@ Fase 2.4-L: Commercial Trial Activation Runtime
 - Persistir `access_state`, `activated_at`, `trial_started_at`, `trial_expires_at`, `plan_type` e `tenant_state` no SAAS_DB.
 - Atualizar `/subscribe` com CTA para ativar trial e redirecionar para `/app/dashboard`.
 - Manter gating server-side e observar estados `TRIAL`, `ACTIVE`, `EXPIRED`, `CANCELED`, `SUSPENDED`.
-
 
 Fase 2.2-F: Transitional Surface Cleanup
 
@@ -46,6 +83,7 @@ Fase 2.2-J: AI Governance Versioning
 - Criar matriz de compatibilidade entre operating model, skills, agents e governança de auth/recovery/ownership.
 - Documentar regras de drift e quando bump de versão é obrigatório.
 - Evitar semver complexo, compatibilidade automática ou tooling pesado.
+
 ## 1.3.34.3 — reindex do workflow manual por novo filename
 
 - O workflow manual de produção foi renomeado para `production-deploy-manual.yml`.

@@ -16,9 +16,19 @@ const operationalLinks = [
   { href: "/app/dashboard", label: "Visão geral", icon: TrendingUp },
   { href: "/app/accounts", label: "Contas", icon: CreditCard },
   { href: "/app/programs", label: "Programas", icon: Briefcase },
-  { href: "/app/purchases", label: "Compras", icon: Package },
   { href: "/app/transfers", label: "Transferências", icon: Archive },
+
   { href: "/app/sales", label: "Vendas", icon: Activity },
+];
+
+const toolsLinks = [
+  { href: "/app/purchases", label: "Compra Bonificada", icon: Package },
+  {
+    href: "/app/transimulator",
+    label: "Simuladores",
+    icon: TrendingUp, ///melhorar este icone com ia, sera uma simulação d ealgo, por isso o icone de caixa, mas pode ser melhorado
+    status: "in-development",
+  },
 ];
 
 const supportLinks = [
@@ -49,13 +59,15 @@ function NavLink({
       }`}
     >
       <span
+        suppressHydrationWarning
         className={`inline-flex h-8 w-8 items-center justify-center rounded-md transition-colors ${
           active
             ? "bg-emerald-100 text-emerald-600"
             : "bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600"
         }`}
       >
-        <Icon className="h-4 w-4" />
+        {/* render icon; aria-hidden to avoid a11y duplication when hydration differs */}
+        <Icon className="h-4 w-4" aria-hidden="true" />
       </span>
       <span>{label}</span>
     </Link>
@@ -81,6 +93,17 @@ export default function AppSidebar() {
           </div>
           <nav className="space-y-1">
             {operationalLinks.map((link) => (
+              <NavLink key={link.href} {...link} />
+            ))}
+          </nav>
+        </section>
+
+        <section className="space-y-3">
+          <div className="mb-3 px-3 text-label-xs font-semibold text-slate-400">
+            ferramentas
+          </div>
+          <nav className="space-y-1">
+            {toolsLinks.map((link) => (
               <NavLink key={link.href} {...link} />
             ))}
           </nav>

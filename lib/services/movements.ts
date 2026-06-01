@@ -99,6 +99,8 @@ export type MileEntryRecord = {
   source?: string | null;
   status?: string;
   metadata?: Record<string, unknown> | null;
+  relatedEntityType?: string | null;
+  relatedEntityId?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
   consumedLotId?: number | null;
@@ -306,7 +308,8 @@ export function createMovementService(repo: MovementsRepo) {
     const destinationAccountId = data.toAccountId ?? null;
 
     if (destinationAccountId !== null) {
-      const destinationAccount = await repo.findAccountById(destinationAccountId);
+      const destinationAccount =
+        await repo.findAccountById(destinationAccountId);
       if (!destinationAccount) {
         throw new AccountNotFoundError(
           `account ${destinationAccountId} not found`,

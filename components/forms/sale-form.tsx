@@ -14,9 +14,31 @@ type Account = {
   program: string | null;
   balance: number;
   cpmCents?: number;
+  isActive?: boolean;
 };
 
-export default function SaleForm({ accounts }: { accounts: Account[] }) {
+export default function SaleForm({
+  accounts,
+  defaultAccountId,
+}: {
+  accounts: Account[];
+  defaultAccountId?: number;
+}) {
+  return (
+    <SaleFormInner accounts={accounts} defaultAccountId={defaultAccountId} />
+  );
+}
+
+function SaleFormInner({
+  accounts,
+  defaultAccountId,
+}: {
+  accounts: Account[];
+  defaultAccountId?: number;
+}) {
+  const activeAccounts = accounts.filter(
+    (account) => account.isActive !== false,
+  );
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [inspection, setInspection] = useState<any | null>(null);
@@ -79,9 +101,14 @@ export default function SaleForm({ accounts }: { accounts: Account[] }) {
       <h3 className="font-semibold">Nova Venda</h3>
       <div>
         <label className="text-sm">Conta</label>
-        <select name="accountId" required className="w-full">
+        <select
+          name="accountId"
+          required
+          className="w-full"
+          defaultValue={defaultAccountId ? String(defaultAccountId) : ""}
+        >
           <option value="">Selecione</option>
-          {accounts.map((a) => (
+          {activeAccounts.map((a) => (
             <option key={a.id} value={a.id}>
               {a.nickname} {a.program ? ` — ${a.program}` : ""} — {a.balance}{" "}
               pts

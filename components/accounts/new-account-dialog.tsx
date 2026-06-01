@@ -20,14 +20,8 @@ import type {
   AccountOverview,
   AccountProgramOption,
 } from "../../lib/data/accounts";
-import {
-  createAccountAction,
-  inactivateAccountAction,
-  softDeleteAccountAction,
-  updateAccountAction,
-} from "../../app/app/accounts/actions";
 
-type DialogMode = "create" | "edit" | "view" | "adjust" | "inactive" | "delete";
+type DialogMode = "create" | "edit" | "view" | "inactive" | "delete";
 
 type Props = {
   isOpen: boolean;
@@ -69,7 +63,21 @@ export default function NewAccountDialog({
   );
   const [error, setError] = useState<string | null>(null);
 
+  const initialComparableState = getInitialState(mode, account);
+  const isEditLikeMode = mode === "edit";
+  const isCreateMode = mode === "create";
+  const hasChanges = isEditLikeMode
+    ? hasFormChanges(formState, initialComparableState, {
+        ignoreSeedToggle: true,
+      })
+    : true;
+
   function submit(actionMode: DialogMode) {
+    if (actionMode === "edit" && !hasChanges) {
+      setError("Nenhuma alteração detectada para salvar.");
+      return;
+    }
+
     const formData = new FormData();
     formData.set(
       "mode",
@@ -91,7 +99,7 @@ export default function NewAccountDialog({
     formData.set("nickname", formState.nickname);
     formData.set("initialBalance", formState.initialBalance || "0");
     formData.set("initialCpm", formState.initialCpm || "0");
-    if (formState.addInitialBalance) {
+    if (isCreateMode && formState.addInitialBalance) {
       formData.set("addInitialBalance", "on");
     }
     if (formState.isActive) {
@@ -101,21 +109,20 @@ export default function NewAccountDialog({
     setError(null);
     startTransition(async () => {
       try {
-        let result: { success?: boolean; error?: string; errors?: any } = {
-          success: false,
-        };
-
-        if (actionMode === "create") {
-          result = await createAccountAction(formData);
-        } else if (actionMode === "delete") {
-          result = await softDeleteAccountAction(formData);
-        } else if (actionMode === "inactive") {
-          result = await inactivateAccountAction(formData);
-        } else {
-          result = await updateAccountAction(formData);
+        const payload = Object.fromEntries(formData.entries());
+        const response = await fetch("/api/accounts/mutate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        let result: { success?: boolean; error?: string; errors?: any } = {};
+        try {
+          result = await response.json();
+        } catch {
+          result = { success: false, error: "Resposta inválida do servidor." };
         }
 
-        if (!result?.success) {
+        if (!response.ok || !result?.success) {
           setError(result?.error || JSON.stringify(result?.errors || {}));
           return;
         }
@@ -133,7 +140,27 @@ export default function NewAccountDialog({
 
     setFormState(getInitialState(mode, account));
     setError(null);
-  }, [isOpen, mode, account]);
+  }, [isOpen, mode, account, programs]);
+
+  const selectedProgram = programs.find(
+    (p) => String(p.id) === String(formState.programId),
+  );
+  const viewProgramName = account?.program ?? selectedProgram?.name ?? "—";
+  const viewNickname = formState.nickname || "Sem apelido";
+  const viewBalance = account
+    ? `${account.balance.toLocaleString("pt-BR")} pts`
+    : `${Number(formState.initialBalance || 0).toLocaleString("pt-BR")} pts`;
+  const viewCpm = account
+    ? `R$ ${(account.cpmCents / 100).toFixed(2)}`
+    : `R$ ${Number(formState.initialCpm || 0).toFixed(2)}`;
+  const viewCreatedAt = formatDateTimePtBr(account?.createdAt);
+  const viewUpdatedAt = formatDateTimePtBr(account?.updatedAt);
+  const operationalRisk = getOperationalRisk({
+    isActive: account?.isActive ?? formState.isActive,
+    balance: account?.balance ?? Number(formState.initialBalance || 0),
+    cpmCents:
+      account?.cpmCents ?? Math.round(Number(formState.initialCpm || 0) * 100),
+  });
 
   return (
     <Dialog isOpen={isOpen} onOpenChange={onOpenChange}>
@@ -150,7 +177,11 @@ export default function NewAccountDialog({
                 {account?.displayName ?? "Conta selecionada"}
               </div>
               <div className="mt-1 text-sm text-slate-600">
-                Essa conta ficará inativa e sairá das operações visíveis.
+                {mode === "delete"
+                  ? "Essa conta será removida da lista e manterá o histórico operacional."
+                  : account?.isActive
+                    ? "Essa conta será retirada da operação visível, mantendo o histórico operacional."
+                    : "Essa conta voltará a participar da operação visível, sem perder o histórico."}
               </div>
             </div>
 
@@ -164,7 +195,13 @@ export default function NewAccountDialog({
               </Button>
               <Button
                 type="button"
-                className="bg-slate-950 text-white hover:bg-slate-900"
+                className={
+                  mode === "delete"
+                    ? "!border-rose-600 !bg-rose-600 !text-white hover:!bg-rose-700"
+                    : account?.isActive
+                      ? "!border-rose-600 !bg-rose-600 !text-white hover:!bg-rose-700"
+                      : "!border-emerald-600 !bg-emerald-600 !text-white hover:!bg-emerald-700"
+                }
                 onClick={() => submit(mode)}
                 disabled={isPending}
               >
@@ -172,7 +209,9 @@ export default function NewAccountDialog({
                   ? "Processando..."
                   : mode === "delete"
                     ? "Excluir conta"
-                    : "Inativar conta"}
+                    : account?.isActive
+                      ? "Inativar conta"
+                      : "Ativar conta"}
               </Button>
             </DialogFooter>
           </div>
@@ -191,135 +230,210 @@ export default function NewAccountDialog({
               </div>
             ) : null}
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-sm font-medium text-slate-700">
-                  Programa de pontos
-                </label>
-                <ProgramSelector
-                  selectedProgramId={formState.programId}
-                  onChange={(value) =>
-                    setFormState((current) => ({
-                      ...current,
-                      programId: value,
-                    }))
-                  }
-                  programs={programs}
-                  disabled={mode === "view"}
-                  required
-                />
-              </div>
-
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-sm font-medium text-slate-700">
-                  Apelido da conta
-                </label>
-                <Input
-                  value={formState.nickname}
-                  onChange={(event) =>
-                    setFormState((current) => ({
-                      ...current,
-                      nickname: event.target.value,
-                    }))
-                  }
-                  placeholder="Ex: Helena, Empresa, Família"
-                  disabled={mode === "view"}
-                />
-                <p className="text-xs text-slate-500">
-                  Ajuda a diferenciar múltiplas contas do mesmo programa.
-                </p>
-              </div>
-
-              <div className="md:col-span-2 flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                <div>
-                  <div className="text-sm font-medium text-slate-950">
-                    Adicionar saldo inicial
+            {mode === "view" ? (
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                    Resumo da conta
                   </div>
-                  <div className="text-xs text-slate-500">
-                    Ao ativar, o saldo e o CPM inicial entram como operação
-                    seed.
+                  <div className="mt-2 text-lg font-semibold text-slate-950">
+                    {account?.displayName ?? "Conta selecionada"}
+                  </div>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Visualização somente leitura para conferência rápida.
+                  </p>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                      Programa
+                    </div>
+                    <div className="mt-2 text-base font-semibold text-slate-950">
+                      {viewProgramName}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                      Apelido
+                    </div>
+                    <div className="mt-2 text-base font-semibold text-slate-950">
+                      {viewNickname}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                      Saldo atual
+                    </div>
+                    <div className="mt-2 text-base font-semibold text-slate-950">
+                      {viewBalance}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                      CPM médio
+                    </div>
+                    <div className="mt-2 text-base font-semibold text-slate-950">
+                      {viewCpm}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                      Criada em
+                    </div>
+                    <div className="mt-2 text-base font-semibold text-slate-950">
+                      {viewCreatedAt}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                      Atualizada em
+                    </div>
+                    <div className="mt-2 text-base font-semibold text-slate-950">
+                      {viewUpdatedAt}
+                    </div>
                   </div>
                 </div>
-                <Switch
-                  checked={formState.addInitialBalance}
-                  onClick={() =>
-                    setFormState((current) => ({
-                      ...current,
-                      addInitialBalance: !current.addInitialBalance,
-                    }))
-                  }
-                  disabled={mode === "view"}
-                />
-              </div>
 
-              {formState.addInitialBalance || mode !== "create" ? (
-                <>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">
-                      Saldo inicial
-                    </label>
-                    <Input
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={formState.initialBalance}
-                      onChange={(event) =>
-                        setFormState((current) => ({
-                          ...current,
-                          initialBalance: event.target.value,
-                        }))
-                      }
-                      placeholder="Ex: 10000"
-                      disabled={mode === "view"}
-                    />
+                <div
+                  className={`rounded-2xl border px-4 py-3 ${operationalRisk.className}`}
+                >
+                  <div className="text-xs font-semibold uppercase tracking-[0.16em]">
+                    Tag de risco operacional
                   </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">
-                      CPM inicial
-                    </label>
-                    <Input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={formState.initialCpm}
-                      onChange={(event) =>
-                        setFormState((current) => ({
-                          ...current,
-                          initialCpm: event.target.value,
-                        }))
-                      }
-                      placeholder="Ex: 22.50"
-                      disabled={mode === "view"}
-                    />
-                    <p className="text-xs text-slate-500">
-                      Valor pago por mil pontos.
-                    </p>
+                  <div className="mt-1 text-sm font-semibold">
+                    {operationalRisk.label}
                   </div>
-                </>
-              ) : null}
-
-              <div className="md:col-span-2 flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                <div>
-                  <div className="text-sm font-medium text-slate-950">
-                    Conta ativa
-                  </div>
-                  <div className="text-xs text-slate-500">
-                    Ative ou desative sem apagar o histórico.
-                  </div>
+                  <p className="mt-1 text-xs">{operationalRisk.description}</p>
                 </div>
-                <Switch
-                  checked={formState.isActive}
-                  onClick={() =>
-                    setFormState((current) => ({
-                      ...current,
-                      isActive: !current.isActive,
-                    }))
-                  }
-                  disabled={mode === "view"}
-                />
               </div>
-            </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="md:col-span-2 space-y-2">
+                  <label className="text-sm font-medium text-slate-700">
+                    Programa de pontos
+                  </label>
+                  <ProgramSelector
+                    selectedProgramId={formState.programId}
+                    onChange={(value) =>
+                      setFormState((current) => ({
+                        ...current,
+                        programId: value,
+                      }))
+                    }
+                    programs={programs}
+                    required
+                  />
+                </div>
+
+                <div className="md:col-span-2 space-y-2">
+                  <label className="text-sm font-medium text-slate-700">
+                    Apelido da conta
+                  </label>
+                  <Input
+                    value={formState.nickname}
+                    onChange={(event) =>
+                      setFormState((current) => ({
+                        ...current,
+                        nickname: event.target.value,
+                      }))
+                    }
+                    placeholder="Ex: Helena, Empresa, Família"
+                  />
+                  <p className="text-xs text-slate-500">
+                    Ajuda a diferenciar múltiplas contas do mesmo programa.
+                  </p>
+                </div>
+
+                {mode === "create" ? (
+                  <div className="md:col-span-2 flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <div>
+                      <div className="text-sm font-medium text-slate-950">
+                        Adicionar saldo inicial
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        Ao ativar, o saldo e o CPM inicial entram como operação
+                        seed.
+                      </div>
+                    </div>
+                    <Switch
+                      checked={formState.addInitialBalance}
+                      onClick={() =>
+                        setFormState((current) => ({
+                          ...current,
+                          addInitialBalance: !current.addInitialBalance,
+                        }))
+                      }
+                    />
+                  </div>
+                ) : null}
+
+                {formState.addInitialBalance || mode !== "create" ? (
+                  <>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-700">
+                        Saldo inicial
+                      </label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={formState.initialBalance}
+                        onChange={(event) =>
+                          setFormState((current) => ({
+                            ...current,
+                            initialBalance: event.target.value,
+                          }))
+                        }
+                        placeholder="Ex: 10000"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-700">
+                        CPM inicial
+                      </label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={formState.initialCpm}
+                        onChange={(event) =>
+                          setFormState((current) => ({
+                            ...current,
+                            initialCpm: event.target.value,
+                          }))
+                        }
+                        placeholder="Ex: 22.50"
+                      />
+                      <p className="text-xs text-slate-500">
+                        Valor pago por mil pontos.
+                      </p>
+                    </div>
+                  </>
+                ) : null}
+
+                <div className="md:col-span-2 flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                  <div>
+                    <div className="text-sm font-medium text-slate-950">
+                      Conta ativa
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      Ative ou desative sem apagar o histórico.
+                    </div>
+                  </div>
+                  <Switch
+                    checked={formState.isActive}
+                    onClick={() =>
+                      setFormState((current) => ({
+                        ...current,
+                        isActive: !current.isActive,
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+            )}
 
             <Separator />
 
@@ -327,16 +441,16 @@ export default function NewAccountDialog({
               <DialogFooter>
                 <Button
                   type="button"
-                  className="border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                  className="!border-slate-200 !bg-white !text-slate-700 hover:!bg-slate-50"
                   onClick={() => onOpenChange(false)}
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="button"
-                  className="bg-emerald-600 text-white hover:bg-emerald-700"
+                  className="!border-emerald-600 !bg-emerald-600 !text-white hover:!bg-emerald-700"
                   onClick={() => submit(mode)}
-                  disabled={isPending}
+                  disabled={isPending || (mode === "edit" && !hasChanges)}
                 >
                   {isPending
                     ? "Salvando..."
@@ -349,7 +463,7 @@ export default function NewAccountDialog({
               <DialogFooter>
                 <Button
                   type="button"
-                  className="bg-slate-950 text-white hover:bg-slate-900"
+                  className="!border-slate-950 !bg-slate-950 !text-white hover:!bg-slate-900"
                   onClick={() => onOpenChange(false)}
                 >
                   Fechar
@@ -396,8 +510,6 @@ function getTitle(mode: DialogMode) {
       return "Nova conta";
     case "edit":
       return "Editar conta";
-    case "adjust":
-      return "Ajustar saldo";
     case "inactive":
       return "Inativar conta";
     case "delete":
@@ -413,13 +525,86 @@ function getDescription(mode: DialogMode) {
       return "Crie uma nova conta operacional com saldo e CPM inicial opcionais.";
     case "edit":
       return "Atualize apelido, saldo, CPM e estado operacional da conta.";
-    case "adjust":
-      return "Ajuste o saldo operacional sem perder a leitura da conta.";
     case "inactive":
       return "Desative a conta e remova-a da operação visível.";
     case "delete":
-      return "Essa conta ficará inativa e sairá das operações visíveis.";
+      return "Essa conta será removida da lista, mantendo o histórico operacional.";
     default:
       return "Leia os detalhes operacionais desta conta.";
   }
+}
+
+function normalizeForCompare(state: AccountFormState) {
+  return {
+    programId: String(state.programId || ""),
+    nickname: String(state.nickname || "").trim(),
+    addInitialBalance: Boolean(state.addInitialBalance),
+    initialBalance: Number(state.initialBalance || 0),
+    initialCpm: Number(state.initialCpm || 0),
+    isActive: Boolean(state.isActive),
+  };
+}
+
+function hasFormChanges(
+  current: AccountFormState,
+  initial: AccountFormState,
+  options?: { ignoreSeedToggle?: boolean },
+) {
+  const a = normalizeForCompare(current);
+  const b = normalizeForCompare(initial);
+
+  return (
+    a.programId !== b.programId ||
+    a.nickname !== b.nickname ||
+    (!options?.ignoreSeedToggle &&
+      a.addInitialBalance !== b.addInitialBalance) ||
+    a.initialBalance !== b.initialBalance ||
+    a.initialCpm !== b.initialCpm ||
+    a.isActive !== b.isActive
+  );
+}
+
+function formatDateTimePtBr(value?: string | null) {
+  if (!value) return "—";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "—";
+  return parsed.toLocaleString("pt-BR");
+}
+
+function getOperationalRisk(params: {
+  isActive: boolean;
+  balance: number;
+  cpmCents: number;
+}) {
+  if (!params.isActive) {
+    return {
+      label: "Alto",
+      description: "Conta inativa. Não participa da operação visível.",
+      className: "border-rose-200 bg-rose-50 text-rose-700",
+    };
+  }
+
+  if (params.balance <= 0) {
+    return {
+      label: "Médio",
+      description:
+        "Saldo zerado. Sem disponibilidade para operações imediatas.",
+      className: "border-amber-200 bg-amber-50 text-amber-700",
+    };
+  }
+
+  if (params.cpmCents >= 3000) {
+    return {
+      label: "Médio",
+      description:
+        "CPM elevado. Recomenda-se revisar custo e margem antes de vender.",
+      className: "border-amber-200 bg-amber-50 text-amber-700",
+    };
+  }
+
+  return {
+    label: "Baixo",
+    description: "Conta operacional saudável para uso no fluxo diário.",
+    className: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  };
 }

@@ -18,6 +18,7 @@ type DropdownContextValue = {
   isOpen: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
   triggerRef: RefObject<HTMLButtonElement | null>;
+  contentRef: RefObject<HTMLDivElement | null>;
 };
 
 const DropdownContext = createContext<DropdownContextValue | null>(null);
@@ -25,7 +26,8 @@ const DropdownContext = createContext<DropdownContextValue | null>(null);
 export function DropdownMenu({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
-  const value = { isOpen, setOpen: setIsOpen, triggerRef };
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const value = { isOpen, setOpen: setIsOpen, triggerRef, contentRef };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -33,6 +35,7 @@ export function DropdownMenu({ children }: { children: ReactNode }) {
     const onPointerDown = (event: PointerEvent) => {
       const target = event.target as Node;
       if (triggerRef.current?.contains(target)) return;
+      if (contentRef.current?.contains(target)) return;
       setIsOpen(false);
     };
 
@@ -84,12 +87,27 @@ export function DropdownMenuContent({
   if (!context?.isOpen || !mounted) return null;
 
   const triggerRect = context.triggerRef.current?.getBoundingClientRect();
-  const top = (triggerRect?.bottom ?? 0) + window.scrollY + 8;
-  const left = Math.max((triggerRect?.right ?? 0) + window.scrollX - 240, 12);
+  const estimatedHeight = 280;
+  const spacing = 8;
+  const bottomSpace = window.innerHeight - (triggerRect?.bottom ?? 0);
+  const topSpace = triggerRect?.top ?? 0;
+  const shouldOpenAbove =
+    bottomSpace < estimatedHeight && topSpace > estimatedHeight;
+  const top = shouldOpenAbove
+    ? Math.max(
+        (triggerRect?.top ?? 0) + window.scrollY - estimatedHeight - spacing,
+        12,
+      )
+    : (triggerRect?.bottom ?? 0) + window.scrollY + spacing;
+  const left = Math.min(
+    Math.max((triggerRect?.right ?? 0) + window.scrollX - 240, 12),
+    window.innerWidth - 260,
+  );
 
   return createPortal(
     <div
-      className={`fixed z-50 min-w-60 rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_18px_50px_rgba(15,23,42,0.14)] ${className}`}
+      ref={context.contentRef}
+      className={`fixed z-50 min-w-60 max-h-[calc(100vh-24px)] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_18px_50px_rgba(15,23,42,0.14)] ${className}`}
       style={{ top, left }}
     >
       {children}

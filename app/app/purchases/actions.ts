@@ -56,7 +56,8 @@ export async function createPurchaseAction(
 
   try {
     const auth = requireAuth(sessionContext.auth);
-    const resolveOwnedAccountFn = deps.resolveOwnedAccount ?? resolveOwnedAccount;
+    const resolveOwnedAccountFn =
+      deps.resolveOwnedAccount ?? resolveOwnedAccount;
     const ownedAccount = await resolveOwnedAccountFn(auth, input.accountId);
     const orgId = ownedAccount.ownership.organizationId;
 
@@ -68,7 +69,7 @@ export async function createPurchaseAction(
     try {
       await client.query("BEGIN");
       const accRes = await client.query(
-        `SELECT current_points_balance, current_avg_cost_per_thousand_cents, current_cost_basis_cents FROM program_accounts WHERE id = $1 LIMIT 1 FOR UPDATE`,
+        `SELECT program_id, current_points_balance, current_avg_cost_per_thousand_cents, current_cost_basis_cents FROM program_accounts WHERE id = $1 LIMIT 1 FOR UPDATE`,
         [input.accountId],
       );
       if (!accRes.rows.length) {
@@ -76,6 +77,17 @@ export async function createPurchaseAction(
         return { success: false, error: "account not found" };
       }
       const acc = accRes.rows[0];
+      if (
+        input.programId != null &&
+        Number(acc.program_id) !== Number(input.programId)
+      ) {
+        await client.query("ROLLBACK");
+        return {
+          success: false,
+          error: "account does not belong to selected program",
+        };
+      }
+      input.programId = Number(acc.program_id);
       const impact = calculatePurchaseImpact({
         currentBalance: Number(acc.current_points_balance || 0),
         currentCpmCents: Number(acc.current_avg_cost_per_thousand_cents || 0),

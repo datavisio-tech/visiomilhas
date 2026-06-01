@@ -1,0 +1,19 @@
+# Coverage Policy
+# Generated: 2026-05-31
+
+coverage:
+  unit:
+    minimum_percent: 90
+    exemption_process: "Criar ticket de exceção e justificar com testes compensatórios"
+  integration:
+    minimum_percent: 80
+  e2e:
+    critical_flows_minimum_percent: 100
+
+exceptions:
+  allowed_when:
+    - module_is_experimental
+    - test_infrastructure_missing
+  process:
+    - Create exception ticket
+    - Include compensating tests or manual validation steps

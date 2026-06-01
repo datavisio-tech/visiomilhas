@@ -162,7 +162,7 @@ export async function resolveBetterAuthSessionContext(
                 userId: sessionContext.auth.userId,
                 accountId: provision.accountId ?? null,
                 organizationId: provision.organizationId,
-                ownsAccount: true,
+                ownsAccount: Boolean(provision.accountId),
                 ownsOrganizationScope: true,
               }),
             );

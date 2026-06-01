@@ -44,7 +44,7 @@ export const auth: any = (() => {
         },
       },
       advanced: {
-        useSecureCookies: true,
+        useSecureCookies: process.env.NODE_ENV === "production",
         disableCSRFCheck: false,
         disableOriginCheck: false,
       },

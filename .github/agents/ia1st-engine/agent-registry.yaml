@@ -1,0 +1,412 @@
+bootstrap:
+  name: IA-1st Engine Registry
+  version: 1.0.0
+  generated_at: 2026-05-31
+  canonical_root: .github/agents/ia1st-engine
+  scan_scope:
+    - .github/agents/*.agent.md
+    - .ai-first/**/*.agent.md
+  task_intake:
+    enabled: true
+    gate: execution_graph_and_dependency_validation
+
+dependency_validation:
+  acyclic: true
+  validated_domain_order:
+    - discovery
+    - planning
+    - implementation
+    - validation
+    - operations
+    - governance
+  unresolved_items:
+    - artifact_registry.yaml
+    - governance_policy.yaml
+    - release_policy.yaml
+    - autopilot_policy.yaml
+    - prompt-routing-protocol.yaml
+
+orchestrators:
+  - id: ia1st-orchestrator
+    name: IA-1st Orchestrator
+    file: .github/agents/ia1st-orchestrator.agent.md
+    domain: orchestrator
+    role: bootstrap and route work
+    consumes:
+      - environment-context.md
+      - technical-inventory.yaml
+      - dependency-map.yaml
+      - business-capabilities.yaml
+      - business-rules-catalog.yaml
+      - ui-inventory.yaml
+      - as-is-architecture.yaml
+      - domain-model.yaml
+      - integration-landscape.yaml
+      - security-assessment.yaml
+      - infrastructure-landscape.yaml
+      - technical-debt-report.yaml
+      - code-quality-report.yaml
+      - test-coverage-report.yaml
+      - complexity-report.yaml
+      - modernization-priority-matrix.yaml
+      - as-is-system-model.md
+    produces:
+      - execution-plan.md
+    status: ready
+
+  - id: ia-1st-orchestrator
+    name: IA-1st Orchestrator
+    file: .github/agents/ia-1st-orchestrator.agent.md
+    domain: orchestrator
+    role: canonical orchestrator definition
+    consumes:
+      - environment-context.md
+      - technical-inventory.yaml
+      - dependency-map.yaml
+      - business-capabilities.yaml
+      - business-rules-catalog.yaml
+      - ui-inventory.yaml
+      - as-is-architecture.yaml
+      - domain-model.yaml
+      - integration-landscape.yaml
+      - security-assessment.yaml
+      - infrastructure-landscape.yaml
+      - technical-debt-report.yaml
+      - code-quality-report.yaml
+      - test-coverage-report.yaml
+      - complexity-report.yaml
+      - modernization-priority-matrix.yaml
+      - as-is-system-model.md
+    produces:
+      - execution-plan.md
+    status: ready
+
+domains:
+  discovery:
+    order:
+      - environment-discovery
+      - project-discovery
+      - business-discovery
+      - ui-discovery
+      - architecture-discovery
+      - data-model-discovery
+      - integration-discovery
+      - legacy-knowledge-discovery
+      - security-discovery
+      - infrastructure-discovery
+      - quality-discovery
+    agents:
+      - id: environment-discovery
+        file: .github/agents/environment-discovery.agent.md
+        produces:
+          - environment-context.md
+        depends_on: []
+        status: ready
+      - id: project-discovery
+        file: .github/agents/project-discovery.agent.md
+        produces:
+          - technical-inventory.yaml
+          - dependency-map.yaml
+          - business-capabilities.yaml
+          - modernization-candidates.yaml
+          - as-is-system-model.md
+        depends_on:
+          - environment-discovery
+        status: ready
+      - id: business-discovery
+        file: .github/agents/business-discovery.agent.md
+        produces:
+          - business-rules-catalog.yaml
+          - business-capabilities.yaml
+        depends_on:
+          - project-discovery
+        status: ready
+      - id: ui-discovery
+        file: .github/agents/ui-discovery.agent.md
+        produces:
+          - ui-inventory.yaml
+          - navigation-map.yaml
+        depends_on:
+          - project-discovery
+        status: ready
+      - id: architecture-discovery
+        file: .github/agents/architecture-discovery.agent.md
+        produces:
+          - as-is-architecture.yaml
+        depends_on:
+          - project-discovery
+        status: ready
+      - id: data-model-discovery
+        file: .github/agents/data-model-discovery.agent.md
+        produces:
+          - domain-model.yaml
+          - relationship-map.yaml
+        depends_on:
+          - project-discovery
+        status: ready
+      - id: integration-discovery
+        file: .github/agents/integration-discovery.agent.md
+        produces:
+          - integration-landscape.yaml
+        depends_on:
+          - project-discovery
+        status: ready
+      - id: legacy-knowledge-discovery
+        file: .github/agents/legacy-knowledge-discovery.agent.md
+        produces:
+          - tribal-knowledge-catalog.yaml
+        depends_on:
+          - project-discovery
+        status: ready
+      - id: security-discovery
+        file: .github/agents/security-discovery.agent.md
+        produces:
+          - security-assessment.yaml
+        depends_on:
+          - project-discovery
+        status: ready
+      - id: infrastructure-discovery
+        file: .github/agents/infrastructure-discovery.agent.md
+        produces:
+          - infrastructure-landscape.yaml
+        depends_on:
+          - project-discovery
+        status: ready
+      - id: quality-discovery
+        file: .github/agents/quality-discovery.agent.md
+        produces:
+          - technical-debt-report.yaml
+          - code-quality-report.yaml
+          - test-coverage-report.yaml
+          - complexity-report.yaml
+          - modernization-priority-matrix.yaml
+        depends_on:
+          - project-discovery
+        status: ready
+
+  planning:
+    order:
+      - modernization-planning
+      - target-architecture
+    agents:
+      - id: modernization-planning
+        file: .github/agents/modernization-planning.agent.md
+        produces:
+          - modernization-roadmap.yaml
+          - migration-strategy.yaml
+          - execution-phases.yaml
+          - risk-mitigation-plan.yaml
+          - target-architecture.yaml
+          - modernization-report.md
+        depends_on:
+          - environment-discovery
+          - project-discovery
+          - business-discovery
+          - ui-discovery
+          - architecture-discovery
+          - data-model-discovery
+          - integration-discovery
+          - legacy-knowledge-discovery
+          - security-discovery
+          - infrastructure-discovery
+          - quality-discovery
+        status: ready
+      - id: target-architecture
+        file: .github/agents/target-architecture.agent.md
+        produces:
+          - target-architecture.yaml
+          - module-blueprint.yaml
+          - folder-structure.yaml
+          - coding-standards.yaml
+          - security-architecture.yaml
+          - testing-strategy.yaml
+          - architecture-decision-records.yaml
+        depends_on:
+          - modernization-planning
+        status: ready
+
+  implementation:
+    order:
+      - implementation-orchestrator
+      - backend-modernization
+      - frontend-modernization
+      - database-migration
+      - integration-modernization
+    agents:
+      - id: implementation-orchestrator
+        file: .github/agents/implementation-orchestrator.agent.md
+        produces:
+          - implementation-plan.yaml
+          - execution-backlog.yaml
+          - acceptance-criteria.yaml
+          - module-execution-order.yaml
+        depends_on:
+          - modernization-planning
+          - target-architecture
+        status: ready
+      - id: backend-modernization
+        file: .github/agents/backend-modernization.agent.md
+        produces:
+          - backend-modernization-report.md
+          - migration-log.yaml
+          - refactoring-decisions.yaml
+          - api-modernization-report.yaml
+        depends_on:
+          - implementation-orchestrator
+          - target-architecture
+        status: ready
+      - id: frontend-modernization
+        file: .github/agents/frontend-modernization.agent.md
+        produces:
+          - frontend-modernization-report.md
+          - migration-log.yaml
+        depends_on:
+          - implementation-orchestrator
+          - target-architecture
+        status: ready
+      - id: database-migration
+        file: .ai-first/implementation/018-database-migration.agent.md
+        produces:
+          - database-migration-report.md
+          - migration-log.yaml
+        depends_on:
+          - implementation-orchestrator
+          - target-architecture
+        status: ready
+      - id: integration-modernization
+        file: .ai-first/implementation/019-integration-modernization.agent.md
+        produces:
+          - integration-modernization-report.md
+          - api-contract-map.yaml
+          - compatibility-matrix.yaml
+          - integration-risk-report.yaml
+        depends_on:
+          - implementation-orchestrator
+          - target-architecture
+        status: ready
+
+  validation:
+    order:
+      - test-architecture
+      - automated-testing
+      - code-review
+      - security-review
+    agents:
+      - id: test-architecture
+        file: .github/agents/test-architecture.agent.md
+        produces:
+          - test-strategy.yaml
+          - coverage-policy.yaml
+          - quality-gates.yaml
+        depends_on:
+          - target-architecture
+          - modernization-planning
+          - security-discovery
+          - business-discovery
+        status: ready
+      - id: automated-testing
+        file: .github/agents/automated-testing.agent.md
+        produces:
+          - test-execution-report.md
+          - test-coverage-report.yaml
+          - quality-gate-results.yaml
+        depends_on:
+          - implementation-orchestrator
+          - test-architecture
+        status: ready
+      - id: code-review
+        file: .github/agents/code-review.agent.md
+        produces:
+          - code-review-report.md
+          - architecture-compliance-report.yaml
+          - quality-scorecard.yaml
+        depends_on:
+          - implementation-orchestrator
+          - target-architecture
+          - automated-testing
+        status: ready
+      - id: security-review
+        file: .github/agents/security-review.agent.md
+        produces:
+          - security-review-report.md
+          - vulnerabilities.yaml
+          - remediation-plan.yaml
+        depends_on:
+          - implementation-orchestrator
+          - security-discovery
+          - automated-testing
+        status: ready
+
+  operations:
+    order:
+      - deployment
+      - observability
+      - performance-optimization
+    agents:
+      - id: deployment
+        file: .github/agents/deployment.agent.md
+        produces:
+          - deployment-report.md
+          - deployment-log.yaml
+          - rollback-plan.yaml
+          - post-deployment-validation.yaml
+        depends_on:
+          - implementation-orchestrator
+          - code-review
+          - security-review
+          - automated-testing
+        status: ready
+      - id: observability
+        file: .github/agents/observability.agent.md
+        produces:
+          - observability-blueprint.yaml
+          - logging-standards.yaml
+          - metrics-catalog.yaml
+          - sli-slo-catalog.yaml
+          - alerting-rules.yaml
+        depends_on:
+          - target-architecture
+          - infrastructure-discovery
+          - deployment
+        status: ready
+      - id: performance-optimization
+        file: .github/agents/performance-optimization.agent.md
+        produces:
+          - performance-baseline.yaml
+          - performance-bottlenecks.yaml
+          - performance-optimization-plan.yaml
+          - capacity-analysis.yaml
+        depends_on:
+          - observability
+          - target-architecture
+          - deployment
+        status: ready
+
+  governance:
+    order:
+      - governance
+    agents:
+      - id: governance
+        file: .github/agents/governance.agent.md
+        produces:
+          - governance-report.md
+          - agent-compliance-report.yaml
+          - artifact-compliance-report.yaml
+          - policy-compliance-report.yaml
+          - factory-health-score.yaml
+          - governance-recommendations.yaml
+        depends_on:
+          - all_agent_definitions
+          - artifact_registry.yaml
+          - governance_policy.yaml
+          - release_policy.yaml
+          - autopilot_policy.yaml
+          - prompt-routing-protocol.yaml
+        status: blocked_by_missing_policy_artifacts
+
+external_agents:
+  - id: visiomilhas
+    file: .github/agents/visiomilhas.agent.md
+    domain: product
+    role: product-specific implementation agent
+    status: available_but_outside_ia1st_engine

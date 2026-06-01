@@ -56,10 +56,11 @@ export default function ProgramBadge({
   return (
     <div className="flex items-center gap-3">
       <div
+        suppressHydrationWarning
         className={`flex h-11 w-11 items-center justify-center rounded-2xl ${color ? "" : brand.tone}`}
         style={color ? { backgroundColor: color } : undefined}
       >
-        <brand.Icon className="h-5 w-5 text-white/95" />
+        <brand.Icon className="h-5 w-5 text-white/95" aria-hidden="true" />
       </div>
       <div className="min-w-0">
         <div className="flex items-center gap-2">
