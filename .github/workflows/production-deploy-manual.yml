@@ -226,6 +226,9 @@ jobs:
           SSH_USER: root
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET || secrets.AUTH_SECRET }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           MONGODB_SERVER_IP: ${{ vars.MONGODB_SERVER_IP || secrets.MONGODB_SERVER_IP }}
           MONGODB_USER: ${{ secrets.MONGODB_USER }}
           MONGODB_USER_PASSWORD: ${{ secrets.MONGODB_USER_PASSWORD }}
