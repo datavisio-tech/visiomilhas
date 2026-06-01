@@ -280,5 +280,6 @@ jobs:
           curl -fsS --retry 5 --retry-delay 5 "${APP_URL}/" > /dev/null
           echo "Production smoke test passed for ${IMAGE_NAME}:${GITHUB_SHA}."
         env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 22
           SSH_USER: root
