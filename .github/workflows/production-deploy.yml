@@ -92,7 +92,7 @@ jobs:
           echo "Required production secrets are present."
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          SSH_PORT: 22
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
@@ -113,7 +113,7 @@ jobs:
           ssh-keyscan -p "${SSH_PORT}" "${SSH_HOST}" >> ~/.ssh/known_hosts
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          SSH_PORT: 22
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Ensure remote directory exists
@@ -123,7 +123,7 @@ jobs:
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "mkdir -p '${REMOTE_DIR}' && test -w '${REMOTE_DIR}'"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          SSH_PORT: 22
           SSH_USER: ${{ secrets.SSH_USER }}
 
       - name: Sync source to server
@@ -157,7 +157,7 @@ jobs:
             ./ "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          SSH_PORT: 22
           SSH_USER: ${{ secrets.SSH_USER }}
 
       - name: Render production env on server
@@ -190,7 +190,7 @@ jobs:
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && mv .env.production.tmp .env.production && chmod 600 .env.production && test -s .env.production"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          SSH_PORT: 22
           SSH_USER: ${{ secrets.SSH_USER }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
@@ -206,7 +206,7 @@ jobs:
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && docker build -t '${IMAGE_NAME}:${GITHUB_SHA}' . && VISIOMILHAS_IMAGE_TAG='${GITHUB_SHA}' docker stack deploy -c stack.visiomilhas.yml '${STACK_NAME}'"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          SSH_PORT: 22
           SSH_USER: ${{ secrets.SSH_USER }}
 
       - name: Validate deployment
@@ -218,5 +218,5 @@ jobs:
           echo "Production smoke test passed for ${IMAGE_NAME}:${GITHUB_SHA}."
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          SSH_PORT: 22
           SSH_USER: ${{ secrets.SSH_USER }}
