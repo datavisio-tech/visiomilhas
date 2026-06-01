@@ -17,7 +17,7 @@ export default async function AppAreaLayout({
       <AppSidebar />
       <div className="ml-56">
         <AppHeader email={email} />
-        <main className="px-8 py-8 lg:px-10">{children}</main>cccccc
+        <main className="px-8 py-8 lg:px-10">{children}</main>
       </div>
     </div>
   );

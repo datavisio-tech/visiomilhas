@@ -36,6 +36,11 @@ type BetterAuthSessionResolver = {
   };
 };
 
+type BetterAuthOperationalDisabled = {
+  __authOperationalDisabled?: boolean;
+  __authBootstrapMessage?: string;
+};
+
 function resolveProvider(session: BetterAuthSessionLike): string | null {
   return (
     session.session?.provider ??
@@ -72,9 +77,17 @@ export function buildSessionContextFromBetterAuthSession(
 }
 
 export async function resolveBetterAuthSessionContext(
-  authInstance: BetterAuthSessionResolver,
+  authInstance: BetterAuthSessionResolver | BetterAuthOperationalDisabled,
   requestHeaders?: Headers,
 ): Promise<SessionContext | null> {
+  if ("__authOperationalDisabled" in authInstance && authInstance.__authOperationalDisabled) {
+    return null;
+  }
+
+  if (!("api" in authInstance) || typeof authInstance.api?.getSession !== "function") {
+    return null;
+  }
+
   const resolvedHeaders = requestHeaders ?? (await headers());
   const session = (await authInstance.api.getSession({
     headers: resolvedHeaders,
