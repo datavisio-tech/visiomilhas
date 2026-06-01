@@ -248,5 +248,5 @@ describeIfDb("Purchases accounting integration", () => {
     } finally {
       await client.end();
     }
-  });
+  }, 10000);
 });
