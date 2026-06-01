@@ -7,7 +7,7 @@ version: "3.8"
 
 services:
   traefik:
-    image: traefik:latest
+    image: traefik:2.11.2
 
     command:
       - --log.level=INFO
