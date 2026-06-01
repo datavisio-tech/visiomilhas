@@ -276,8 +276,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "docker stack services '${STACK_NAME}' && docker service ps '${SERVICE_NAME}' --no-trunc"
-          curl -kfsS --retry 5 --retry-delay 5 "${APP_URL}/sign-in" > /dev/null
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "docker stack services '${STACK_NAME}' && docker service ps '${SERVICE_NAME}' --no-trunc && container_id=\$(docker ps -q --filter label=com.docker.swarm.service.name='${SERVICE_NAME}' | head -n1) && test -n \"\$container_id\" && docker exec \"\$container_id\" node --input-type=module -e \"const res = await fetch('http://127.0.0.1:3000/sign-in'); if (!res.ok) { console.error('HTTP ' + res.status); process.exit(1); } console.log('Production smoke test passed');\""
           echo "Production smoke test passed for ${IMAGE_NAME}:${GITHUB_SHA}."
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
