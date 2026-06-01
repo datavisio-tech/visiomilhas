@@ -93,7 +93,7 @@ jobs:
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 22
-          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_USER: gitdatavisiodeploy
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
@@ -124,7 +124,7 @@ jobs:
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 22
-          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_USER: gitdatavisiodeploy
 
       - name: Sync source to server
         shell: bash
@@ -158,7 +158,7 @@ jobs:
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 22
-          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_USER: gitdatavisiodeploy
 
       - name: Render production env on server
         shell: bash
@@ -191,7 +191,7 @@ jobs:
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 22
-          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_USER: gitdatavisiodeploy
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           MONGODB_SERVER_IP: ${{ vars.MONGODB_SERVER_IP || secrets.MONGODB_SERVER_IP }}
@@ -207,7 +207,7 @@ jobs:
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 22
-          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_USER: gitdatavisiodeploy
 
       - name: Validate deployment
         shell: bash
@@ -219,4 +219,4 @@ jobs:
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 22
-          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_USER: gitdatavisiodeploy
