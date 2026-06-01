@@ -96,20 +96,12 @@ jobs:
             fi
           done
 
-          auth_secret="${AUTH_SECRET:-${BETTER_AUTH_SECRET:-}}"
-          if [ -z "${auth_secret}" ]; then
-            echo "Missing required secret/env: AUTH_SECRET or BETTER_AUTH_SECRET"
-            exit 1
-          fi
-
           echo "Required production secrets are present."
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           POSTGRES_HOST: ${{ vars.POSTGRES_HOST || secrets.POSTGRES_HOST }}
@@ -189,13 +181,21 @@ jobs:
           env_file="$(mktemp)"
           trap 'rm -f "${env_file}"' EXIT
 
+          existing_auth_secret="$(
+            ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" \
+              "if [ -f '${REMOTE_DIR}/.env.production' ]; then grep -E '^(AUTH_SECRET|BETTER_AUTH_SECRET)=' '${REMOTE_DIR}/.env.production' | tail -n 1; fi" \
+            || true
+          )"
+          if [ -n "${existing_auth_secret}" ]; then
+            printf '%s\n' "${existing_auth_secret}" > "${env_file}"
+          fi
+
           printf '%s\n' \
             "APP_NAME=${APP_NAME}" \
             "APP_URL=${APP_URL}" \
             "NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}" \
             "NODE_ENV=${NODE_ENV}" \
             "USE_FIFO_MOVEMENTS_ENGINE=${USE_FIFO_MOVEMENTS_ENGINE}" \
-            "AUTH_SECRET=${AUTH_SECRET}" \
             "GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}" \
             "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}" \
             "POSTGRES_HOST=${POSTGRES_HOST}" \
@@ -221,8 +221,6 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
-          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           POSTGRES_HOST: ${{ vars.POSTGRES_HOST || secrets.POSTGRES_HOST }}
