@@ -74,7 +74,6 @@ jobs:
             USE_FIFO_MOVEMENTS_ENGINE
             PLANO
             PLANO_ANUAL
-            AUTH_SECRET
             GOOGLE_CLIENT_ID
             GOOGLE_CLIENT_SECRET
             POSTGRES_HOST
@@ -100,6 +99,12 @@ jobs:
             fi
           done
 
+          auth_secret="${AUTH_SECRET:-${BETTER_AUTH_SECRET:-}}"
+          if [ -z "${auth_secret}" ]; then
+            echo "Missing required secret/env: AUTH_SECRET or BETTER_AUTH_SECRET"
+            exit 1
+          fi
+
           echo "Required production secrets are present."
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -107,6 +112,7 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
@@ -222,6 +228,7 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
           AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
