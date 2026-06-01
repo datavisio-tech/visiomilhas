@@ -303,6 +303,26 @@ jobs:
           SSH_PORT: 22
           SSH_USER: root
 
+      - name: Inspect Traefik routing state
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" '\''
+            set -euo pipefail
+            traefik_service="$(docker service ls --format "{{.Name}}" | grep "^traefik_" | head -n1 || true)"
+            echo "Traefik service: ${traefik_service}"
+            docker service inspect "${SERVICE_NAME}" --format "{{json .Spec.Labels}}"
+            docker service inspect "${SERVICE_NAME}" --format "{{json .Spec.TaskTemplate.Networks}}"
+            if [ -n "${traefik_service}" ]; then
+              docker service inspect "${traefik_service}" --format "{{json .Spec.TaskTemplate.ContainerSpec.Args}}"
+              docker service logs "${traefik_service}" --tail 40 --raw || true
+            fi
+          '\''
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: 22
+          SSH_USER: root
+
       - name: Validate public URL via Traefik
         shell: bash
         run: |
