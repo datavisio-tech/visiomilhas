@@ -77,7 +77,6 @@ jobs:
             AUTH_SECRET
             GOOGLE_CLIENT_ID
             GOOGLE_CLIENT_SECRET
-            NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
             STRIPE_SECRET_KEY
             STRIPE_WEBHOOK_SECRET
             POSTGRES_HOST
@@ -110,15 +109,9 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          APP_NAME: ${{ secrets.APP_NAME }}
-          APP_URL: ${{ secrets.APP_URL }}
-          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
-          NODE_ENV: ${{ secrets.NODE_ENV }}
-          USE_FIFO_MOVEMENTS_ENGINE: ${{ secrets.USE_FIFO_MOVEMENTS_ENGINE }}
           AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
@@ -211,7 +204,6 @@ jobs:
             "AUTH_SECRET=${AUTH_SECRET}" \
             "GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}" \
             "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}" \
-            "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}" \
             "STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}" \
             "STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}" \
             "POSTGRES_HOST=${POSTGRES_HOST}" \
@@ -237,15 +229,9 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
-          APP_NAME: ${{ secrets.APP_NAME }}
-          APP_URL: ${{ secrets.APP_URL }}
-          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
-          NODE_ENV: ${{ secrets.NODE_ENV }}
-          USE_FIFO_MOVEMENTS_ENGINE: ${{ secrets.USE_FIFO_MOVEMENTS_ENGINE }}
           AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
@@ -285,4 +271,3 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
-          APP_URL: ${{ secrets.APP_URL }}
