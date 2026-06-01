@@ -108,7 +108,18 @@ jobs:
           chmod 700 ~/.ssh
           printf '%s\n' "${SSH_PRIVATE_KEY}" > ~/.ssh/visiomilhas_deploy_key
           chmod 600 ~/.ssh/visiomilhas_deploy_key
-          ssh-keyscan -p "${SSH_PORT}" "${SSH_HOST}" >> ~/.ssh/known_hosts
+          for attempt in 1 2 3 4 5 6; do
+            if ssh-keyscan -T 10 -p "${SSH_PORT}" "${SSH_HOST}" >> ~/.ssh/known_hosts; then
+              echo "SSH host key captured on attempt ${attempt}."
+              break
+            fi
+            echo "ssh-keyscan attempt ${attempt} failed, retrying..."
+            sleep 5
+          done
+          if [ ! -s ~/.ssh/known_hosts ]; then
+            echo "Unable to capture SSH host key from ${SSH_HOST}:${SSH_PORT}"
+            exit 1
+          fi
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 65002
