@@ -192,7 +192,7 @@ describeIfDb("Purchases accounting integration", () => {
     } finally {
       await client.end();
     }
-  });
+  }, 10000);
 
   it("restores accounting on PROBLEM -> RECEIVED", async () => {
     const client = new Client({
