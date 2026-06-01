@@ -155,7 +155,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "docker network inspect network_public >/dev/null 2>&1 || docker network create --driver overlay --attachable network_public"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "docker network inspect traefik_public >/dev/null 2>&1 || docker network create --driver overlay --attachable traefik_public"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 22
