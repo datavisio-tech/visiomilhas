@@ -24,7 +24,7 @@ jobs:
     environment: production
 
     env:
-      REMOTE_DIR: /opt/datavisio/visiomilhas
+      REMOTE_DIR: ${{ secrets.REMOTE_APP_DIR }}
       IMAGE_NAME: datavisio/visiomilhas
       STACK_NAME: visiomilhas
       SERVICE_NAME: visiomilhas_visiomilhas_app
@@ -48,10 +48,10 @@ jobs:
         run: |
           set -euo pipefail
           required=(
-            PRODUCTION_SSH_HOST
-            PRODUCTION_SSH_PORT
-            PRODUCTION_SSH_USER
-            PRODUCTION_SSH_PRIVATE_KEY
+            SSH_HOST
+            SSH_PORT
+            SSH_USER
+            SSH_PRIVATE_KEY
             APP_NAME
             APP_URL
             NEXT_PUBLIC_APP_URL
@@ -89,10 +89,10 @@ jobs:
 
           echo "Required production secrets are present."
         env:
-          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
-          PRODUCTION_SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
-          PRODUCTION_SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
-          PRODUCTION_SSH_PRIVATE_KEY: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           APP_NAME: ${{ secrets.APP_NAME }}
           APP_URL: ${{ secrets.APP_URL }}
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
@@ -130,19 +130,19 @@ jobs:
           chmod 600 ~/.ssh/visiomilhas_deploy_key
           ssh-keyscan -p "${PRODUCTION_SSH_PORT}" "${PRODUCTION_SSH_HOST}" >> ~/.ssh/known_hosts
         env:
-          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
-          PRODUCTION_SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
-          PRODUCTION_SSH_PRIVATE_KEY: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Ensure remote directory exists
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${PRODUCTION_SSH_PORT}" "${PRODUCTION_SSH_USER}@${PRODUCTION_SSH_HOST}" "mkdir -p '${REMOTE_DIR}' && test -w '${REMOTE_DIR}'"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "mkdir -p '${REMOTE_DIR}' && test -w '${REMOTE_DIR}'"
         env:
-          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
-          PRODUCTION_SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
-          PRODUCTION_SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
 
       - name: Sync source to server
         shell: bash
@@ -171,12 +171,12 @@ jobs:
             --exclude '*.tar' \
             --exclude '*.tgz' \
             --exclude '*.gz' \
-            -e "ssh -i ~/.ssh/visiomilhas_deploy_key -p ${PRODUCTION_SSH_PORT}" \
-            ./ "${PRODUCTION_SSH_USER}@${PRODUCTION_SSH_HOST}:${REMOTE_DIR}/"
+            -e "ssh -i ~/.ssh/visiomilhas_deploy_key -p ${SSH_PORT}" \
+            ./ "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/"
         env:
-          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
-          PRODUCTION_SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
-          PRODUCTION_SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
 
       - name: Render production env on server
         shell: bash
@@ -214,12 +214,12 @@ jobs:
             "MONGODB_URI=${MONGODB_URI}" > "${env_file}"
 
           chmod 600 "${env_file}"
-          scp -i ~/.ssh/visiomilhas_deploy_key -P "${PRODUCTION_SSH_PORT}" "${env_file}" "${PRODUCTION_SSH_USER}@${PRODUCTION_SSH_HOST}:${REMOTE_DIR}/.env.production.tmp"
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${PRODUCTION_SSH_PORT}" "${PRODUCTION_SSH_USER}@${PRODUCTION_SSH_HOST}" "cd '${REMOTE_DIR}' && mv .env.production.tmp .env.production && chmod 600 .env.production && test -s .env.production"
+          scp -i ~/.ssh/visiomilhas_deploy_key -P "${SSH_PORT}" "${env_file}" "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/.env.production.tmp"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && mv .env.production.tmp .env.production && chmod 600 .env.production && test -s .env.production"
         env:
-          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
-          PRODUCTION_SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
-          PRODUCTION_SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
           APP_NAME: ${{ secrets.APP_NAME }}
           APP_URL: ${{ secrets.APP_URL }}
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
@@ -251,21 +251,21 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${PRODUCTION_SSH_PORT}" "${PRODUCTION_SSH_USER}@${PRODUCTION_SSH_HOST}" "cd '${REMOTE_DIR}' && docker build -t '${IMAGE_NAME}:${GITHUB_SHA}' . && VISIOMILHAS_IMAGE_TAG='${GITHUB_SHA}' docker stack deploy -c stack.visiomilhas.yml '${STACK_NAME}'"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && docker build -t '${IMAGE_NAME}:${GITHUB_SHA}' . && VISIOMILHAS_IMAGE_TAG='${GITHUB_SHA}' docker stack deploy -c stack.visiomilhas.yml '${STACK_NAME}'"
         env:
-          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
-          PRODUCTION_SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
-          PRODUCTION_SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
 
       - name: Validate deployment
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${PRODUCTION_SSH_PORT}" "${PRODUCTION_SSH_USER}@${PRODUCTION_SSH_HOST}" "docker stack services '${STACK_NAME}' && docker service ps '${SERVICE_NAME}' --no-trunc"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "docker stack services '${STACK_NAME}' && docker service ps '${SERVICE_NAME}' --no-trunc"
           curl -fsS --retry 5 --retry-delay 5 "${APP_URL}/" > /dev/null
           echo "Production smoke test passed for ${IMAGE_NAME}:${GITHUB_SHA}."
         env:
-          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
-          PRODUCTION_SSH_PORT: ${{ secrets.PRODUCTION_SSH_PORT }}
-          PRODUCTION_SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
           APP_URL: ${{ secrets.APP_URL }}
