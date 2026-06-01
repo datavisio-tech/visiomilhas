@@ -202,7 +202,7 @@ async function run() {
       }
     }
 
-    const signUpNoSubSucceeded = report.checks.some(function (item) {
+    const signUpNoSubSucceeded = report.checks.some(function (item: any) {
       return (
         item.scenario === "SIGN_UP_ATTEMPT_NO_SUB" &&
         Boolean(item.result && item.result.ok)

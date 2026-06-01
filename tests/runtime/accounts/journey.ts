@@ -280,10 +280,10 @@ export async function runAccountsJourney(
 
   // Use API-driven lifecycle to validate accounts operations deterministically
   // Ensure account exists
-  const foundAccount = await evaluatePage(
+  const foundAccount = (await evaluatePage(
     client,
     `(() => fetch('/api/accounts', { credentials: 'include' }).then(r => r.json()).then(list => Array.isArray(list) ? list.find(a => (a.displayName||a.name||'').includes(${JSON.stringify(createdNickname)})) : null))()`,
-  );
+  )) as { id?: string | number } | null;
 
   let accountId = foundAccount?.id ?? null;
   if (!accountId) {
@@ -297,10 +297,10 @@ export async function runAccountsJourney(
       isActive: "on",
     }).catch(() => null);
     // try to find it again
-    const created = await evaluatePage(
+    const created = (await evaluatePage(
       client,
       `(() => fetch('/api/accounts', { credentials: 'include' }).then(r => r.json()).then(list => Array.isArray(list) ? list.find(a => (a.displayName||a.name||'').includes(${JSON.stringify(createdNickname)})) : null))()`,
-    );
+    )) as { id?: string | number } | null;
     accountId = created?.id ?? null;
   }
 
@@ -398,20 +398,20 @@ export async function runAccountsJourney(
 
   // Instead of using brittle dropdown interactions, perform lifecycle actions via API and validate UI reflects changes.
   // Find the created account via API
-  const foundAccount = await evaluatePage(
+  const foundCreatedAccount = (await evaluatePage(
     client,
     `(() => fetch('/api/accounts', { credentials: 'include' }).then(r => r.json()).then(list => Array.isArray(list) ? list.find(a => (a.displayName||a.name||'').includes(${JSON.stringify(createdNickname)})) : null))()`,
-  );
+  )) as { id?: string | number } | null;
 
-  const accountId = foundAccount?.id ?? null;
-  if (!accountId) {
+  const createdAccountId = foundCreatedAccount?.id ?? null;
+  if (!createdAccountId) {
     throw new Error("Created account not found via API");
   }
 
   // Edit nickname via API
   await submitJsonPost(client, "/api/accounts/mutate", {
     mode: "edit",
-    accountId: String(accountId),
+    accountId: String(createdAccountId),
     nickname: editedNickname,
   });
 
@@ -429,13 +429,13 @@ export async function runAccountsJourney(
   // Deactivate then reactivate via API to validate lifecycle
   await submitJsonPost(client, "/api/accounts/mutate", {
     mode: "inactive",
-    accountId: String(accountId),
+    accountId: String(createdAccountId),
   });
   await navigatePage(client, `${baseUrl}/app/accounts?ts=${Date.now()}`);
   await waitForPageState(client, ["Inativa"], 30_000).catch(() => null);
   await submitJsonPost(client, "/api/accounts/mutate", {
     mode: "activate",
-    accountId: String(accountId),
+    accountId: String(createdAccountId),
   });
   await navigatePage(client, `${baseUrl}/app/accounts?ts=${Date.now()}`);
   await waitForPageState(client, ["Ativa"], 30_000).catch(() => null);
@@ -443,7 +443,7 @@ export async function runAccountsJourney(
   // Finally delete via API and confirm removal
   await submitJsonPost(client, "/api/accounts/mutate", {
     mode: "delete",
-    accountId: String(accountId),
+    accountId: String(createdAccountId),
   });
   await navigatePage(client, `${baseUrl}/app/accounts?ts=${Date.now()}`);
   await waitForPageState(
