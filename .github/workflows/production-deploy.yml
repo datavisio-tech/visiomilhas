@@ -12,6 +12,9 @@ on:
         required: false
         default: "latest"
         type: string
+  repository_dispatch:
+    types:
+      - production_deploy
 
 permissions:
   contents: read
@@ -36,11 +39,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [ "${{ github.event.inputs.confirm_production_deploy }}" != "DEPLOY" ]; then
+          if [ "${CONFIRM_PRODUCTION_DEPLOY}" != "DEPLOY" ]; then
             echo "Production deploy not confirmed. Type DEPLOY to continue."
             exit 1
           fi
           echo "Production deploy confirmation accepted."
+        env:
+          CONFIRM_PRODUCTION_DEPLOY: ${{ github.event.inputs.confirm_production_deploy || github.event.client_payload.confirm_production_deploy }}
 
       - name: Validate required secrets
         shell: bash
