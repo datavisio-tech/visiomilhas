@@ -108,17 +108,17 @@ jobs:
           BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
-          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          POSTGRES_HOST: ${{ vars.POSTGRES_HOST || secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ vars.POSTGRES_PORT || secrets.POSTGRES_PORT }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          SAAS_DB: ${{ secrets.SAAS_DB }}
-          APP_DB: ${{ secrets.APP_DB }}
-          MONGODB_SERVER_IP: ${{ secrets.MONGODB_SERVER_IP }}
+          POSTGRES_DB: ${{ vars.POSTGRES_DB || secrets.POSTGRES_DB }}
+          SAAS_DB: ${{ vars.SAAS_DB || secrets.SAAS_DB }}
+          APP_DB: ${{ vars.APP_DB || secrets.APP_DB }}
+          MONGODB_SERVER_IP: ${{ vars.MONGODB_SERVER_IP || secrets.MONGODB_SERVER_IP }}
           MONGODB_USER: ${{ secrets.MONGODB_USER }}
           MONGODB_USER_PASSWORD: ${{ secrets.MONGODB_USER_PASSWORD }}
-          MONGODB_DATABASE: ${{ secrets.MONGODB_DATABASE }}
+          MONGODB_DATABASE: ${{ vars.MONGODB_DATABASE || secrets.MONGODB_DATABASE }}
 
       - name: Configure SSH
         shell: bash
@@ -221,17 +221,17 @@ jobs:
           BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
-          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          POSTGRES_HOST: ${{ vars.POSTGRES_HOST || secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ vars.POSTGRES_PORT || secrets.POSTGRES_PORT }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          SAAS_DB: ${{ secrets.SAAS_DB }}
-          APP_DB: ${{ secrets.APP_DB }}
-          MONGODB_SERVER_IP: ${{ secrets.MONGODB_SERVER_IP }}
+          POSTGRES_DB: ${{ vars.POSTGRES_DB || secrets.POSTGRES_DB }}
+          SAAS_DB: ${{ vars.SAAS_DB || secrets.SAAS_DB }}
+          APP_DB: ${{ vars.APP_DB || secrets.APP_DB }}
+          MONGODB_SERVER_IP: ${{ vars.MONGODB_SERVER_IP || secrets.MONGODB_SERVER_IP }}
           MONGODB_USER: ${{ secrets.MONGODB_USER }}
           MONGODB_USER_PASSWORD: ${{ secrets.MONGODB_USER_PASSWORD }}
-          MONGODB_DATABASE: ${{ secrets.MONGODB_DATABASE }}
+          MONGODB_DATABASE: ${{ vars.MONGODB_DATABASE || secrets.MONGODB_DATABASE }}
 
       - name: Build image and deploy stack
         shell: bash
