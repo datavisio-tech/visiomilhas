@@ -173,6 +173,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "rm -rf '${REMOTE_DIR}' && mkdir -p '${REMOTE_DIR}'"
           rsync -az --delete \
             --exclude '.git' \
             --exclude 'node_modules' \
