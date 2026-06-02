@@ -315,13 +315,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" '\''
-            set -euo pipefail
-            echo "=== Traefik routers ==="
-            curl -s http://127.0.0.1:8082/api/http/routers | grep -n "visiomilhas" || true
-            echo "=== App containers ==="
-            docker ps --filter name=visiomilhas_app --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
-          '\''
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "set -euo pipefail; echo '=== Traefik routers ==='; curl -s http://127.0.0.1:8082/api/http/routers | grep -n visiomilhas || true"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "set -euo pipefail; echo '=== App containers ==='; docker ps --filter name=visiomilhas_app"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 22
