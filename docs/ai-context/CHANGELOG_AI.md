@@ -2588,3 +2588,18 @@ Notas de segurança:
 - O workflow faz masking do connection string e não imprime segredos (scripts usam masking). Ainda assim, nunca cole o valor do secret em conversas públicas ou documentos versionados.
 - Este agente NÃO configura o secret automaticamente; solicite ao responsável de infraestrutura/owner para adicionar o secret.
 - Se houver falha, coletar apenas logs sanitizados e abrir investigação; não executar ações manuais em `staging` ou `production`.
+## 2026-06-02 - Docker Runtime Layout Collision Fix
+
+Objetivo:
+
+- Corrigir a tela branca em producao causada por colisao entre o `WORKDIR /app` do container e a estrutura App Router `app/` + `app/app/`.
+
+Alteracoes:
+
+- `Dockerfile` passou a usar `WORKDIR /workspace`.
+- Caminhos derivados do build e runner foram ajustados de `/app` para `/workspace`.
+- Healthcheck passou a apontar para `/workspace/scripts/healthcheck.js`.
+
+Escopo preservado:
+
+- Nenhuma alteracao em Subscribe, Auth, Layouts, Providers, Billing ou regras de subscription.

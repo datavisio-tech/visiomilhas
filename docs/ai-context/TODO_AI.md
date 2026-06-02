@@ -919,3 +919,9 @@ Status 1.3.20 — integração atômica da compra ao motor FIFO:
 - `createPurchaseAction` em `app/app/purchases/actions.ts` foi atualizado para, quando `USE_FIFO_MOVEMENTS_ENGINE` estiver ativa, delegar ao `acquireMilesUseCase(..., txRepo)` executando o use-case dentro da mesma transação da compra.
 - Pendências: validar a migration `db/app/migrations/0001_add_mile_point_lots.sql` em ambiente isolado, executar testes de integração e validar rollback antes de ativar a flag em staging.
 ```
+2026-06-02 - Docker Runtime Layout Collision Fix
+
+- Validar `docker build` com o novo `WORKDIR /workspace`.
+- Validar `docker run` e conferir HTML bruto de `/`, `/subscribe`, `/app` e `/app/accounts`.
+- Confirmar em navegador que nao ha React #418, React #423, `HierarchyRequestError` ou tela branca.
+- Apos validacao local, executar deploy via GitHub Actions e repetir smoke test em producao.

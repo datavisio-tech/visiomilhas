@@ -316,3 +316,9 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - Decisão: qualquer drift entre docs, skills e agents deve ser registrado em `CHANGELOG_AI.md` e `DAILY_CHECKPOINT.md` antes de novas mudanças operacionais.
 - Decisão: `AI_OPERATING_MODEL_VERSION=2.2-I` é a baseline oficial ativa da governança IA.
 - Decisão: skills versionadas usam baseline `v1` e agents versionados usam baseline `v1`, ambos compatíveis com `2.2-I`.
+### 2026-06-02 - Docker Runtime Layout Collision Fix
+
+- Decisao: o build containerizado do VisioMilhas nao deve usar `WORKDIR /app`, para evitar colisao com a arvore App Router `app/` e rotas internas `app/app/`.
+- Decisao: o Dockerfile passa a usar `WORKDIR /workspace` e todos os caminhos absolutos derivados devem acompanhar esse diretorio.
+- Motivo: producao apresentou HTML sem `<!DOCTYPE html>` e erros React de hidratacao apos o standalone build containerizado, enquanto local dev, build e standalone sem Docker permaneceram corretos.
+- Escopo: nao alterar Subscribe, Auth, layouts fonte, providers, billing ou regras de subscription para este fix.
