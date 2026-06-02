@@ -7,6 +7,8 @@ import FinalCtaSection from "../components/landing/final-cta-section";
 import LandingFooter from "../components/landing/footer";
 import ShadcnButton from "../components/ui/shadcn-button";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   return (
     <main className="bg-slate-950 text-white">
