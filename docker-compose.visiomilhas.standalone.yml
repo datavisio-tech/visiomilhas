@@ -1,0 +1,22 @@
+services:
+  visiomilhas_app:
+    image: datavisio/visiomilhas:${VISIOMILHAS_IMAGE_TAG:-a00e7b74a1df93287965fc81801e2d326c3338b9}
+    container_name: visiomilhas_app
+    command: ["node", "server.js"]
+    env_file:
+      - .env.production
+    restart: unless-stopped
+    networks:
+      - traefik_public
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "traefik_public"
+      traefik.http.routers.visiomilhas.rule: "Host(`visiomilhas.visiochat.cloud`)"
+      traefik.http.routers.visiomilhas.entrypoints: "websecure"
+      traefik.http.routers.visiomilhas.tls: "true"
+      traefik.http.routers.visiomilhas.tls.certresolver: "le"
+      traefik.http.services.visiomilhas.loadbalancer.server.port: "3000"
+
+networks:
+  traefik_public:
+    external: true

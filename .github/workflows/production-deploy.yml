@@ -1,6 +1,9 @@
 name: Production Deploy - VisioMilhas
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       confirm_production_deploy:
@@ -21,7 +24,7 @@ permissions:
 
 jobs:
   deploy:
-    name: Deploy to production Swarm
+    name: Deploy to production standalone
     runs-on: ubuntu-latest
     environment: production
 
@@ -51,12 +54,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [ "${CONFIRM_PRODUCTION_DEPLOY}" != "DEPLOY" ]; then
-            echo "Production deploy not confirmed. Type DEPLOY to continue."
-            exit 1
+          if [ "${GITHUB_EVENT_NAME}" != "push" ]; then
+            if [ "${CONFIRM_PRODUCTION_DEPLOY}" != "DEPLOY" ]; then
+              echo "Production deploy not confirmed. Type DEPLOY to continue."
+              exit 1
+            fi
+            echo "Production deploy confirmation accepted."
+          else
+            echo "Push-triggered deploy accepted."
           fi
-          echo "Production deploy confirmation accepted."
         env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
           CONFIRM_PRODUCTION_DEPLOY: ${{ github.event.inputs.confirm_production_deploy || github.event.client_payload.confirm_production_deploy }}
 
       - name: Validate required secrets
@@ -155,7 +163,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "docker network inspect traefik_public >/dev/null 2>&1 || docker network create --driver overlay --attachable traefik_public"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "docker network inspect traefik_public >/dev/null 2>&1 || docker network create traefik_public"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 22
@@ -199,7 +207,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && docker stack deploy -c stack.traefik.yml traefik"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && docker compose --env-file .env.production -f docker-compose.traefik.standalone.yml up -d"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 22
@@ -286,7 +294,7 @@ jobs:
             --build-arg MONGODB_USER_PASSWORD \
             --build-arg MONGODB_DATABASE \
             --build-arg MONGODB_URI \
-            -t '${IMAGE_NAME}:${GITHUB_SHA}' . && VISIOMILHAS_IMAGE_TAG='${GITHUB_SHA}' docker stack deploy -c stack.visiomilhas.yml '${STACK_NAME}'"
+            -t '${IMAGE_NAME}:${GITHUB_SHA}' . && VISIOMILHAS_IMAGE_TAG='${GITHUB_SHA}' docker compose --env-file '${REMOTE_DIR}/.env.production' -f docker-compose.visiomilhas.standalone.yml up -d"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 22
@@ -296,7 +304,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "docker stack services '${STACK_NAME}' && docker service ps '${SERVICE_NAME}' --no-trunc && container_id=\$(docker ps -q --filter label=com.docker.swarm.service.name='${SERVICE_NAME}' | head -n1) && test -n \"\$container_id\" && for attempt in 1 2 3 4 5 6 7 8 9 10; do status=\$(docker exec \"\$container_id\" node --input-type=module -e \"const res = await fetch('http://127.0.0.1:3000/sign-in'); console.log(res.status); process.exit(res.ok ? 0 : 1);\"); if [ \"\$status\" = \"200\" ]; then echo 'Production smoke test passed'; exit 0; fi; echo \"Smoke test attempt \$attempt returned HTTP \$status, retrying...\"; sleep 5; done; echo 'Production smoke test failed after retries'; docker service logs '${SERVICE_NAME}' --tail 80 --raw; exit 1"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "container_id=\$(docker ps -q --filter name=visiomilhas_app | head -n1) && test -n \"\$container_id\" && for attempt in 1 2 3 4 5 6 7 8 9 10; do status=\$(docker exec \"\$container_id\" node --input-type=module -e \"const res = await fetch('http://127.0.0.1:3000/'); console.log(res.status); process.exit(res.ok ? 0 : 1);\"); if [ \"\$status\" = \"200\" ]; then echo 'Production smoke test passed'; exit 0; fi; echo \"Smoke test attempt \$attempt returned HTTP \$status, retrying...\"; sleep 5; done; echo 'Production smoke test failed after retries'; docker logs '\$(docker ps -q --filter name=visiomilhas_app | head -n1)' --tail 80 --raw; exit 1"
           echo "Production smoke test passed for ${IMAGE_NAME}:${GITHUB_SHA}."
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -309,14 +317,10 @@ jobs:
           set -euo pipefail
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" '\''
             set -euo pipefail
-            traefik_service="$(docker service ls --format "{{.Name}}" | grep "^traefik_" | head -n1 || true)"
-            echo "Traefik service: ${traefik_service}"
-            docker service inspect "${SERVICE_NAME}" --format "{{json .Spec.Labels}}"
-            docker service inspect "${SERVICE_NAME}" --format "{{json .Spec.TaskTemplate.Networks}}"
-            if [ -n "${traefik_service}" ]; then
-              docker service inspect "${traefik_service}" --format "{{json .Spec.TaskTemplate.ContainerSpec.Args}}"
-              docker service logs "${traefik_service}" --tail 40 --raw || true
-            fi
+            echo "=== Traefik routers ==="
+            curl -s http://127.0.0.1:8082/api/http/routers | grep -n "visiomilhas" || true
+            echo "=== App containers ==="
+            docker ps --filter name=visiomilhas_app --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
           '\''
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
