@@ -207,7 +207,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && docker compose --env-file .env.production -f docker-compose.traefik.standalone.yml up -d"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "if docker container inspect traefik >/dev/null 2>&1; then echo 'Traefik already running'; else cd '${REMOTE_DIR}' && docker compose --env-file .env.production -f docker-compose.traefik.standalone.yml up -d; fi"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 22
