@@ -294,7 +294,7 @@ jobs:
             --build-arg MONGODB_USER_PASSWORD \
             --build-arg MONGODB_DATABASE \
             --build-arg MONGODB_URI \
-            -t '${IMAGE_NAME}:${GITHUB_SHA}' . && VISIOMILHAS_IMAGE_TAG='${GITHUB_SHA}' docker compose -f docker-compose.visiomilhas.standalone.yml up -d"
+            -t '${IMAGE_NAME}:${GITHUB_SHA}' . && docker rm -f visiomilhas_app >/dev/null 2>&1 || true && VISIOMILHAS_IMAGE_TAG='${GITHUB_SHA}' docker compose -f docker-compose.visiomilhas.standalone.yml up -d"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: 22
