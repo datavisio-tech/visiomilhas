@@ -24,7 +24,7 @@ jobs:
     environment: production
 
     env:
-      REMOTE_DIR: ${{ secrets.REMOTE_APP_DIR }}
+      REMOTE_DIR: /opt/datavisio/visiomilhas-clean
       IMAGE_NAME: datavisio/visiomilhas
       STACK_NAME: visiomilhas
       SERVICE_NAME: visiomilhas_visiomilhas_app
@@ -87,6 +87,15 @@ jobs:
             fi
           done
 
+          case "${REMOTE_DIR}" in
+            /opt/datavisio/visiomilhas|/opt/datavisio/visiomilhas-clean|/opt/datavisio/visiomilhas-*)
+              ;;
+            *)
+              echo "REMOTE_DIR fora do padrao seguro: ${REMOTE_DIR}"
+              exit 1
+              ;;
+          esac
+
           echo "Required production secrets are present."
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -141,6 +150,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          case "${REMOTE_DIR}" in
+            /opt/datavisio/visiomilhas|/opt/datavisio/visiomilhas-clean|/opt/datavisio/visiomilhas-*) ;;
+            *) echo "REMOTE_DIR fora do padrao seguro: ${REMOTE_DIR}"; exit 1 ;;
+          esac
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "mkdir -p '${REMOTE_DIR}' && test -w '${REMOTE_DIR}'"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -161,6 +174,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          case "${REMOTE_DIR}" in
+            /opt/datavisio/visiomilhas|/opt/datavisio/visiomilhas-clean|/opt/datavisio/visiomilhas-*) ;;
+            *) echo "REMOTE_DIR fora do padrao seguro: ${REMOTE_DIR}"; exit 1 ;;
+          esac
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "rm -rf '${REMOTE_DIR}' && mkdir -p '${REMOTE_DIR}'"
           rsync -az --delete \
             --exclude '.git' \
@@ -259,7 +276,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "set -a; . '${REMOTE_DIR}/.env.production'; set +a; cd '${REMOTE_DIR}' && docker build \
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "set -a; . '${REMOTE_DIR}/.env.production'; set +a; cd '${REMOTE_DIR}' && docker build --no-cache --pull \
             --build-arg APP_NAME \
             --build-arg APP_URL \
             --build-arg NEXT_PUBLIC_APP_URL \
