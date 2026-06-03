@@ -9,6 +9,10 @@ import { reportAuthEvent } from "./server/auth-observability";
 export const auth: any = (() => {
   try {
     const betterAuthEnvironment = resolveBetterAuthEnvironment();
+    const googleRedirectURI = new URL(
+      "/api/auth/callback/google",
+      betterAuthEnvironment.baseURL,
+    ).toString();
 
     return betterAuth({
       database: drizzleAdapter(admDb(), {
@@ -24,6 +28,7 @@ export const auth: any = (() => {
         google: {
           clientId: betterAuthEnvironment.googleClientId,
           clientSecret: betterAuthEnvironment.googleClientSecret,
+          redirectURI: googleRedirectURI,
         },
       },
       emailAndPassword: {
