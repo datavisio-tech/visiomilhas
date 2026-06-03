@@ -2603,3 +2603,35 @@ Alteracoes:
 Escopo preservado:
 
 - Nenhuma alteracao em Subscribe, Auth, Layouts, Providers, Billing ou regras de subscription.
+
+## 2026-06-02 - Knowledge Capture: Docker Runtime Layout Collision
+
+Objetivo:
+
+- Transformar o incidente real de producao em conhecimento permanente da IA-1st Engine.
+
+Alteracoes:
+
+- Criada a knowledge base `docs/ai-context/knowledge-base/KB-0001-DOCKER-WORKDIR-APP-ROUTER-COLLISION.md`.
+- Criada a skill `.agents/skills/runtime-deploy-forensics/SKILL.md`.
+- Atualizado o `IA-1st Orchestrator` para exigir Runtime Forensics antes de investigacao frontend quando houver tela branca, React #418, React #423, `HierarchyRequestError`, `NotFoundError` ou `document.doctype = null`.
+
+Resultado:
+
+- Futuros agentes passam a validar HTML bruto, `document.doctype`, container ativo, imagem ativa, deploy ativo e Traefik/proxy antes de alterar componentes React.
+
+## 2026-06-02 - Auth Bootstrap Environment Fix
+
+Objetivo:
+
+- Restaurar o login Google em producao garantindo que `BETTER_AUTH_SECRET` chegue preenchido e que o pipeline falhe se o segredo vier vazio.
+
+Alteracoes:
+
+- O workflow de deploy passou a abortar com `Missing BETTER_AUTH_SECRET` quando `BETTER_AUTH_SECRET` e `AUTH_SECRET` estao vazios.
+- O secret `BETTER_AUTH_SECRET` foi preenchido no ambiente de producao do GitHub com um valor nao vazio.
+
+Resultado esperado:
+
+- O bootstrap do Better Auth volta a inicializar o provider Google em producao.
+- O erro `AUTH_BOOTSTRAP_FAILED` nao deve mais surgir por secret vazio.

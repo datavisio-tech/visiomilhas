@@ -99,6 +99,11 @@ jobs:
             fi
           done
 
+          if [ -z "${BETTER_AUTH_SECRET:-${AUTH_SECRET:-}}" ]; then
+            echo "Missing BETTER_AUTH_SECRET"
+            exit 1
+          fi
+
           case "${REMOTE_DIR}" in
             /opt/datavisio/visiomilhas|/opt/datavisio/visiomilhas-clean|/opt/datavisio/visiomilhas-*)
               ;;

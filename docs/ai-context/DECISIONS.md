@@ -322,3 +322,17 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - Decisao: o Dockerfile passa a usar `WORKDIR /workspace` e todos os caminhos absolutos derivados devem acompanhar esse diretorio.
 - Motivo: producao apresentou HTML sem `<!DOCTYPE html>` e erros React de hidratacao apos o standalone build containerizado, enquanto local dev, build e standalone sem Docker permaneceram corretos.
 - Escopo: nao alterar Subscribe, Auth, layouts fonte, providers, billing ou regras de subscription para este fix.
+
+### 2026-06-02 - Runtime Forensics antes de investigacao frontend
+
+- Decisao: incidentes com tela branca, hydration failure, React #418, React #423, `HierarchyRequestError`, `NotFoundError` ou `document.doctype = null` devem seguir primeiro o fluxo Runtime Forensics -> HTML Validation -> Container Validation -> Deploy Validation -> Proxy Routing Validation.
+- Decisao: agentes so devem investigar componentes React depois de provar que o HTML bruto contem `<!DOCTYPE html>`, que `document.doctype` existe, que o container ativo usa a imagem esperada e que o proxy aponta para o backend correto.
+- Motivo: o incidente `KB-0001` provou que sintomas de hidratacao React podem ser causados por artefato Docker/deploy, e nao por componente frontend.
+- Artefatos oficiais: `docs/ai-context/knowledge-base/KB-0001-DOCKER-WORKDIR-APP-ROUTER-COLLISION.md` e `.agents/skills/runtime-deploy-forensics/SKILL.md`.
+
+### 2026-06-02 - Auth bootstrap environment hardening
+
+- Decisao: o deploy de producao deve falhar imediatamente se `BETTER_AUTH_SECRET` e `AUTH_SECRET` estiverem ambos vazios.
+- Decisao: `BETTER_AUTH_SECRET` passa a ser o segredo primario do Better Auth em producao; `AUTH_SECRET` continua como fallback tecnico, nao como substituto silencioso de um env vazio.
+- Motivo: a producao retornou `AUTH_BOOTSTRAP_FAILED` porque o processo Node recebeu `BETTER_AUTH_SECRET` vazio, apesar de outros segredos estarem presentes.
+- Resultado esperado: o provider Google so inicializa com um segredo valido e nao vazio.
