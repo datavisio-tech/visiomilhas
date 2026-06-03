@@ -144,6 +144,7 @@ Quando houver erro de login, sempre validar nesta ordem:
 - Confirmar que o callback gerado aponta para o domínio público correto.
 - Confirmar que o runtime usa a imagem recém-publicada após a troca de secrets.
 - Somente depois disso validar consent screen, callback e criação de sessão.
+- Se o runtime ainda emitir o `client_id` antigo, o ponto de falha está entre a atualização do secret e a recriação do container.
 
 ## Regras de Segurança
 

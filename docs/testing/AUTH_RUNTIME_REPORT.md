@@ -110,3 +110,15 @@ redirect_uri=https://visiomilhas.visiochat.cloud/api/auth/callback/google
 - The Google response still redirected to `signin/oauth/error` with `redirect_uri_mismatch`.
 - That means the runtime request still does not complete the cutover, even though the callback path is correct.
 - The next operational checkpoint is to confirm that the newly created production OAuth client is the one currently loaded into the live container and that the active container was actually recreated after the secret update.
+
+### Runtime verification performed in this round
+
+- The live production endpoint still emitted the following Google OAuth `client_id`:
+
+```txt
+469564365250-b21amqa3fgjqs0c6rbeod71nfaul3ikk.apps.googleusercontent.com
+```
+
+- This is the same client identifier observed before the production cutover.
+- Therefore, the active runtime is still using the old Google OAuth client, not the newly created production client.
+- The most likely break is between the GitHub secret update and the container refresh step, meaning the runtime image/container was not recreated with the new secret set.
