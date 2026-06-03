@@ -68,3 +68,45 @@ message: 'Missing required environment variables: BETTER_AUTH_SECRET'
 
 - Prevent future deploys from reaching production with an empty auth secret.
 - Keep the `AUTH_BOOTSTRAP_FAILED` 503 from reappearing due to an empty secret.
+
+## 2026-06-02 - OAuth Production Cutover
+
+### Purpose
+
+- Validate the transition from the development Google OAuth client to the production Google OAuth client using the newly updated GitHub secrets.
+
+### Runtime expectation
+
+- The application should continue to send the production callback URI:
+
+```txt
+https://visiomilhas.visiochat.cloud/api/auth/callback/google
+```
+
+### Validation checklist
+
+- Confirm the active deployment uses the latest commit and image.
+- Confirm the container was recreated after the secret update.
+- Confirm the live Node process receives the production `GOOGLE_CLIENT_ID`.
+- Confirm the generated Google OAuth URL uses the production client identifier.
+- Confirm the OAuth flow reaches Google consent or returns a session after callback.
+
+### Notes
+
+- Do not log the full client secret.
+- Do not change Better Auth logic or callback paths for this validation.
+- If the mismatch persists, the remaining divergence is likely between the active Google Cloud Console client and the production secret set in GitHub.
+
+### Live production validation performed in this round
+
+- The production auth endpoint generated an OAuth URL using:
+
+```txt
+client_id=469564365250-b21amqa3fgjqs0c6rbeod71nfaul3ikk.apps.googleusercontent.com
+redirect_uri=https://visiomilhas.visiochat.cloud/api/auth/callback/google
+```
+
+- The `redirect_uri` is correct and matches the code expectation.
+- The Google response still redirected to `signin/oauth/error` with `redirect_uri_mismatch`.
+- That means the runtime request still does not complete the cutover, even though the callback path is correct.
+- The next operational checkpoint is to confirm that the newly created production OAuth client is the one currently loaded into the live container and that the active container was actually recreated after the secret update.
