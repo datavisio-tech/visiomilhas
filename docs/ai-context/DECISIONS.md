@@ -1,4 +1,10 @@
-﻿## 2026-06-04 - Agent routing enforcement
+﻿# 2026-06-04 - PROD V2 cutover readiness decision
+
+- Decision: the current release candidate is **NO-GO** for PROD V2 promotion until schema/bootstrap evidence is closed.
+- Decision: purchases and session refresh warnings are tracked as medium-severity runtime/test instability, not as standalone blockers.
+- Decision: production deploy readiness must include explicit evidence for the APP schema path before cutover to a fresh PROD V2 target.
+
+## 2026-06-04 - Agent routing enforcement
 
 - Decisao: task type must be routed through `.agents/AGENT_ROUTER.md` before selecting the active agent identity.
 - Decisao: `.github/agents/` remains the canonical agent tree and `.agents/skills/` remains the canonical skill tree.

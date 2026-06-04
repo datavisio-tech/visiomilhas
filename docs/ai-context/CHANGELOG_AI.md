@@ -1,4 +1,11 @@
-﻿## 2026-06-04 - Agent routing enforcement
+﻿# 2026-06-04 - PROD V2 cutover readiness audit
+
+- Audited the current HM release candidate for production readiness.
+- Documented that purchases and session refresh warnings are not hard blockers on their own.
+- Identified a production-cutover blocker around schema/bootstrap evidence for the APP lot migration path.
+- Added the cutover readiness report, production deploy checklist, rollback plan, and post-deploy validation guide.
+
+## 2026-06-04 - Agent routing enforcement
 
 - Added `.agents/AGENT_ROUTER.md` as the mandatory routing layer between task type, agent file, and skill set.
 - Updated the root `AGENTS.md` and `.agents/HANDOVER.md` so operational replies must select a routed agent instead of using a generic identity.
