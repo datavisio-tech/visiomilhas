@@ -736,3 +736,29 @@ Progresso estimado (MVP1) atualizado:
   - `FIRST_CUSTOMER_CHECKLIST.md`
   - `GO_LIVE_OPERATIONS_CHECKLIST.md`
 - Keep this phase documentation-only: no code, workflow, migration, or deploy changes.
+# 2026-06-04
+
+## Failure recovery integration
+
+- Add a failure registry for repeatable operational issues.
+- Require registry lookup before `FAIL`.
+- Add recovery playbooks and explicit fallbacks for SSH, GitHub integration, Docker pull, and compose collisions.
+
+## Playwright automation baseline
+
+- Treat browser smoke tests as a separate lane from Vitest.
+- Keep HM route coverage in Playwright under a dedicated `tests/e2e` path.
+- Use the Playwright runtime for homepage, sign-in, dashboard, accounts, programs, purchases, and subscribe checks.
+
+## Autonomous delivery engine
+
+- Run delivery in a closed loop: implement -> test -> validate -> fix -> retest -> document -> classify -> continue.
+- Treat human escalation as a last resort for missing credentials, business decisions, or destructive operations.
+- Produce `DEPLOY_CONFIDENCE_SCORE` for HM and PROD using Infrastructure, Authentication, Smoke, Functional, and Runtime categories.
+
+## Test suite organization
+
+- Keep `tests/domain`, `tests/integration`, and `tests/runtime` as the official lanes.
+- Do not introduce browser smoke tests into the unit lane.
+- Treat `tests-e2e` as a future dedicated lane only if there is an explicit migration plan.
+- Keep `test-results` as generated output only.

@@ -143,10 +143,15 @@ jobs:
             --exclude '.next' \
             --exclude '.env' \
             --exclude '.env.*' \
+            --exclude 'tests' \
+            --exclude 'test-results' \
+            --exclude 'playwright-report' \
+            --exclude 'coverage' \
+            --exclude 'docs' \
+            --exclude '.agents' \
             --exclude '.claude' \
             --exclude 'dumps' \
             --exclude 'backups' \
-            --exclude 'coverage' \
             --exclude 'logs' \
             --exclude '*.log' \
             --exclude '*.tmp' \

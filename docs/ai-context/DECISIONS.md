@@ -376,3 +376,12 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - MongoDB is not part of the current required runtime path.
 - The production deploy pipeline must be validated end-to-end through GitHub Actions -> SSH -> Docker -> Traefik -> container -> public URL.
 - Healthcheck, auth runtime events, and post-deploy smoke tests are mandatory gates for readiness.
+# 2026-06-04
+
+- Adopted a Failure Recovery Layer as part of the delivery workflow.
+- Agents must consult the failure registry and run the matching recovery playbook before returning `FAIL`.
+- Local execution/runtime failures should be reclassified to `WARNING` when the issue is agent-side or environment-side rather than a SaaS defect.
+- Playwright browser automation is available and must run in an isolated lane from Vitest/unit automation.
+- Adopted an Autonomous Delivery Engine flow for HM/PROD delivery: implement, test, validate, fix, retest, document, classify, continue, and only escalate to humans for credentials, business decisions, or destructive actions.
+- Standardized `DEPLOY_CONFIDENCE_SCORE` across Infrastructure, Authentication, Smoke, Functional, and Runtime categories for HM and PROD.
+- Formalized the test suite organization contract: `tests/domain` for pure unit rules, `tests/integration` for persistence/service checks, `tests/runtime` for browser-like journeys, `tests-e2e` only for a future dedicated browser lane, and `test-results` for artifacts only.

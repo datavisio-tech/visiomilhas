@@ -2722,3 +2722,10 @@ Resultado esperado:
   - `docs/ai-context/GO_LIVE_OPERATIONS_CHECKLIST.md`
 - Purpose:
   - formalize onboarding, trial, subscription, cancellation, reactivation, support, incident response and rollback procedures.
+# 2026-06-04
+
+- Added the Failure Recovery Layer to turn recurring operational errors into registry-backed recovery paths before surfacing `FAIL`.
+- Documented known failure patterns: `spawn setup refresh`, `403 Resource not accessible by integration`, SSH port/auth issues, Docker pull denial, and container-name conflicts.
+- Registered FP-008 for browser automation availability: Playwright runtime confirmed and should be treated as a dedicated smoke-test lane.
+- Introduced the Autonomous Delivery Engine directive and the HM/PROD `DEPLOY_CONFIDENCE_SCORE` model.
+- Formalized the official test suite organization contract for `tests/domain`, `tests/integration`, `tests/runtime`, `tests-e2e`, and `test-results`.
