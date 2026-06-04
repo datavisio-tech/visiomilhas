@@ -1,7 +1,7 @@
 services:
   visiomilhas_app:
     image: datavisio/visiomilhas:${VISIOMILHAS_IMAGE_TAG:-a00e7b74a1df93287965fc81801e2d326c3338b9}
-    container_name: visiomilhas_app
+    container_name: ${VISIOMILHAS_CONTAINER_NAME:-visiomilhas_app}
     command: ["node", "server.js"]
     env_file:
       - .env.production

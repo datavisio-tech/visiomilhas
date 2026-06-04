@@ -27,10 +27,12 @@ jobs:
     environment: production
 
     env:
-      REMOTE_DIR: /opt/datavisio/visiomilhas-prod-v2
+      REMOTE_DIR: /opt/datavisio/visiomilhas
       IMAGE_NAME: datavisio/visiomilhas
       STACK_NAME: visiomilhas-prod
       SERVICE_NAME: visiomilhas_prod_app
+      VISIOMILHAS_CONTAINER_NAME: visiomilhas_app
+      COMPOSE_PROJECT_NAME: visiomilhas-prod
       PUBLIC_BASE_URL: https://visiomilhas.visiochat.cloud
       SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
       SSH_USER: root
@@ -113,6 +115,8 @@ jobs:
           APP_NAME: ${{ vars.APP_NAME || secrets.APP_NAME }}
           APP_URL: ${{ vars.APP_URL || secrets.APP_URL }}
           NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL || secrets.NEXT_PUBLIC_APP_URL }}
+          COMPOSE_PROJECT_NAME: visiomilhas-prod
+          VISIOMILIAS_CONTAINER_NAME: visiomilhas_app
           NODE_ENV: ${{ vars.NODE_ENV || secrets.NODE_ENV }}
           USE_FIFO_MOVEMENTS_ENGINE: ${{ vars.USE_FIFO_MOVEMENTS_ENGINE || secrets.USE_FIFO_MOVEMENTS_ENGINE }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
@@ -292,7 +296,7 @@ jobs:
             --build-arg BETTER_AUTH_SECRET \
             --build-arg GOOGLE_CLIENT_ID \
             --build-arg GOOGLE_CLIENT_SECRET \
-            -t '${IMAGE_NAME}:${GITHUB_SHA}' . && { docker rm -f ${SERVICE_NAME} >/dev/null 2>&1 || true; } && VISIOMILHAS_IMAGE_TAG=${GITHUB_SHA} docker compose -f docker-compose.visiomilhas.standalone.yml up -d"
+            -t '${IMAGE_NAME}:${GITHUB_SHA}' . && { docker rm -f "${VISIOMILIAS_CONTAINER_NAME}" >/dev/null 2>&1 || true; } && VISIOMILIAS_IMAGE_TAG=${GITHUB_SHA} VISIOMILIAS_CONTAINER_NAME=${VISIOMILIAS_CONTAINER_NAME} COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME} docker compose -f docker-compose.visiomilhas.standalone.yml up -d"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: root
@@ -301,7 +305,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "container_id=\$(docker ps -q --filter name=${SERVICE_NAME} | head -n1) && test -n \"\$container_id\" && docker exec \"\$container_id\" node scripts/healthcheck.js"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "container_id=\$(docker ps -q --filter name=${VISIOMILIAS_CONTAINER_NAME} | head -n1) && test -n \"\$container_id\" && docker exec \"\$container_id\" node scripts/healthcheck.js"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: root
@@ -349,3 +353,5 @@ jobs:
           python3 -c 'import json,sys;from pathlib import Path;raw=Path(sys.argv[1]).read_text(encoding="utf-8").strip();\nif not raw: raise SystemExit("PROD OAuth bootstrap response was empty");\ndata=json.loads(raw);url=data.get("url") or "";\nif "accounts.google.com" not in url: raise SystemExit(f"PROD OAuth bootstrap did not return Google redirect URL: {url!r}")' "${oauth_file}"
         env:
           PUBLIC_BASE_URL: ${{ env.PUBLIC_BASE_URL }}
+
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "container_id=\$(docker ps -q --filter name=${VISIOMILIAS_CONTAINER_NAME} | head -n1) && test -n \"\$container_id\" && docker exec \"\$container_id\" node scripts/healthcheck.js"
