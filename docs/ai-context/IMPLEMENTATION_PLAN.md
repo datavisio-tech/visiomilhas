@@ -768,3 +768,8 @@ Progresso estimado (MVP1) atualizado:
 - Consult docs in the canonical order: `docs/ai-context/`, `.agents/`, `CHANGELOG_AI.md`, `DECISIONS.md`, `IMPLEMENTATION_PLAN.md`, and `failure-registry/`.
 - Keep HM and PROD isolated in deploy strategy, compose project naming, runtime targets, and validation lanes.
 - Route browser validation through Playwright and QA user discovery rather than human or personal accounts.
+## 2026-06-04 - IA-1stEngine discipline enforcement
+
+- Enforce mandatory reply fields in all operational outputs: `AGENT`, `SKILLS`, `SOURCES CONSULTED`, and `STATUS`.
+- Self-correct any draft that misses the mandatory fields before responding.
+- Before surfacing `FAIL`, consult the failure registry; before surfacing `HUMAN_ACTION_REQUIRED`, consult the applicable recovery playbook.

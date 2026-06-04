@@ -2734,3 +2734,8 @@ Resultado esperado:
 - Added the repository-root `AGENTS.md` as the canonical operating system for IA-1stEngine on VisioMilhas.
 - Added `.agents/HANDOVER.md` as the standard handover format for every agent transition.
 - Standardized the required document consultation order, official agents, deploy policy, failure recovery policy, and HUMAN_ACTION_REQUIRED criteria for the project.
+## 2026-06-04 - IA-1stEngine discipline enforcement
+
+- Strengthened the repository operating system with mandatory operational response fields: `AGENT`, `SKILLS`, `SOURCES CONSULTED`, and `STATUS`.
+- Added explicit `PROCESS_VIOLATION` self-correction guidance for any response draft missing the mandatory fields.
+- Expanded the handover template to include `STATUS`, `SOURCES CONSULTED`, and `AGENT` so formal transitions remain machine-checkable.

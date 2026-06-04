@@ -27,3 +27,8 @@ Browser validation must load official synthetic QA users from `docs/ai-context/T
 - `tests/runtime` for environment validation
 - `tests-e2e` for browser validation
 - `test-results` for generated artifacts only
+
+## Operational reply discipline
+
+- Any operational reply generated while working on browser validation must expose `AGENT`, `SKILLS`, `SOURCES CONSULTED`, and `STATUS`.
+- Any draft missing those fields must be corrected internally before the final response is emitted.

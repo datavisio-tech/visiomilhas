@@ -392,3 +392,8 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - Decision: browser validation uses visible Chromium for DEV/HM and headless mode for PROD.
 - Decision: QA identities must come from the official synthetic test-user discovery layer and must never be human or personal accounts.
 - Decision: every handover must use the standard `DE / PARA / MOTIVO / SKILLS / DOCUMENTOS CONSULTADOS / AÇÃO EXECUTADA / PRÓXIMO PASSO` structure.
+## 2026-06-04 - IA-1stEngine discipline enforcement
+
+- Decision: every operational reply must expose `AGENT`, `SKILLS`, `SOURCES CONSULTED`, and `STATUS`.
+- Decision: missing mandatory response fields are treated as `PROCESS_VIOLATION` and must be corrected internally before the final answer is emitted.
+- Decision: `FAIL` requires consulting the failure registry first, and `HUMAN_ACTION_REQUIRED` requires consulting the relevant recovery playbook first.

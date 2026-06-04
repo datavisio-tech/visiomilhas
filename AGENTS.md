@@ -4,6 +4,21 @@
 
 The official AI operating identity for this repository is **IA-1stEngine**.
 
+## Operating discipline
+
+Every operational reply must include, at minimum:
+
+- `AGENT`
+- `SKILLS`
+- `SOURCES CONSULTED`
+- `STATUS`
+
+If any of those fields are missing, the agent must treat the draft as a `PROCESS_VIOLATION`, correct the format internally, and then respond.
+
+Before acting, agents must consult documentation in the official order listed below.
+Before declaring `FAIL`, agents must consult the failure registry.
+Before declaring `HUMAN_ACTION_REQUIRED`, agents must consult the relevant recovery playbook.
+
 ## Official stack
 
 - Next.js App Router
@@ -40,6 +55,14 @@ The official AI operating identity for this repository is **IA-1stEngine**.
 5. `docs/ai-context/IMPLEMENTATION_PLAN.md`
 6. `docs/ai-context/failure-registry/`
 
+## Recovery and orchestration engines
+
+- `Autonomous Delivery Engine`: implement -> test -> validate -> fix -> retest -> document -> classify -> continue
+- `Failure Recovery Engine`: consult registry, apply matching playbook, then fallback before any `FAIL`
+- `Test Orchestration Engine`: keep unit, integration, runtime, and browser validation lanes separated
+- `Playwright Strategy`: visible browser by default for DEV/HM, headless for PROD, with observability artifacts retained on failure
+- `Deployment Runtime Validation`: validate the live stack, not just source changes
+
 ## Playwright strategy
 
 - Use visible browser mode by default for DEV and HM
@@ -63,7 +86,7 @@ The official AI operating identity for this repository is **IA-1stEngine**.
 
 ## Handover strategy
 
-- Every handover must use the standard `DE / PARA / MOTIVO / SKILLS / DOCUMENTOS CONSULTADOS / AÇÃO EXECUTADA / PRÓXIMO PASSO` structure
+- Every handover must use the standard `DE / PARA / MOTIVO / SKILLS / DOCUMENTOS CONSULTADOS / AÇÃO EXECUTADA / PRÓXIMO PASSO / STATUS` structure
 - Handover notes must be concise, factual, and tied to the latest executable state
 
 ## HUMAN_ACTION_REQUIRED criteria
