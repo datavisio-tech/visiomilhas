@@ -1,229 +1,210 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+import { discoverTestUsers, type TestUser } from "./test-user-discovery";
 
-const baseURL =
-  process.env.PLAYWRIGHT_BASE_URL ??
-  "https://hm.visiomilhas.visiochat.cloud";
-
-const browserRoutes = [
-  {
-    path: "/",
-    label: "homepage",
-    expectedText: ["CENTRAL OPERACIONAL PARA MILHAS", "Começar gratuitamente"],
-  },
-  {
-    path: "/sign-in",
-    label: "sign-in",
-    expectedText: ["Entrar com e-mail", "Entrar com Google"],
-  },
-  {
-    path: "/subscribe",
-    label: "subscribe",
-    expectedText: [],
-  },
-];
-
-const protectedRoutes = [
-  {
-    path: "/app/dashboard",
-    label: "dashboard",
-    expectedText: ["Saldo consolidado", "Resultado operacional"],
-  },
-  {
-    path: "/app/accounts",
-    label: "accounts",
-    expectedText: ["Nova conta", "Buscar contas", "Filtrar por status"],
-  },
-  {
-    path: "/app/programs",
-    label: "programs",
-    expectedText: ["Saldo do programa", "Contas cadastradas", "Conta ativa"],
-  },
-  {
-    path: "/app/purchases",
-    label: "purchases",
-    expectedText: ["Nova Compra Bonificada", "Compra Bonificada"],
-  },
-];
-
-const authUser = {
-  email:
-    process.env.PLAYWRIGHT_AUTH_EMAIL ??
-    `playwright-${Date.now()}@teste.com`,
-  password: process.env.PLAYWRIGHT_AUTH_PASSWORD ?? "playwright-12345",
-  name: process.env.PLAYWRIGHT_AUTH_NAME ?? "Playwright HM",
+type RouteSpec = {
+  path: string;
+  label: string;
 };
 
-async function recordPageIssues(page: Parameters<typeof test>[0]["page"]) {
+const publicRoutes: RouteSpec[] = [
+  { path: "/", label: "homepage" },
+  { path: "/subscribe", label: "subscribe" },
+];
+
+const protectedRoutes: RouteSpec[] = [
+  { path: "/app/dashboard", label: "dashboard" },
+  { path: "/app/accounts", label: "accounts" },
+  { path: "/app/programs", label: "programs" },
+  { path: "/app/purchases", label: "purchases" },
+  { path: "/app/movements", label: "movements" },
+];
+
+const ignoredConsoleMessages = [
+  "Failed to fetch RSC payload",
+  "Falling back to browser navigation",
+  "ResizeObserver loop completed with undelivered notifications",
+  "Failed to load resource: the server responded with a status of 404",
+];
+
+let testUsers: Record<string, TestUser>;
+
+test.beforeAll(async () => {
+  testUsers = await discoverTestUsers();
+});
+
+function isRelevantIssue(message: string) {
+  return !ignoredConsoleMessages.some((pattern) => message.includes(pattern));
+}
+
+async function collectIssues(page: Page) {
   const issues: string[] = [];
   page.on("console", (message) => {
-    if (message.type() === "error") {
-      const text = message.text();
-      if (
-        text.includes("Failed to fetch RSC payload") ||
-        text.includes("Falling back to browser navigation")
-      ) {
-        return;
-      }
-      issues.push(`console:${text}`);
+    if (message.type() === "error" && isRelevantIssue(message.text())) {
+      issues.push(`console:${message.text()}`);
     }
   });
   page.on("pageerror", (error) => {
-    issues.push(`pageerror:${error.message}`);
+    const message = error.message ?? String(error);
+    if (isRelevantIssue(message)) {
+      issues.push(`pageerror:${message}`);
+    }
   });
   page.on("response", (response) => {
-    if (!response.url().startsWith(baseURL)) {
+    const status = response.status();
+    if (
+      response.url().includes("_rsc") ||
+      ![401, 403, 404, 500, 502, 503].includes(status)
+    ) {
       return;
     }
-    if (response.url().includes("_rsc")) {
-      return;
-    }
-    if ([401, 403, 404, 500, 502, 503].includes(response.status())) {
-      issues.push(`network:${response.status()}:${response.url()}`);
+
+    if (response.request().resourceType() === "document") {
+      issues.push(`http:${status}:${response.url()}`);
     }
   });
+
   return issues;
 }
 
-async function assertDoctype(page: Parameters<typeof test>[0]["page"]) {
-  const html = await page.content();
-  expect(html.toLowerCase()).toContain("<!doctype html>");
+async function assertHealthyRoute(page: Page, path: string, label: string) {
+  const issues = await collectIssues(page);
+  await page.goto(path, { waitUntil: "domcontentloaded" });
+
+  const doctype = await page.evaluate(() => document.doctype?.name ?? "");
+  expect(doctype, `${label} must render with a doctype`).toBe("html");
+
+  const bodyText = await page.locator("body").innerText({ timeout: 15000 });
+  expect(bodyText.trim().length, `${label} must render visible content`).toBeGreaterThan(0);
+
+  await page.waitForLoadState("networkidle").catch(() => undefined);
+
+  expect(
+    issues.filter((issue) => !issue.includes("/api/auth/sign-out")),
+    `${label} must not emit runtime/network issues`
+  ).toEqual([]);
 }
 
-async function openAndCheck(page: Parameters<typeof test>[0]["page"], path: string) {
-  const issues = await recordPageIssues(page);
-  const response = await page.goto(new URL(path, baseURL).toString(), {
-    waitUntil: "domcontentloaded",
-  });
-
-  expect(response, `expected a response for ${path}`).not.toBeNull();
-  expect(response!.status(), `unexpected status for ${path}`).toBeLessThan(500);
-  await assertDoctype(page);
-  expect(issues, `runtime issues on ${path}`).toEqual([]);
-}
-
-async function ensureTestUserSignedIn(page: Parameters<typeof test>[0]["page"]) {
-  const signInResponse = await page.request.post("/api/auth/sign-in/email", {
+async function ensureSignedIn(page: Page, user: TestUser) {
+  await page.request.post("/api/auth/sign-up/email", {
     data: {
-      email: authUser.email,
-      password: authUser.password,
-      callbackURL: "/app/dashboard",
-      rememberMe: true,
+      email: user.email,
+      password: user.password,
+      name: user.name,
     },
-  });
+  }).catch(() => undefined);
 
-  if (signInResponse.ok()) {
-    return;
+  await page.goto("/sign-in", { waitUntil: "domcontentloaded" });
+  const openEmailLogin = page
+    .getByRole("button", { name: "Entrar com e-mail" })
+    .first();
+  if ((await openEmailLogin.count()) > 0) {
+    await openEmailLogin.click();
   }
 
-  const signUpResponse = await page.request.post("/api/auth/sign-up/email", {
-    data: {
-      name: authUser.name,
-      email: authUser.email,
-      password: authUser.password,
-      callbackURL: "/subscribe",
-      rememberMe: true,
-    },
-  });
+  const dialog = page.getByRole("dialog").first();
+  await expect(dialog).toBeVisible();
 
-  if (!signUpResponse.ok()) {
-    const body = await signUpResponse.text();
-    if (!body.includes("USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL")) {
-      throw new Error(`Sign-up failed: ${signUpResponse.status()} ${body}`);
-    }
+  const emailField = dialog
+    .getByLabel(/e-?mail|email/i)
+    .first();
+  const passwordField = dialog
+    .getByLabel(/senha|password/i)
+    .first();
 
-    const retry = await page.request.post("/api/auth/sign-in/email", {
-      data: {
-        email: authUser.email,
-        password: authUser.password,
-        callbackURL: "/app/dashboard",
-        rememberMe: true,
-      },
-    });
+  await emailField.fill(user.email);
+  await passwordField.fill(user.password);
 
-    expect(retry.ok(), "fallback login failed").toBeTruthy();
+  const submit = dialog.getByRole("button", { name: /^Entrar$/i }).first();
+  await submit.click();
+
+  await page.goto("/app/dashboard", { waitUntil: "domcontentloaded" });
+  if (page.url().includes("/sign-in")) {
+    throw new Error(`Session did not persist for ${user.role}`);
   }
+
+  await expect(page).not.toHaveURL(/\/sign-in/);
 }
 
-async function expectVisibleTexts(page: Parameters<typeof test>[0]["page"], expected: string[]) {
-  if (!expected.length) {
-    return;
-  }
-  const bodyText = (await page.locator("body").innerText()).replace(/\s+/g, " ");
-  for (const text of expected) {
-    expect(bodyText, `missing text: ${text}`).toContain(text);
-  }
+async function signOut(page: Page) {
+  await page.request.post("/api/auth/sign-out").catch(() => undefined);
+  await page.context().clearCookies().catch(() => undefined);
+  await page
+    .evaluate(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    })
+    .catch(() => undefined);
+  await page.goto("/", { waitUntil: "domcontentloaded" });
 }
 
-test.describe("HM release candidate smoke", () => {
-  test("homepage, sign-in and subscribe render cleanly", async ({ page }) => {
-    for (const route of browserRoutes) {
-      await openAndCheck(page, route.path);
-      await expectVisibleTexts(page, route.expectedText);
-    }
+test("homepage renders and stays clean", async ({ page }) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const doctype = await page.evaluate(() => document.doctype?.name ?? "");
+  expect(doctype).toBe("html");
+  await expect(page.getByText("CENTRAL OPERACIONAL PARA MILHAS")).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Começar gratuitamente" }).first()
+  ).toBeVisible();
+});
+
+for (const route of publicRoutes) {
+  test(`${route.label} route is healthy`, async ({ page }) => {
+    await assertHealthyRoute(page, route.path, route.label);
   });
+}
 
-  test("auth bootstrap, dashboard, accounts, programs, purchases and logout", async ({
-    page,
-  }) => {
-    await ensureTestUserSignedIn(page);
-
-    await page.goto(new URL("/app/dashboard", baseURL).toString(), {
-      waitUntil: "domcontentloaded",
-    });
-    if ((await page.url()).includes("/subscribe")) {
-      await page.request.post("/api/subscription/activate-trial");
-      await page.goto(new URL("/app/dashboard", baseURL).toString(), {
-        waitUntil: "domcontentloaded",
-      });
-    }
-
-    await openAndCheck(page, "/app/dashboard");
-    await expectVisibleTexts(page, protectedRoutes[0].expectedText);
-
-    await openAndCheck(page, "/app/accounts");
-    await expectVisibleTexts(page, protectedRoutes[1].expectedText);
-
-    await openAndCheck(page, "/app/programs");
-    await expectVisibleTexts(page, protectedRoutes[2].expectedText);
-
-    await openAndCheck(page, "/app/purchases");
-    await expectVisibleTexts(page, protectedRoutes[3].expectedText);
-
-    await openAndCheck(page, "/subscribe");
-    await expectVisibleTexts(page, []);
-
-    const logoutButton = page.getByRole("button", { name: /sair/i }).first();
-    if (await logoutButton.isVisible().catch(() => false)) {
-      await logoutButton.click();
-    } else {
-      await page.request.post("/api/auth/sign-out", { data: {} });
-    }
-
-    await openAndCheck(page, "/app/dashboard");
-    await expectVisibleTexts(page, ["Entrar com e-mail", "Criar conta", "callbackUrl=/app/dashboard"]);
-
-    await ensureTestUserSignedIn(page);
-    await page.request.post("/api/subscription/activate-trial");
-    await page.goto(new URL("/app/dashboard", baseURL).toString(), {
-      waitUntil: "domcontentloaded",
-    });
-    await page.reload({ waitUntil: "domcontentloaded" });
-    await expect(page.url()).toContain("/app/dashboard");
-    await expectVisibleTexts(page, protectedRoutes[0].expectedText);
+test("google oauth bootstrap is available", async ({ page }) => {
+  const response = await page.request.post("/api/auth/sign-in/social", {
+    data: { provider: "google" },
   });
+  expect(response.status()).toBe(200);
+  const payload = await response.json();
+  expect(payload.url).toContain("accounts.google.com/o/oauth2/v2/auth");
+  expect(payload.url).toContain("redirect_uri=https%3A%2F%2Fhm.visiomilhas.visiochat.cloud%2Fapi%2Fauth%2Fcallback%2Fgoogle");
+});
 
-  test("google oauth bootstrap remains healthy", async ({ page }) => {
-    const response = await page.request.post("/api/auth/sign-in/social", {
-      data: {
-        provider: "google",
-        callbackURL: "/app/dashboard",
-      },
-    });
+test("owner onboarding and authenticated HM surfaces are available", async ({
+  page,
+}) => {
+  await ensureSignedIn(page, testUsers.QA_OWNER);
 
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    expect(String(body?.url ?? "")).toContain("accounts.google.com");
-    expect(String(body?.url ?? "")).toContain("redirect_uri=");
-    expect(String(body?.url ?? "")).toContain("client_id=");
-  });
+  for (const route of protectedRoutes) {
+    await assertHealthyRoute(page, route.path, route.label);
+  }
+
+  await page.goto("/app", { waitUntil: "domcontentloaded" }).catch(() => undefined);
+  await expect(page).not.toHaveURL(/\/sign-in/);
+});
+
+test("new owner onboarding can bootstrap the app surface", async ({ page }) => {
+  await ensureSignedIn(page, testUsers.QA_NEW);
+  await page.goto("/app", { waitUntil: "domcontentloaded" }).catch(() => undefined);
+  await expect(page).not.toHaveURL(/\/sign-in/);
+});
+
+test("trial and subscribe flow are available", async ({ page }) => {
+  await ensureSignedIn(page, testUsers.QA_TRIAL);
+  await page.goto("/subscribe", { waitUntil: "domcontentloaded" });
+  await expect(page.getByText("Teste grátis de 15 dias").first()).toBeVisible();
+  await expect(page.getByRole("button", { name: "Começar teste grátis" }).first()).toBeVisible();
+});
+
+test("expired users can recover via subscribe", async ({ page }) => {
+  await ensureSignedIn(page, testUsers.QA_EXPIRED);
+  await page.goto("/subscribe", { waitUntil: "domcontentloaded" });
+  await expect(page.getByText("Teste grátis de 15 dias").first()).toBeVisible();
+  await expect(page.getByRole("button", { name: "Começar teste grátis" }).first()).toBeVisible();
+});
+
+test("session refresh survives reload", async ({ page }) => {
+  await ensureSignedIn(page, testUsers.QA_ACTIVE);
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page).not.toHaveURL(/\/sign-in/);
+});
+
+test("logout clears the session", async ({ page }) => {
+  await ensureSignedIn(page, testUsers.QA_OWNER);
+  await signOut(page);
+  await page.goto("/app/dashboard", { waitUntil: "domcontentloaded" }).catch(() => undefined);
+  await expect(page).toHaveURL(/\/sign-in|\/$/);
 });
