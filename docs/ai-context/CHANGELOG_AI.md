@@ -2729,3 +2729,8 @@ Resultado esperado:
 - Registered FP-008 for browser automation availability: Playwright runtime confirmed and should be treated as a dedicated smoke-test lane.
 - Introduced the Autonomous Delivery Engine directive and the HM/PROD `DEPLOY_CONFIDENCE_SCORE` model.
 - Formalized the official test suite organization contract for `tests/domain`, `tests/integration`, `tests/runtime`, `tests-e2e`, and `test-results`.
+## 2026-06-04 - VisioMilhas Project Operating System
+
+- Added the repository-root `AGENTS.md` as the canonical operating system for IA-1stEngine on VisioMilhas.
+- Added `.agents/HANDOVER.md` as the standard handover format for every agent transition.
+- Standardized the required document consultation order, official agents, deploy policy, failure recovery policy, and HUMAN_ACTION_REQUIRED criteria for the project.

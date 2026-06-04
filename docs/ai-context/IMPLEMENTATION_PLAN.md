@@ -762,3 +762,9 @@ Progresso estimado (MVP1) atualizado:
 - Do not introduce browser smoke tests into the unit lane.
 - Treat `tests-e2e` as a future dedicated lane only if there is an explicit migration plan.
 - Keep `test-results` as generated output only.
+## 2026-06-04 - VisioMilhas Project Operating System
+
+- Use the root `AGENTS.md` as the first operational reference for every new agent and implementation sequence.
+- Consult docs in the canonical order: `docs/ai-context/`, `.agents/`, `CHANGELOG_AI.md`, `DECISIONS.md`, `IMPLEMENTATION_PLAN.md`, and `failure-registry/`.
+- Keep HM and PROD isolated in deploy strategy, compose project naming, runtime targets, and validation lanes.
+- Route browser validation through Playwright and QA user discovery rather than human or personal accounts.

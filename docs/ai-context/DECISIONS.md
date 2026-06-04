@@ -385,3 +385,10 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - Adopted an Autonomous Delivery Engine flow for HM/PROD delivery: implement, test, validate, fix, retest, document, classify, continue, and only escalate to humans for credentials, business decisions, or destructive actions.
 - Standardized `DEPLOY_CONFIDENCE_SCORE` across Infrastructure, Authentication, Smoke, Functional, and Runtime categories for HM and PROD.
 - Formalized the test suite organization contract: `tests/domain` for pure unit rules, `tests/integration` for persistence/service checks, `tests/runtime` for browser-like journeys, `tests-e2e` only for a future dedicated browser lane, and `test-results` for artifacts only.
+## 2026-06-04 - VisioMilhas Project Operating System
+
+- Decision: `AGENTS.md` at the repository root is the canonical operating-system document for all DataVisio work on VisioMilhas.
+- Decision: the official agent set is `autonomous-delivery-engine`, `failure-recovery-engine`, `browser-validation`, `test-orchestration-engine`, and `deployment-runtime-validation`.
+- Decision: browser validation uses visible Chromium for DEV/HM and headless mode for PROD.
+- Decision: QA identities must come from the official synthetic test-user discovery layer and must never be human or personal accounts.
+- Decision: every handover must use the standard `DE / PARA / MOTIVO / SKILLS / DOCUMENTOS CONSULTADOS / AÇÃO EXECUTADA / PRÓXIMO PASSO` structure.

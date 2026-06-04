@@ -1,36 +1,29 @@
-# Playwright Setup
+# PLAYWRIGHT SETUP
 
-## Operational baseline
+## Runtime modes
 
-Playwright is available and confirmed by a successful run:
+- `PLAYWRIGHT_MODE=visible` for DEV and HM
+- `PLAYWRIGHT_MODE=headless` for PROD
+- default behavior falls back to a visible browser for localhost and HM, and to headless for production hosts
 
-- `npx playwright test --config=playwright.config.ts`
-- result: `1 passed`
+## Observability baseline
 
-## Working rule
+- `headless: false` in visible mode
+- `viewport: null`
+- `screenshot: only-on-failure`
+- `video: retain-on-failure`
+- `trace: retain-on-failure`
+- `slowMo: 300`
+- Chromium starts maximized
 
-Playwright smoke tests must run in their own lane.
+## Test users
 
-Do not mix:
-- browser smoke tests
-- unit tests
-- Vitest assertions
+Browser validation must load official synthetic QA users from `docs/ai-context/TEST_USERS.md` before attempting to create or modify any account.
 
-The browser suite should remain deterministic and focused on real navigation and runtime behavior.
+## Suite split
 
-## Recommended isolation
-
-- Keep browser specs in a dedicated folder such as `tests/e2e/`
-- Keep unit specs in the existing unit-test lane
-- Use a stable base URL for HM when running browser smoke tests
-- Prefer route-level checks and visible UI assertions over implementation details
-
-## What to verify in browser smoke tests
-
-- homepage renders
-- sign-in renders
-- dashboard navigates or redirects correctly
-- accounts renders or redirects correctly
-- programs renders or redirects correctly
-- purchases renders or redirects correctly
-- subscribe renders or redirects correctly
+- `tests/domain` for unit tests
+- `tests/integration` for integration tests
+- `tests/runtime` for environment validation
+- `tests-e2e` for browser validation
+- `test-results` for generated artifacts only

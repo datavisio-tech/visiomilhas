@@ -1,0 +1,15 @@
+# Handover Template
+
+DE:
+
+PARA:
+
+MOTIVO:
+
+SKILLS:
+
+DOCUMENTOS CONSULTADOS:
+
+AÇÃO EXECUTADA:
+
+PRÓXIMO PASSO:
