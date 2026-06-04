@@ -6,6 +6,7 @@
 - Workflow affected: `.github/workflows/release-promotion.yml`.
 - Recovery procedure: restore the proven HM deploy SSH bootstrap, rerun release promotion, and only investigate infrastructure if the restored baseline also fails.
 - Recurrence prevention: future release promotion SSH changes must be compared against the last successful HM deploy baseline before merge.
+- Follow-up correction: aligned release-promotion SSH step-level env declarations with the proven `deploy-hm.yml` authentication baseline for `SSH_HOST`, `SSH_PORT`, `SSH_PRIVATE_KEY`, and remote preparation `SSH_USER`.
 
 # 2026-06-04 - Release promotion SSH regression fix
 

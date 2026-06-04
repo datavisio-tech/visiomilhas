@@ -33,11 +33,14 @@
 2. If host, user, port, and secrets are unchanged but the release workflow changed the SSH bootstrap, classify the incident as `PIPELINE_REGRESSION`.
 3. Restore the proven baseline from `.github/workflows/deploy-hm.yml`:
    - write `SSH_PRIVATE_KEY` to `~/.ssh/visiomilhas_deploy_key`
+   - set `chmod 600 ~/.ssh/visiomilhas_deploy_key`
    - run the selected-port `ssh-keyscan` retry loop for `${SSH_PORT}` and `22`
    - fail fast if neither port captures the host key
    - persist `SSH_PORT=${selected_port}` to `$GITHUB_ENV`
+   - keep `Configure SSH` step-level env declarations for `SSH_HOST`, `SSH_PORT`, and `SSH_PRIVATE_KEY`
+   - keep remote preparation step-level env declarations for `SSH_HOST` and `SSH_USER`
 4. Re-run the release promotion workflow for the same release tag.
-5. Only investigate firewall, host availability, or secrets after the restored baseline fails again.
+5. Only inspect SSH authentication differences after the restored baseline fails again.
 
 ## Playbook: `pull access denied`
 

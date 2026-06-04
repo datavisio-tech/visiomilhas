@@ -322,12 +322,19 @@ jobs:
             exit 1
           fi
           echo "SSH_PORT=${selected_port}" >> "$GITHUB_ENV"
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Ensure remote directory exists
         shell: bash
         run: |
           set -euo pipefail
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "mkdir -p '${REMOTE_DIR}' && test -w '${REMOTE_DIR}'"
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: root
 
       - name: Sync source to HM server
         shell: bash
@@ -615,12 +622,19 @@ jobs:
             exit 1
           fi
           echo "SSH_PORT=${selected_port}" >> "$GITHUB_ENV"
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Ensure remote directory exists
         shell: bash
         run: |
           set -euo pipefail
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "mkdir -p '${REMOTE_DIR}' && test -w '${REMOTE_DIR}'"
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: root
 
       - name: Sync source to production server
         shell: bash

@@ -40,3 +40,10 @@ If the failure persists after recovery and directly blocks delivery, the agent m
   - Root cause: regression introduced by the release promotion pipeline SSH preparation, not an application deploy failure.
   - Recovery: restore the last successful `.github/workflows/deploy-hm.yml` SSH bootstrap: create `~/.ssh`, write `~/.ssh/visiomilhas_deploy_key`, run the selected-port `ssh-keyscan` retry loop across `${SSH_PORT}` and `22`, and persist `SSH_PORT=${selected_port}` to `$GITHUB_ENV`.
   - Recurrence prevention: release promotion deploy jobs must not diverge from the proven HM SSH bootstrap unless a successful release-promotion run validates the replacement.
+- `FP-010`: Release promotion SSH authentication parity.
+  - Classification: `PIPELINE_REGRESSION`.
+  - Symptom: release promotion reached the SSH layer but failed before remote preparation while the HM baseline workflow already authenticated successfully.
+  - Affected workflow: `.github/workflows/release-promotion.yml`.
+  - Root cause: release promotion SSH steps were not fully aligned with the proven `.github/workflows/deploy-hm.yml` authentication baseline.
+  - Recovery: keep the same private-key materialization path, permissions, `known_hosts` generation, selected-port persistence, and step-level SSH env declarations used by `deploy-hm.yml`.
+  - Recurrence prevention: compare SSH authentication blocks before modifying release promotion deploy jobs.
