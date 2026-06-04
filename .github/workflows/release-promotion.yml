@@ -318,13 +318,27 @@ jobs:
             done
           done
           if [ -z "${selected_port}" ]; then
-            echo "Unable to capture SSH host key from ${SSH_HOST} using ports ${SSH_PORT} and 22"
+            for port in "${SSH_PORT}" 22; do
+              for attempt in 1 2 3; do
+                if ssh -i ~/.ssh/visiomilhas_deploy_key -o BatchMode=yes -o ConnectTimeout=15 -o StrictHostKeyChecking=accept-new -p "${port}" "${SSH_USER}@${SSH_HOST}" "true"; then
+                  echo "SSH authentication validated on port ${port} at attempt ${attempt}."
+                  selected_port="${port}"
+                  break 2
+                fi
+                echo "ssh authentication attempt ${attempt} failed on port ${port}, retrying..."
+                sleep 5
+              done
+            done
+          fi
+          if [ -z "${selected_port}" ]; then
+            echo "Unable to prepare SSH authentication using ports ${SSH_PORT} and 22"
             exit 1
           fi
           echo "SSH_PORT=${selected_port}" >> "$GITHUB_ENV"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          SSH_USER: root
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Ensure remote directory exists
@@ -618,13 +632,27 @@ jobs:
             done
           done
           if [ -z "${selected_port}" ]; then
-            echo "Unable to capture SSH host key from ${SSH_HOST} using ports ${SSH_PORT} and 22"
+            for port in "${SSH_PORT}" 22; do
+              for attempt in 1 2 3; do
+                if ssh -i ~/.ssh/visiomilhas_deploy_key -o BatchMode=yes -o ConnectTimeout=15 -o StrictHostKeyChecking=accept-new -p "${port}" "${SSH_USER}@${SSH_HOST}" "true"; then
+                  echo "SSH authentication validated on port ${port} at attempt ${attempt}."
+                  selected_port="${port}"
+                  break 2
+                fi
+                echo "ssh authentication attempt ${attempt} failed on port ${port}, retrying..."
+                sleep 5
+              done
+            done
+          fi
+          if [ -z "${selected_port}" ]; then
+            echo "Unable to prepare SSH authentication using ports ${SSH_PORT} and 22"
             exit 1
           fi
           echo "SSH_PORT=${selected_port}" >> "$GITHUB_ENV"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          SSH_USER: root
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Ensure remote directory exists

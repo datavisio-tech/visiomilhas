@@ -45,5 +45,5 @@ If the failure persists after recovery and directly blocks delivery, the agent m
   - Symptom: release promotion reached the SSH layer but failed before remote preparation while the HM baseline workflow already authenticated successfully.
   - Affected workflow: `.github/workflows/release-promotion.yml`.
   - Root cause: release promotion SSH steps were not fully aligned with the proven `.github/workflows/deploy-hm.yml` authentication baseline.
-  - Recovery: keep the same private-key materialization path, permissions, `known_hosts` generation, selected-port persistence, and step-level SSH env declarations used by `deploy-hm.yml`.
+  - Recovery: keep the same private-key materialization path, permissions, `known_hosts` generation, selected-port persistence, and step-level SSH env declarations used by `deploy-hm.yml`; if `ssh-keyscan` does not materialize `known_hosts`, validate SSH authentication with the same private key and `StrictHostKeyChecking=accept-new` without introducing `~/.ssh/config`.
   - Recurrence prevention: compare SSH authentication blocks before modifying release promotion deploy jobs.

@@ -38,9 +38,11 @@
    - fail fast if neither port captures the host key
    - persist `SSH_PORT=${selected_port}` to `$GITHUB_ENV`
    - keep `Configure SSH` step-level env declarations for `SSH_HOST`, `SSH_PORT`, and `SSH_PRIVATE_KEY`
+   - keep `SSH_USER` available in `Configure SSH` when the workflow validates authentication during SSH preparation
    - keep remote preparation step-level env declarations for `SSH_HOST` and `SSH_USER`
-4. Re-run the release promotion workflow for the same release tag.
-5. Only inspect SSH authentication differences after the restored baseline fails again.
+4. If `ssh-keyscan` does not populate `known_hosts`, run a real SSH authentication validation with the same key and `StrictHostKeyChecking=accept-new`; do not create `~/.ssh/config`.
+5. Re-run the release promotion workflow for the same release tag.
+6. Only inspect SSH authentication differences after the restored baseline fails again.
 
 ## Playbook: `pull access denied`
 

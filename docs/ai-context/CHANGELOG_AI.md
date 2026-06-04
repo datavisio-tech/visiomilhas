@@ -7,6 +7,7 @@
 - Recovery procedure: restore the proven HM deploy SSH bootstrap, rerun release promotion, and only investigate infrastructure if the restored baseline also fails.
 - Recurrence prevention: future release promotion SSH changes must be compared against the last successful HM deploy baseline before merge.
 - Follow-up correction: aligned release-promotion SSH step-level env declarations with the proven `deploy-hm.yml` authentication baseline for `SSH_HOST`, `SSH_PORT`, `SSH_PRIVATE_KEY`, and remote preparation `SSH_USER`.
+- Follow-up correction: kept `ssh-keyscan` as the first known-host path and added SSH authentication validation with the same private key when `ssh-keyscan` does not materialize `known_hosts`, without introducing `~/.ssh/config`.
 
 # 2026-06-04 - Release promotion SSH regression fix
 
