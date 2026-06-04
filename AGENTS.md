@@ -40,11 +40,19 @@ Before declaring `HUMAN_ACTION_REQUIRED`, agents must consult the relevant recov
 
 ## Official agents
 
-- `autonomous-delivery-engine`
-- `failure-recovery-engine`
-- `browser-validation`
-- `test-orchestration-engine`
-- `deployment-runtime-validation`
+`.github/agents/` contains agents.  
+`.agents/skills/` contains skills.
+
+Official agent-to-skill map:
+
+- `000-bootstrap.agent.md` -> `ia-first-engine-discipline`
+- `001-ia1st-orchestrator.agent.md` -> `autonomous-delivery-engine`, `failure-recovery-engine`
+- `020-test-architecture.agent.md` -> `test-orchestration-engine`
+- `021-automated-testing.agent.md` -> `browser-validation`, `deployment-runtime-validation`
+- `024-deployment.agent.md` -> `deployment-runtime-validation`, `failure-recovery-engine`
+- `028-governance.agent.md` -> `ia-first-engine-discipline`, `failure-recovery-engine`
+- `visiomilhas.agent.md` -> `autonomous-delivery-engine`, `deployment-runtime-validation`
+- All browser-validation agents must include `failure-recovery-engine`
 
 ## Required documentation consultation order
 

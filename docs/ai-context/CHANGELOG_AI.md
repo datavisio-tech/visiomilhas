@@ -2739,3 +2739,7 @@ Resultado esperado:
 - Strengthened the repository operating system with mandatory operational response fields: `AGENT`, `SKILLS`, `SOURCES CONSULTED`, and `STATUS`.
 - Added explicit `PROCESS_VIOLATION` self-correction guidance for any response draft missing the mandatory fields.
 - Expanded the handover template to include `STATUS`, `SOURCES CONSULTED`, and `AGENT` so formal transitions remain machine-checkable.
+## 2026-06-04 - Agent / skill governance alignment
+
+- Defined `.github/agents/` as the canonical agent tree and `.agents/skills/` as the canonical skill tree.
+- Added an explicit agent-to-skill mapping so every agent family carries the skills required for execution, recovery, orchestration, and deployment validation.

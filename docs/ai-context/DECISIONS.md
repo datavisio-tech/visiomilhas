@@ -397,3 +397,8 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - Decision: every operational reply must expose `AGENT`, `SKILLS`, `SOURCES CONSULTED`, and `STATUS`.
 - Decision: missing mandatory response fields are treated as `PROCESS_VIOLATION` and must be corrected internally before the final answer is emitted.
 - Decision: `FAIL` requires consulting the failure registry first, and `HUMAN_ACTION_REQUIRED` requires consulting the relevant recovery playbook first.
+## 2026-06-04 - Agent / skill governance alignment
+
+- Decision: `.github/agents/` is the official agent tree.
+- Decision: `.agents/skills/` is the official skill tree.
+- Decision: the agent tree and skill tree are separate on purpose; agent definitions must declare the skills they depend on.
