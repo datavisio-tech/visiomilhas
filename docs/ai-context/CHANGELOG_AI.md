@@ -1,4 +1,13 @@
-﻿# 2026-06-04 - Release promotion SSH regression fix
+﻿# 2026-06-04 - Release promotion SSH baseline restoration
+
+- Regression identified: `.github/workflows/release-promotion.yml` changed the SSH preparation layer that was already proven in `.github/workflows/deploy-hm.yml`.
+- Root cause: release promotion diverged from the selected-port `ssh-keyscan` retry loop and did not preserve the same remote connection bootstrap.
+- Correction applied: restored selected-port SSH host-key capture for `${SSH_PORT}` and `22`, then persisted `SSH_PORT=${selected_port}` to `$GITHUB_ENV`.
+- Workflow affected: `.github/workflows/release-promotion.yml`.
+- Recovery procedure: restore the proven HM deploy SSH bootstrap, rerun release promotion, and only investigate infrastructure if the restored baseline also fails.
+- Recurrence prevention: future release promotion SSH changes must be compared against the last successful HM deploy baseline before merge.
+
+# 2026-06-04 - Release promotion SSH regression fix
 
 - Classified the release promotion HM SSH timeout as `DEPLOY_FAILURE_CLASSIFICATION: PIPELINE_REGRESSION`.
 - Evidence: `.github/workflows/deploy-hm.yml` run `26961560274` at `fdf9b88035dcb3aa8dc8dec8d18370d4ff883d6a` passed `Ensure remote directory exists` after explicit `ssh-keyscan`.

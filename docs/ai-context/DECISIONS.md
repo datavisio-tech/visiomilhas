@@ -1,4 +1,11 @@
-﻿# 2026-06-04 - Release promotion SSH preparation decision
+﻿# 2026-06-04 - Release promotion SSH baseline decision
+
+- Decision: `.github/workflows/release-promotion.yml` must preserve the same SSH bootstrap behavior proven by `.github/workflows/deploy-hm.yml`.
+- Decision: release promotion must use the selected-port `ssh-keyscan` retry loop across `${SSH_PORT}` and `22`.
+- Decision: release promotion must persist `SSH_PORT=${selected_port}` before `Ensure remote directory exists` or any other remote command.
+- Decision: `~/.ssh/config` or `StrictHostKeyChecking accept-new` cannot replace the proven SSH bootstrap until validated by a successful release-promotion run.
+
+# 2026-06-04 - Release promotion SSH preparation decision
 
 - Decision: the release promotion pipeline must use the last known-good HM SSH preparation baseline from `deploy-hm.yml` until a replacement is proven in GitHub Actions.
 - Decision: the incident from `release-promotion.yml` run `26984230889` is classified as `DEPLOY_FAILURE_CLASSIFICATION: PIPELINE_REGRESSION`, not as an application defect.
