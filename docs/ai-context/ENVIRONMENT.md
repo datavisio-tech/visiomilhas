@@ -6,6 +6,9 @@
 - `.env.production` é gerado pelo workflow de deploy no servidor a partir das secrets do GitHub Environment `production`.
 - Nunca imprimir, versionar ou registrar valores reais de secrets.
 - `DATABASE_URL` não deve ser usado como fallback silencioso para `APP_DATABASE_URL`.
+- DEV uses OAuth and secrets only in `.env.local`.
+- HM and PROD share the same Google OAuth client.
+- `BETTER_AUTH_SECRET` is shared across DEV, HM and PROD; `AUTH_SECRET` stays only as a legacy compatibility fallback.
 
 ## Segregação oficial de ambientes
 
@@ -14,6 +17,7 @@
 - URL: `localhost`
 - Uso: desenvolvimento local
 - Bancos: compartilha `postgres_db` e `mongodb` com HM por enquanto
+- OAuth: client local-only em `.env.local`, sem GitHub Environment
 
 ### HM
 
@@ -21,6 +25,7 @@
 - Uso: validação funcional, OAuth, jornada e pré-produção
 - Bancos: `visiomilhas_app`, `postgres_db`, `mongodb`
 - Branch alvo: `develop`
+- OAuth: mesmo client usado por PROD
 
 ### PROD
 
@@ -28,6 +33,7 @@
 - Uso: ambiente público
 - Bancos: `controle_adm_saas_datavisio`, `visiomilhas_app`
 - Branch alvo: `main`
+- OAuth: mesmo client usado por HM
 
 ### Matriz de workflows
 
@@ -119,7 +125,7 @@
 - `MONGODB_USER_PASSWORD`
 - `MONGODB_DATABASE`
 - `MONGODB_URI`
-- `AUTH_SECRET`
+- `BETTER_AUTH_SECRET`
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
@@ -129,6 +135,11 @@
 - `PRODUCTION_SSH_PORT`
 - `PRODUCTION_SSH_USER`
 - `PRODUCTION_SSH_PRIVATE_KEY`
+
+## Legacy compatibility notes
+
+- `AUTH_SECRET` may still be accepted by older workflows as a fallback, but it is not part of the official matrix.
+- DEV OAuth credentials must remain local-only and must not be promoted into GitHub environments.
 
 ## Diferenças entre arquivos de ambiente
 

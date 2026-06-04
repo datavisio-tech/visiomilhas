@@ -102,10 +102,11 @@ Preparar o ambiente de homologação `hm.visiomilhas.visiochat.cloud` sem impact
 - mantém o fluxo de produção separado do HM
 
 ## Dependências operacionais ainda sensíveis
-- Configuração manual do Google OAuth Console para HM e PROD.
+- Configuracao manual do Google OAuth Console para HM e PROD com o mesmo client compartilhado; DEV permanece local-only.
 - DNS propagado e resolvido antes do primeiro teste público.
 - Traefik já ativo e enxergando a rede/public router.
 - Secrets de HM preenchidas no environment correto.
+- HM and PROD share the same Google OAuth client; DEV remains local-only.
 
 ## Bloqueantes
 - Falta de redirect URI e origin da HM no Google Cloud Console.
@@ -129,4 +130,3 @@ Preparar o ambiente de homologação `hm.visiomilhas.visiochat.cloud` sem impact
 - Preparação de DNS/Traefik/certificados: 30 a 60 minutos
 - Validação do workflow e smoke tests: 20 a 40 minutos
 - Validação manual de OAuth: 10 a 20 minutos
-

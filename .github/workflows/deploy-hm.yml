@@ -10,6 +10,7 @@ permissions:
   contents: read
 
 jobs:
+  # Official matrix: DEV uses local-only OAuth; HM and PROD share the same Google OAuth client and BETTER_AUTH_SECRET.
   deploy:
     name: Deploy to HM standalone
     runs-on: ubuntu-latest

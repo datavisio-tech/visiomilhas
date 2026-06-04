@@ -27,7 +27,7 @@
 
 ## Required environment
 
-- `BETTER_AUTH_SECRET` or `AUTH_SECRET`
+- `BETTER_AUTH_SECRET` (with `AUTH_SECRET` as legacy fallback only)
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
 - `APP_URL` or `NEXT_PUBLIC_APP_URL` for base URL fallback

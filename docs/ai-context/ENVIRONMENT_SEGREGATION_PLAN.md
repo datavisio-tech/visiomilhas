@@ -49,15 +49,15 @@ Date: 2026-06-03
 
 | Environment | APP_URL | NEXT_PUBLIC_APP_URL | NODE_ENV | USE_FIFO_MOVEMENTS_ENGINE | PostgreSQL endpoint | Mongo endpoint | Auth/OAuth |
 |---|---|---|---|---|---|---|---|
-| DEV | localhost URL | localhost URL | development | 0 | shared `postgres_db` | shared `mongodb` | local-only secrets or dev environment |
-| HM | `https://hm.visiomilhas.visiochat.cloud` | `https://hm.visiomilhas.visiochat.cloud` | production | 0 unless explicitly enabled | shared `postgres_db` | shared `mongodb` | shared Google OAuth client |
-| PROD | `https://visiomilhas.visiochat.cloud` | `https://visiomilhas.visiochat.cloud` | production | 0 unless explicitly enabled | `postgres_prod_v2` | `mongodb_prod_v2` future | shared Google OAuth client |
+| DEV | localhost URL | localhost URL | development | 0 | shared `postgres_db` | shared `mongodb` | local-only OAuth client in `.env.local`; no GitHub secrets |
+| HM | `https://hm.visiomilhas.visiochat.cloud` | `https://hm.visiomilhas.visiochat.cloud` | production | 0 unless explicitly enabled | shared `postgres_db` | shared `mongodb` | shared Google OAuth client (HM/PROD only) |
+| PROD | `https://visiomilhas.visiochat.cloud` | `https://visiomilhas.visiochat.cloud` | production | 0 unless explicitly enabled | `postgres_prod_v2` | `mongodb_prod_v2` future | shared Google OAuth client (HM/PROD only) |
 
 ## 3) Secrets Matrix
 
 ### DEV
 
-- Stored locally in `.env.local`
+- Stored locally in `.env.local` (not GitHub)
 - Typical values:
   - `APP_NAME`
   - `APP_URL`
@@ -274,8 +274,7 @@ Rules:
 
 ## 12) Notes
 
-- Google OAuth is shared between HM and PROD.
+- DEV OAuth is local-only; HM and PROD share the same Google OAuth client.
 - DEV remains local-first for speed.
 - The PROD database starts empty and must not inherit DEV/HM data.
 - This plan is architectural only; no code or migrations are changed by this document.
-

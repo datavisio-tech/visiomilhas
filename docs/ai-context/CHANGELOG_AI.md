@@ -1,5 +1,11 @@
 ## 2026-06-03 â€” Environment Segregation Pipeline Hardening â€” IN PROGRESS
 
+## 2026-06-03 - OAuth matrix correction
+
+- DEV OAuth is local-only in `.env.local`.
+- HM and PROD share the same Google OAuth client.
+- `BETTER_AUTH_SECRET` is shared across DEV, HM and PROD.
+
 ### Status: os workflows HM e PROD foram endurecidos para remover a dependÃªncia de `.next/types` no typecheck e validar DOCTYPE + OAuth bootstrap explicitamente
 
 **Achievements**:

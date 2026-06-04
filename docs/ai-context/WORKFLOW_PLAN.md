@@ -4,6 +4,8 @@
 
 Prepare DEV, HM, and PROD as distinct operational lanes without touching the currently active environment.
 
+Official matrix reminder: DEV OAuth is local-only; HM and PROD share the same Google OAuth client and `BETTER_AUTH_SECRET`.
+
 ## Branch strategy
 
 - `develop` -> HM

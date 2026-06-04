@@ -10,11 +10,13 @@
 - [ ] `BETTER_AUTH_SECRET` válido e não vazio
 - [ ] `GOOGLE_CLIENT_ID` válido
 - [ ] `GOOGLE_CLIENT_SECRET` válido
+- [ ] HM e PROD compartilham o mesmo client Google OAuth; DEV permanece local-only
 - [ ] DNS de produção resolvendo corretamente
 - [ ] Traefik ativo e com router da produção
 - [ ] TLS/Let's Encrypt ativo
 - [ ] Workflow de produção apontando para `main`
 - [ ] Google OAuth Console com URIs autorizadas
+- [ ] Credenciais OAuth de DEV não estão em GitHub environments
 
 ## Bootstrap técnico
 - [ ] Aplicar migrations do ADM
@@ -64,4 +66,3 @@
 - [ ] Sem tela branca
 - [ ] Sem erros de hidratação
 - [ ] Sem `503` em auth
-

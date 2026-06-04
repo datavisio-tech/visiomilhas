@@ -1,3 +1,9 @@
+## 2026-06-03 - OAuth matrix correction
+
+- DEV OAuth is local-only in `.env.local`.
+- HM and PROD share the same Google OAuth client.
+- `BETTER_AUTH_SECRET` is the shared secret across DEV, HM and PROD.
+
 # IMPLEMENTATION_PLAN - MVP1 (VisioMilhas)
 
 ## 2026-06-03 - Pipeline Hardening for Environment Segregation

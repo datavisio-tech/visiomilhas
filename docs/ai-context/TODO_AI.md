@@ -583,7 +583,7 @@ Decisões registradas:
 Seguranca adicional a auditar:
 
 - secrets historicos no git e em logs de actions.
-- GOOGLE_CLIENT_SECRET, AUTH_SECRET, DATABASE_URL e SSH_PRIVATE_KEY.
+- GOOGLE_CLIENT_SECRET, BETTER_AUTH_SECRET, DATABASE_URL e SSH_PRIVATE_KEY.
 - .gitignore e historico git.
 
 ## 2.2 — Better Auth foundation

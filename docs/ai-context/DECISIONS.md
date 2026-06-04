@@ -5,6 +5,12 @@
 - DecisÃ£o: os workflows HM e PROD passam a validar bootstrap OAuth Google por resposta nÃ£o-503, sem `AUTH_BOOTSTRAP_FAILED` e com redirect para `accounts.google.com`.
 - DecisÃ£o: os gates permanecem em ordem `lint -> typecheck -> build`, mas o `typecheck` agora Ã© independente do artefato gerado pelo build.
 
+## 2026-06-03 - OAuth matrix correction
+
+- Decisao: DEV uses a local-only Google OAuth client in `.env.local`.
+- Decisao: HM and PROD share the same Google OAuth client.
+- Decisao: `BETTER_AUTH_SECRET` is shared across DEV, HM and PROD; `AUTH_SECRET` stays only as a legacy fallback for compatibility.
+
 # DECISIONS - VisioMilhas
 
 ## 2026-06-03 — Environment Segregation Implementation

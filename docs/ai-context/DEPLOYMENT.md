@@ -4,6 +4,8 @@
 
 Registrar o fluxo operacional de deploy, validação de runtime e verificação de artefatos em produção para o VisioMilhas.
 
+Official matrix reminder: DEV OAuth stays local-only; HM and PROD share the same Google OAuth client and `BETTER_AUTH_SECRET`.
+
 ## Fluxo Oficial
 
 1. Commit na branch de trabalho.

@@ -32,7 +32,7 @@ The HM workflow and environment docs reference the following required inputs:
 - `POSTGRES_DB`
 - `SAAS_DB`
 - `APP_DB`
-- `BETTER_AUTH_SECRET` or `AUTH_SECRET`
+- `BETTER_AUTH_SECRET`
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
 
@@ -46,6 +46,7 @@ The HM workflow and environment docs reference the following required inputs:
 - [ ] HM remote compose / runtime files can be written by the deploy user.
 - [ ] HM runtime database URLs point to the shared HM databases.
 - [ ] Google OAuth Console has the HM callback URI registered and validated manually.
+- [ ] HM and PROD share the same Google OAuth client; DEV remains local-only.
 
 ## 3) Infrastructure requirements
 
@@ -70,6 +71,7 @@ The HM workflow and environment docs reference the following required inputs:
 - PostgreSQL connection values must resolve to the HM shared databases.
 - Better Auth must have a non-empty secret.
 - Google OAuth client credentials must be present.
+- HM and PROD use the same Google OAuth client; DEV stays local-only.
 
 ## 4) Workflow audit
 

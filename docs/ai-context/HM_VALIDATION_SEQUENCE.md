@@ -5,6 +5,8 @@
 ## Objetivo
 Definir a sequência de validação pós-deploy de homologação.
 
+- HM usa o mesmo client Google OAuth compartilhado com PROD; DEV permanece local-only.
+
 ## Fluxo de validação
 
 ### 1. Login
@@ -56,4 +58,3 @@ Definir a sequência de validação pós-deploy de homologação.
 - `redirect_uri_mismatch`.
 - tela branca.
 - erro de hidratação.
-

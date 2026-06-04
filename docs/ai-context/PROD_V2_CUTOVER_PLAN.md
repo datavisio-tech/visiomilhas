@@ -16,13 +16,15 @@ Planejar o primeiro go-live do PostgreSQL Production V2 com banco vazio, sem mig
 - O banco de produção V2 nasce vazio.
 - Não há herança de dados de DEV/HM.
 - A autenticação usa Better Auth com bootstrap explícito.
+- DEV OAuth remains local-only and does not use GitHub environments.
+- HM and PROD share the same Google OAuth client and the same shared Better Auth secret.
 - O cutover não executa seeds automáticos de demo.
 - O primeiro owner, a primeira organização e o primeiro trial nascem pelo fluxo runtime/onboarding.
 
 ## Pré-cutover
 1. Provisionar `controle_adm_saas_datavisio` e `visiomilhas_app` no PostgreSQL Production V2.
 2. Confirmar `ADM_DATABASE_URL` e `APP_DATABASE_URL` apontando para os bancos corretos.
-3. Confirmar `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` válidos no environment de produção.
+3. Confirmar `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` válidos no shared HM/PROD OAuth client.
 4. Confirmar DNS, Traefik e TLS da URL de produção.
 5. Confirmar que o workflow de produção está apontando para `main`.
 6. Confirmar que o bootstrap de produção V2 permanece planning-only até o go-live autorizado.
@@ -75,4 +77,3 @@ Planejar o primeiro go-live do PostgreSQL Production V2 com banco vazio, sem mig
 - Cutover técnico com validação: 30 a 60 minutos
 - Bootstrap do primeiro usuário e conferências funcionais: 20 a 40 minutos
 - Janela total recomendada: 1 h 30 min a 2 h 40 min
-

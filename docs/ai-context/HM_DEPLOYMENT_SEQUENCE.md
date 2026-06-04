@@ -69,14 +69,14 @@ Documentar a evidência e liberar HM para testes funcionais.
 ## Dependências humanas
 - Confirmar Google OAuth Console atualizado para HM.
 - Confirmar DNS e TLS resolvidos.
+- Confirmar que HM usa o mesmo client Google OAuth compartilhado com PROD; DEV continua local-only.
 
 ## Pontos de atenção
 - HM deve usar a infraestrutura atual sem tocar na produção.
-- HM deve ser validado com o mesmo client OAuth compartilhado de PROD.
+- HM deve ser validado com o mesmo client OAuth compartilhado com PROD; DEV permanece local-only.
 - HM não deve herdar dados de PROD.
 
 ## Tempo estimado
 - Deploy técnico: 10 a 20 minutos
 - Validação funcional: 20 a 40 minutos
 - Ajustes de DNS/OAuth, se necessários: 15 a 30 minutos
-

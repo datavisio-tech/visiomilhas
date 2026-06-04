@@ -47,7 +47,7 @@ Os nomes abaixo devem existir no GitHub Environment `production`. Os valores nã
 - `POSTGRES_DB`
 - `SAAS_DB`
 - `APP_DB`
-- `AUTH_SECRET`
+- `BETTER_AUTH_SECRET`
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
@@ -145,7 +145,7 @@ Executar apenas leitura. Não alterar arquivos, serviços, containers ou volumes
 - `NEXT_PUBLIC_APP_URL`
 - `NODE_ENV`
 - `USE_FIFO_MOVEMENTS_ENGINE`
-- `AUTH_SECRET`
+- `BETTER_AUTH_SECRET`
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
