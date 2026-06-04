@@ -1,4 +1,11 @@
-﻿# 2026-06-04 - PROD V2 cutover readiness decision
+﻿# 2026-06-04 - Release promotion SSH preparation decision
+
+- Decision: the release promotion pipeline must use the last known-good HM SSH preparation baseline from `deploy-hm.yml` until a replacement is proven in GitHub Actions.
+- Decision: the incident from `release-promotion.yml` run `26984230889` is classified as `DEPLOY_FAILURE_CLASSIFICATION: PIPELINE_REGRESSION`, not as an application defect.
+- Decision: when host, port, user, and secrets show no evidence of change, and the previous HM workflow passed the same remote step, the first recovery action is to restore the proven `ssh-keyscan` behavior.
+- Decision: `StrictHostKeyChecking accept-new` must not replace explicit `ssh-keyscan` in the release promotion deploy jobs without a successful proof run.
+
+# 2026-06-04 - PROD V2 cutover readiness decision
 
 - Decision: the current release candidate is **NO-GO** for PROD V2 promotion until schema/bootstrap evidence is closed.
 - Decision: purchases and session refresh warnings are tracked as medium-severity runtime/test instability, not as standalone blockers.

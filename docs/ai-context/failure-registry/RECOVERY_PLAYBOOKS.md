@@ -27,6 +27,18 @@
 2. Avoid re-overwriting the port later in the workflow.
 3. Re-run SSH validation.
 
+## Playbook: `ssh timeout after accept-new`
+
+1. Compare the failing workflow with the last successful deploy workflow before changing infrastructure.
+2. If the failing workflow replaced `ssh-keyscan` with `StrictHostKeyChecking accept-new`, classify the incident as `PIPELINE_REGRESSION`.
+3. Restore the proven baseline:
+   - write `SSH_PRIVATE_KEY` to `~/.ssh/visiomilhas_deploy_key`
+   - run `ssh-keyscan -T 10 -p "${SSH_PORT}" "${SSH_HOST}" >> ~/.ssh/known_hosts`
+   - when `${SSH_PORT}` is not `22`, also run `ssh-keyscan -T 10 -p 22 "${SSH_HOST}" >> ~/.ssh/known_hosts || true`
+   - persist `SSH_PORT=${SSH_PORT}` to `$GITHUB_ENV`
+4. Re-run the release promotion workflow for the same release tag.
+5. Only investigate firewall, host availability, or secrets after the restored baseline fails again.
+
 ## Playbook: `pull access denied`
 
 1. Stop relying on remote image pull for HM.

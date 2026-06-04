@@ -305,20 +305,11 @@ jobs:
           chmod 700 ~/.ssh
           printf '%s\n' "${SSH_PRIVATE_KEY}" > ~/.ssh/visiomilhas_deploy_key
           chmod 600 ~/.ssh/visiomilhas_deploy_key
-          cat > ~/.ssh/config <<EOF
-          Host ${SSH_HOST}
-            HostName ${SSH_HOST}
-            User ${SSH_USER}
-            Port ${SSH_PORT:-22}
-            IdentityFile ~/.ssh/visiomilhas_deploy_key
-            IdentitiesOnly yes
-            StrictHostKeyChecking accept-new
-            UserKnownHostsFile ~/.ssh/known_hosts
-          EOF
-          chmod 600 ~/.ssh/config
-          touch ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
-          echo "SSH_PORT=${SSH_PORT:-22}" >> "$GITHUB_ENV"
+          ssh-keyscan -T 10 -p "${SSH_PORT}" "${SSH_HOST}" >> ~/.ssh/known_hosts
+          if [ "${SSH_PORT}" != "22" ]; then
+            ssh-keyscan -T 10 -p 22 "${SSH_HOST}" >> ~/.ssh/known_hosts || true
+          fi
+          echo "SSH_PORT=${SSH_PORT}" >> "$GITHUB_ENV"
 
       - name: Ensure remote directory exists
         shell: bash
@@ -595,20 +586,11 @@ jobs:
           chmod 700 ~/.ssh
           printf '%s\n' "${SSH_PRIVATE_KEY}" > ~/.ssh/visiomilhas_deploy_key
           chmod 600 ~/.ssh/visiomilhas_deploy_key
-          cat > ~/.ssh/config <<EOF
-          Host ${SSH_HOST}
-            HostName ${SSH_HOST}
-            User ${SSH_USER}
-            Port ${SSH_PORT:-22}
-            IdentityFile ~/.ssh/visiomilhas_deploy_key
-            IdentitiesOnly yes
-            StrictHostKeyChecking accept-new
-            UserKnownHostsFile ~/.ssh/known_hosts
-          EOF
-          chmod 600 ~/.ssh/config
-          touch ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
-          echo "SSH_PORT=${SSH_PORT:-22}" >> "$GITHUB_ENV"
+          ssh-keyscan -T 10 -p "${SSH_PORT}" "${SSH_HOST}" >> ~/.ssh/known_hosts
+          if [ "${SSH_PORT}" != "22" ]; then
+            ssh-keyscan -T 10 -p 22 "${SSH_HOST}" >> ~/.ssh/known_hosts || true
+          fi
+          echo "SSH_PORT=${SSH_PORT}" >> "$GITHUB_ENV"
 
       - name: Ensure remote directory exists
         shell: bash

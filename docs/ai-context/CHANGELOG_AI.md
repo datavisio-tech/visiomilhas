@@ -1,4 +1,12 @@
-﻿# 2026-06-04 - PROD V2 cutover readiness audit
+﻿# 2026-06-04 - Release promotion SSH regression fix
+
+- Classified the release promotion HM SSH timeout as `DEPLOY_FAILURE_CLASSIFICATION: PIPELINE_REGRESSION`.
+- Evidence: `.github/workflows/deploy-hm.yml` run `26961560274` at `fdf9b88035dcb3aa8dc8dec8d18370d4ff883d6a` passed `Ensure remote directory exists` after explicit `ssh-keyscan`.
+- Evidence: `.github/workflows/release-promotion.yml` run `26984230889` at `e95ac0af914a24ed79b7b99cf1fdabf0edbda076` failed the same remote-directory step after replacing `ssh-keyscan` with SSH config plus `StrictHostKeyChecking accept-new`.
+- Restored the known-good `ssh-keyscan` host-key capture behavior in `release-promotion.yml` for HM and PROD deploy jobs.
+- Updated the failure registry and recovery playbooks so future agents restore the known-good SSH preparation before opening a new infrastructure RCA.
+
+# 2026-06-04 - PROD V2 cutover readiness audit
 
 - Audited the current HM release candidate for production readiness.
 - Documented that purchases and session refresh warnings are not hard blockers on their own.
