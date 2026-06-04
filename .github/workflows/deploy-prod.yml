@@ -232,6 +232,7 @@ jobs:
             "APP_NAME=${APP_NAME}" \
             "APP_URL=${APP_URL}" \
             "NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}" \
+            "ACTIVE_DATABASE_TARGET=production" \
             "NODE_ENV=${NODE_ENV}" \
             "USE_FIFO_MOVEMENTS_ENGINE=${USE_FIFO_MOVEMENTS_ENGINE}" \
             "POSTGRES_HOST=${POSTGRES_HOST}" \
