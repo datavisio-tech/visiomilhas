@@ -95,7 +95,6 @@ jobs:
           MONGODB_SERVER_IP: ${{ vars.MONGODB_SERVER_IP || secrets.MONGODB_SERVER_IP }}
           MONGODB_USER: ${{ secrets.MONGODB_USER }}
           MONGODB_USER_PASSWORD: ${{ secrets.MONGODB_USER_PASSWORD }}
-          MONGODB_DATABASE: ${{ vars.MONGODB_DATABASE || secrets.MONGODB_DATABASE }}
 
       - name: Configure SSH
         shell: bash
@@ -221,7 +220,6 @@ jobs:
           MONGODB_SERVER_IP: ${{ vars.MONGODB_SERVER_IP || secrets.MONGODB_SERVER_IP }}
           MONGODB_USER: ${{ secrets.MONGODB_USER }}
           MONGODB_USER_PASSWORD: ${{ secrets.MONGODB_USER_PASSWORD }}
-          MONGODB_DATABASE: ${{ vars.MONGODB_DATABASE || secrets.MONGODB_DATABASE }}
 
       - name: Build image and deploy HM app
         shell: bash
