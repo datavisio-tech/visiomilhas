@@ -6,8 +6,8 @@ import {
   getPageState,
   waitForPageState,
   RuntimeContext,
-} from "../../../../tests/runtime/runtime-browser";
-import { waitForSelectOptions } from "../../../../tests/runtime/runtime-browser";
+  waitForSelectOptions,
+} from "../../../lib/runtime-browser";
 
 // Purchases MCP journey: login -> open cockpit -> create card -> drag across columns -> validate bonus generation
 export async function runPurchasesJourney(ctx: RuntimeContext) {
