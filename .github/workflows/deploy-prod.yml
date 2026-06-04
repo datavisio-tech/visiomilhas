@@ -252,7 +252,13 @@ jobs:
             "APP_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${APP_DB}" \
             "BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}" \
             "GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}" \
-            "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}" > "${env_file}"
+            "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}" \
+            "VISIOMILIAS_IMAGE_TAG=${GITHUB_SHA}" \
+            "VISIOMILIAS_CONTAINER_NAME=visiomilhas_app" \
+            "VISIOMILIAS_PUBLIC_HOST=${VISIOMILIAS_PUBLIC_HOST}" \
+            "VISIOMILIAS_ROUTER_NAME=${VISIOMILIAS_ROUTER_NAME}" \
+            "VISIOMILIAS_SERVICE_NAME=${VISIOMILIAS_SERVICE_NAME}" \
+            "COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}" > "${env_file}"
 
           chmod 600 "${env_file}"
           scp -i ~/.ssh/visiomilhas_deploy_key -P "${SSH_PORT}" "${env_file}" "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/.env.production.tmp"
@@ -299,7 +305,7 @@ jobs:
             --build-arg BETTER_AUTH_SECRET \
             --build-arg GOOGLE_CLIENT_ID \
             --build-arg GOOGLE_CLIENT_SECRET \
-            -t '${IMAGE_NAME}:${GITHUB_SHA}' . && { docker rm -f "${VISIOMILIAS_CONTAINER_NAME}" >/dev/null 2>&1 || true; } && VISIOMILIAS_IMAGE_TAG=${GITHUB_SHA} VISIOMILIAS_CONTAINER_NAME=${VISIOMILIAS_CONTAINER_NAME} VISIOMILIAS_PUBLIC_HOST=${VISIOMILIAS_PUBLIC_HOST} VISIOMILIAS_ROUTER_NAME=${VISIOMILIAS_ROUTER_NAME} VISIOMILIAS_SERVICE_NAME=${VISIOMILIAS_SERVICE_NAME} COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME} docker compose -f docker-compose.visiomilhas.standalone.yml up -d"
+            -t '${IMAGE_NAME}:${GITHUB_SHA}' . && { docker rm -f "${VISIOMILIAS_CONTAINER_NAME}" >/dev/null 2>&1 || true; } && docker compose --env-file .env.production -f docker-compose.visiomilhas.standalone.yml up -d"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: root

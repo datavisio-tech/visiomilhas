@@ -210,6 +210,12 @@ jobs:
             "MONGODB_USER=${MONGODB_USER}" \
             "MONGODB_USER_PASSWORD=${MONGODB_USER_PASSWORD}" \
             "MONGODB_DATABASE=${MONGODB_DATABASE}" \
+            "VISIOMILIAS_IMAGE_TAG=${GITHUB_SHA}" \
+            "VISIOMILIAS_CONTAINER_NAME=visiomilhas_hm" \
+            "VISIOMILIAS_PUBLIC_HOST=${VISIOMILIAS_PUBLIC_HOST}" \
+            "VISIOMILIAS_ROUTER_NAME=${VISIOMILIAS_ROUTER_NAME}" \
+            "VISIOMILIAS_SERVICE_NAME=${VISIOMILIAS_SERVICE_NAME}" \
+            "COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}" \
             "MONGODB_URI=mongodb://${MONGODB_USER}:${MONGODB_USER_PASSWORD}@${MONGODB_SERVER_IP}/${MONGODB_DATABASE}" > "${env_file}"
 
           chmod 600 "${env_file}"
@@ -250,7 +256,7 @@ jobs:
             --build-arg BETTER_AUTH_SECRET \
             --build-arg GOOGLE_CLIENT_ID \
             --build-arg GOOGLE_CLIENT_SECRET \
-            -t '${IMAGE_NAME}:${GITHUB_SHA}' . && { docker rm -f "${VISIOMILHAS_CONTAINER_NAME}" >/dev/null 2>&1 || true; } && VISIOMILIAS_IMAGE_TAG=${GITHUB_SHA} VISIOMILIAS_CONTAINER_NAME=${VISIOMILHAS_CONTAINER_NAME} VISIOMILIAS_PUBLIC_HOST=${VISIOMILIAS_PUBLIC_HOST} VISIOMILIAS_ROUTER_NAME=${VISIOMILIAS_ROUTER_NAME} VISIOMILIAS_SERVICE_NAME=${VISIOMILIAS_SERVICE_NAME} COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME} docker compose -f docker-compose.visiomilhas.standalone.yml up -d"
+            -t '${IMAGE_NAME}:${GITHUB_SHA}' . && { docker rm -f "${VISIOMILHAS_CONTAINER_NAME}" >/dev/null 2>&1 || true; } && docker compose --env-file .env.production -f docker-compose.visiomilhas.standalone.yml up -d"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: root
