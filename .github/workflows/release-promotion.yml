@@ -1,0 +1,835 @@
+name: Release Promotion Pipeline - VisioMilhas
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Semantic version tag to promote (for example v2.0.0-rc.1 or v2.0.0)"
+        required: true
+        type: string
+      release_kind:
+        description: "Release track"
+        required: true
+        type: choice
+        default: rc
+        options:
+          - rc
+          - production
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-promotion-${{ github.event.inputs.release_tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  resolve_release:
+    name: Resolve release metadata
+    runs-on: ubuntu-latest
+    outputs:
+      release_tag: ${{ steps.resolve.outputs.release_tag }}
+      release_kind: ${{ steps.resolve.outputs.release_kind }}
+      is_rc: ${{ steps.resolve.outputs.is_rc }}
+      is_production: ${{ steps.resolve.outputs.is_production }}
+    steps:
+      - name: Resolve tag and release kind
+        id: resolve
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            RELEASE_TAG="${{ inputs.release_tag }}"
+            RELEASE_KIND="${{ inputs.release_kind }}"
+          else
+            RELEASE_TAG="${GITHUB_REF_NAME}"
+            case "${RELEASE_TAG}" in
+              *-rc.*|*-beta.*) RELEASE_KIND="rc" ;;
+              *) RELEASE_KIND="production" ;;
+            esac
+          fi
+
+          case "${RELEASE_KIND}" in
+            rc|production) ;;
+            *)
+              echo "Unsupported release kind: ${RELEASE_KIND}"
+              exit 1
+              ;;
+          esac
+
+          if [ -z "${RELEASE_TAG}" ]; then
+            echo "Missing release tag"
+            exit 1
+          fi
+
+          echo "release_tag=${RELEASE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "release_kind=${RELEASE_KIND}" >> "$GITHUB_OUTPUT"
+          if [ "${RELEASE_KIND}" = "rc" ]; then
+            echo "is_rc=true" >> "$GITHUB_OUTPUT"
+            echo "is_production=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_rc=false" >> "$GITHUB_OUTPUT"
+            echo "is_production=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  build_once:
+    name: Build release image once
+    runs-on: ubuntu-latest
+    environment: hm
+    needs: resolve_release
+    env:
+      RELEASE_TAG: ${{ needs.resolve_release.outputs.release_tag }}
+      IMAGE_NAME: datavisio/visiomilhas
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET || secrets.AUTH_SECRET }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      MONGODB_SERVER_IP: ${{ secrets.MONGODB_SERVER_IP }}
+      MONGODB_USER: ${{ secrets.MONGODB_USER }}
+      MONGODB_USER_PASSWORD: ${{ secrets.MONGODB_USER_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Load public release config
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f config/production-public.env ]; then
+            echo "Missing config/production-public.env"
+            exit 1
+          fi
+          cat config/production-public.env >> "$GITHUB_ENV"
+          printf 'RELEASE_TAG=%s\n' "${RELEASE_TAG}" >> "$GITHUB_ENV"
+
+      - name: Validate required build inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            APP_NAME
+            APP_URL
+            NEXT_PUBLIC_APP_URL
+            NODE_ENV
+            USE_FIFO_MOVEMENTS_ENGINE
+            POSTGRES_HOST
+            POSTGRES_PORT
+            POSTGRES_DB
+            SAAS_DB
+            APP_DB
+            PLANO
+            PLANO_ANUAL
+            GOOGLE_CLIENT_ID
+            GOOGLE_CLIENT_SECRET
+            BETTER_AUTH_SECRET
+            POSTGRES_USER
+            POSTGRES_PASSWORD
+            MONGODB_SERVER_IP
+            MONGODB_USER
+            MONGODB_USER_PASSWORD
+            MONGODB_DATABASE
+          )
+          for name in "${required[@]}"; do
+            if [ -z "${!name:-}" ]; then
+              echo "Missing required secret/env: ${name}"
+              exit 1
+            fi
+          done
+          echo "Build inputs are present."
+
+      - name: Install dependencies
+        shell: bash
+        run: npm ci
+
+      - name: Run quality gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run lint
+          npm run typecheck
+
+      - name: Build Docker image once
+        shell: bash
+        run: |
+          set -euo pipefail
+          DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+          ADM_DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${SAAS_DB}"
+          APP_DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${APP_DB}"
+          MONGODB_URI="mongodb://${MONGODB_USER}:${MONGODB_USER_PASSWORD}@${MONGODB_SERVER_IP}/${MONGODB_DATABASE}"
+
+          docker build --no-cache --pull \
+            --build-arg APP_NAME="${APP_NAME}" \
+            --build-arg APP_URL="${APP_URL}" \
+            --build-arg NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL}" \
+            --build-arg NODE_ENV="${NODE_ENV}" \
+            --build-arg USE_FIFO_MOVEMENTS_ENGINE="${USE_FIFO_MOVEMENTS_ENGINE}" \
+            --build-arg POSTGRES_HOST="${POSTGRES_HOST}" \
+            --build-arg POSTGRES_PORT="${POSTGRES_PORT}" \
+            --build-arg POSTGRES_DB="${POSTGRES_DB}" \
+            --build-arg SAAS_DB="${SAAS_DB}" \
+            --build-arg APP_DB="${APP_DB}" \
+            --build-arg POSTGRES_USER="${POSTGRES_USER}" \
+            --build-arg POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
+            --build-arg DATABASE_URL="${DATABASE_URL}" \
+            --build-arg ADM_DATABASE_URL="${ADM_DATABASE_URL}" \
+            --build-arg APP_DATABASE_URL="${APP_DATABASE_URL}" \
+            --build-arg BETTER_AUTH_SECRET="${BETTER_AUTH_SECRET}" \
+            --build-arg GOOGLE_CLIENT_ID="${GOOGLE_CLIENT_ID}" \
+            --build-arg GOOGLE_CLIENT_SECRET="${GOOGLE_CLIENT_SECRET}" \
+            --build-arg MONGODB_SERVER_IP="${MONGODB_SERVER_IP}" \
+            --build-arg MONGODB_USER="${MONGODB_USER}" \
+            --build-arg MONGODB_USER_PASSWORD="${MONGODB_USER_PASSWORD}" \
+            --build-arg MONGODB_DATABASE="${MONGODB_DATABASE}" \
+            --build-arg MONGODB_URI="${MONGODB_URI}" \
+            -t "${IMAGE_NAME}:${RELEASE_TAG}" .
+
+          docker save "${IMAGE_NAME}:${RELEASE_TAG}" -o release-image.tar
+
+      - name: Upload release image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: visiomilhas-image-${{ needs.resolve_release.outputs.release_tag }}
+          path: release-image.tar
+          if-no-files-found: error
+
+  deploy_hm:
+    name: Deploy promoted release to HM
+    runs-on: ubuntu-latest
+    environment: hm
+    needs:
+      - resolve_release
+      - build_once
+    env:
+      RELEASE_TAG: ${{ needs.resolve_release.outputs.release_tag }}
+      IMAGE_NAME: datavisio/visiomilhas
+      REMOTE_DIR: /opt/datavisio/visiomilhas-hm
+      VISIOMILIAS_CONTAINER_NAME: visiomilhas_hm
+      VISIOMILIAS_PUBLIC_HOST: hm.visiomilhas.visiochat.cloud
+      VISIOMILIAS_ROUTER_NAME: visiomilhas_hm
+      VISIOMILIAS_SERVICE_NAME: visiomilhas_hm
+      COMPOSE_PROJECT_NAME: visiomilhas-hm
+      APP_ENV: hm
+      ACTIVE_DATABASE_TARGET: hm
+      APP_URL: https://hm.visiomilhas.visiochat.cloud
+      NEXT_PUBLIC_APP_URL: https://hm.visiomilhas.visiochat.cloud
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+      SSH_USER: root
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET || secrets.AUTH_SECRET }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      MONGODB_SERVER_IP: ${{ secrets.MONGODB_SERVER_IP }}
+      MONGODB_USER: ${{ secrets.MONGODB_USER }}
+      MONGODB_USER_PASSWORD: ${{ secrets.MONGODB_USER_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Download release image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: visiomilhas-image-${{ needs.resolve_release.outputs.release_tag }}
+          path: /tmp/release-image
+
+      - name: Load public release config
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f config/production-public.env ]; then
+            echo "Missing config/production-public.env"
+            exit 1
+          fi
+          cat config/production-public.env >> "$GITHUB_ENV"
+          printf 'RELEASE_TAG=%s\n' "${RELEASE_TAG}" >> "$GITHUB_ENV"
+          printf 'APP_ENV=%s\n' "${APP_ENV}" >> "$GITHUB_ENV"
+          printf 'ACTIVE_DATABASE_TARGET=%s\n' "${ACTIVE_DATABASE_TARGET}" >> "$GITHUB_ENV"
+          printf 'APP_URL=%s\n' "${APP_URL}" >> "$GITHUB_ENV"
+          printf 'NEXT_PUBLIC_APP_URL=%s\n' "${NEXT_PUBLIC_APP_URL}" >> "$GITHUB_ENV"
+          printf 'COMPOSE_PROJECT_NAME=%s\n' "${COMPOSE_PROJECT_NAME}" >> "$GITHUB_ENV"
+          printf 'VISIOMILIAS_CONTAINER_NAME=%s\n' "${VISIOMILIAS_CONTAINER_NAME}" >> "$GITHUB_ENV"
+          printf 'VISIOMILIAS_PUBLIC_HOST=%s\n' "${VISIOMILIAS_PUBLIC_HOST}" >> "$GITHUB_ENV"
+          printf 'VISIOMILIAS_ROUTER_NAME=%s\n' "${VISIOMILIAS_ROUTER_NAME}" >> "$GITHUB_ENV"
+          printf 'VISIOMILIAS_SERVICE_NAME=%s\n' "${VISIOMILIAS_SERVICE_NAME}" >> "$GITHUB_ENV"
+          printf 'REMOTE_DIR=%s\n' "${REMOTE_DIR}" >> "$GITHUB_ENV"
+
+      - name: Validate HM secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            SSH_HOST
+            SSH_PORT
+            SSH_USER
+            SSH_PRIVATE_KEY
+            GOOGLE_CLIENT_ID
+            GOOGLE_CLIENT_SECRET
+            BETTER_AUTH_SECRET
+            POSTGRES_USER
+            POSTGRES_PASSWORD
+            MONGODB_SERVER_IP
+            MONGODB_USER
+            MONGODB_USER_PASSWORD
+          )
+          for name in "${required[@]}"; do
+            if [ -z "${!name:-}" ]; then
+              echo "Missing required secret/env: ${name}"
+              exit 1
+            fi
+          done
+
+      - name: Configure SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${SSH_PRIVATE_KEY}" > ~/.ssh/visiomilhas_deploy_key
+          chmod 600 ~/.ssh/visiomilhas_deploy_key
+          selected_port=""
+          for port in "${SSH_PORT}" 22; do
+            for attempt in 1 2 3 4 5 6; do
+              if ssh-keyscan -T 10 -p "${port}" "${SSH_HOST}" >> ~/.ssh/known_hosts; then
+                selected_port="${port}"
+                break 2
+              fi
+              sleep 5
+            done
+          done
+          if [ -z "${selected_port}" ]; then
+            echo "Unable to capture SSH host key from ${SSH_HOST} using ports ${SSH_PORT} and 22"
+            exit 1
+          fi
+          echo "SSH_PORT=${selected_port}" >> "$GITHUB_ENV"
+
+      - name: Ensure remote directory exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "mkdir -p '${REMOTE_DIR}' && test -w '${REMOTE_DIR}'"
+
+      - name: Sync source to HM server
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "rm -rf '${REMOTE_DIR}' && mkdir -p '${REMOTE_DIR}'"
+          rsync -az --delete \
+            --exclude '.git' \
+            --exclude 'node_modules' \
+            --exclude '.next' \
+            --exclude '.env' \
+            --exclude '.env.*' \
+            --exclude 'tests' \
+            --exclude 'test-results' \
+            --exclude 'playwright-report' \
+            --exclude 'coverage' \
+            --exclude 'docs' \
+            --exclude '.agents' \
+            --exclude '.claude' \
+            --exclude 'dumps' \
+            --exclude 'backups' \
+            --exclude 'logs' \
+            --exclude '*.log' \
+            --exclude '*.tmp' \
+            --exclude '*.cache' \
+            --exclude '*.sqlite' \
+            --exclude '*.sqlite3' \
+            --exclude '*.dump' \
+            --exclude '*.bak' \
+            --exclude '*.backup' \
+            --exclude '*.zip' \
+            --exclude '*.tar' \
+            --exclude '*.tgz' \
+            --exclude '*.gz' \
+            -e "ssh -i ~/.ssh/visiomilhas_deploy_key -p ${SSH_PORT}" \
+            ./ "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/"
+
+      - name: Load release image on HM host
+        shell: bash
+        run: |
+          set -euo pipefail
+          scp -i ~/.ssh/visiomilhas_deploy_key -P "${SSH_PORT}" "/tmp/release-image/release-image.tar" "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/release-image.tar"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && docker load -i release-image.tar && rm -f release-image.tar"
+
+      - name: Render HM env on server
+        shell: bash
+        run: |
+          set -euo pipefail
+          env_file="$(mktemp)"
+          trap 'rm -f "${env_file}"' EXIT
+
+          printf '%s\n' \
+            "APP_NAME=${APP_NAME}" \
+            "APP_URL=${APP_URL}" \
+            "NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}" \
+            "NODE_ENV=${NODE_ENV}" \
+            "APP_ENV=${APP_ENV}" \
+            "USE_FIFO_MOVEMENTS_ENGINE=${USE_FIFO_MOVEMENTS_ENGINE}" \
+            "POSTGRES_HOST=${POSTGRES_HOST}" \
+            "POSTGRES_PORT=${POSTGRES_PORT}" \
+            "POSTGRES_DB=${POSTGRES_DB}" \
+            "SAAS_DB=${SAAS_DB}" \
+            "APP_DB=${APP_DB}" \
+            "PLANO=${PLANO}" \
+            "PLANO_ANUAL=${PLANO_ANUAL}" \
+            "ACTIVE_DATABASE_TARGET=${ACTIVE_DATABASE_TARGET}" \
+            "VISIOMILIAS_IMAGE_TAG=${RELEASE_TAG}" \
+            "VISIOMILIAS_CONTAINER_NAME=${VISIOMILIAS_CONTAINER_NAME}" \
+            "VISIOMILIAS_PUBLIC_HOST=${VISIOMILIAS_PUBLIC_HOST}" \
+            "VISIOMILIAS_ROUTER_NAME=${VISIOMILIAS_ROUTER_NAME}" \
+            "VISIOMILIAS_SERVICE_NAME=${VISIOMILIAS_SERVICE_NAME}" \
+            "COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}" \
+            "DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}" \
+            "ADM_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${SAAS_DB}" \
+            "APP_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${APP_DB}" \
+            "BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}" \
+            "GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}" \
+            "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}" \
+            "POSTGRES_USER=${POSTGRES_USER}" \
+            "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" \
+            "MONGODB_SERVER_IP=${MONGODB_SERVER_IP}" \
+            "MONGODB_USER=${MONGODB_USER}" \
+            "MONGODB_USER_PASSWORD=${MONGODB_USER_PASSWORD}" \
+            "MONGODB_DATABASE=${MONGODB_DATABASE}" \
+            "MONGODB_URI=mongodb://${MONGODB_USER}:${MONGODB_USER_PASSWORD}@${MONGODB_SERVER_IP}/${MONGODB_DATABASE}" > "${env_file}"
+
+          chmod 600 "${env_file}"
+          scp -i ~/.ssh/visiomilhas_deploy_key -P "${SSH_PORT}" "${env_file}" "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/.env.production.tmp"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && mv .env.production.tmp .env.production && chmod 600 .env.production && test -s .env.production"
+
+      - name: Deploy release artifact to HM
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && docker rm -f '${VISIOMILIAS_CONTAINER_NAME}' >/dev/null 2>&1 || true && docker compose --env-file .env.production -f docker-compose.visiomilhas.standalone.yml up -d"
+
+      - name: Validate HM runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "container_id=\$(docker ps -q --filter name=${VISIOMILIAS_CONTAINER_NAME} | head -n1) && test -n \"\$container_id\" && docker exec \"\$container_id\" node scripts/healthcheck.js"
+          for route in / /sign-in /subscribe /app /app/dashboard /app/accounts /app/programs /app/purchases; do
+            status="$(curl -k -s -o /dev/null -w '%{http_code}' --max-time 20 "${APP_URL}${route}" || true)"
+            if [ "${status}" != "200" ] && [ "${status}" != "307" ]; then
+              echo "HM route ${route} returned HTTP ${status}"
+              exit 1
+            fi
+          done
+
+      - name: Inspect Traefik routing state
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "curl -s http://127.0.0.1:8082/api/http/routers | grep -n hm.visiomilhas.visiochat.cloud || true"
+
+      - name: Prune old Docker images on HM host
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && bash scripts/prune-docker-images.sh datavisio/visiomilhas 4"
+
+  smoke_hm:
+    name: Playwright smoke on HM
+    runs-on: ubuntu-latest
+    needs:
+      - resolve_release
+      - deploy_hm
+    env:
+      PLAYWRIGHT_MODE: headless
+      PLAYWRIGHT_BASE_URL: https://hm.visiomilhas.visiochat.cloud
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        shell: bash
+        run: npm ci
+
+      - name: Run HM smoke tests
+        shell: bash
+        run: npx playwright test --config=playwright.config.ts
+
+  integration_tests:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    needs:
+      - smoke_hm
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        shell: bash
+        run: npm ci
+
+      - name: Run integration tests
+        shell: bash
+        run: npm run test:integration
+
+  publish_rc_release:
+    name: Publish GitHub pre-release
+    runs-on: ubuntu-latest
+    needs:
+      - resolve_release
+      - integration_tests
+    if: needs.resolve_release.outputs.is_rc == 'true'
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ needs.resolve_release.outputs.release_tag }}
+    steps:
+      - name: Publish pre-release
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            gh release edit "${RELEASE_TAG}" --prerelease --title "${RELEASE_TAG}" --notes "Release candidate ${RELEASE_TAG}"
+          else
+            gh release create "${RELEASE_TAG}" --prerelease --title "${RELEASE_TAG}" --notes "Release candidate ${RELEASE_TAG}"
+          fi
+
+  deploy_prod:
+    name: Deploy promoted release to PROD
+    runs-on: ubuntu-latest
+    environment: production
+    needs:
+      - resolve_release
+      - integration_tests
+    if: needs.resolve_release.outputs.is_production == 'true'
+    env:
+      RELEASE_TAG: ${{ needs.resolve_release.outputs.release_tag }}
+      IMAGE_NAME: datavisio/visiomilhas
+      REMOTE_DIR: /opt/datavisio/visiomilhas
+      VISIOMILIAS_CONTAINER_NAME: visiomilhas_app
+      VISIOMILIAS_PUBLIC_HOST: visiomilhas.visiochat.cloud
+      VISIOMILIAS_ROUTER_NAME: visiomilhas
+      VISIOMILIAS_SERVICE_NAME: visiomilhas
+      COMPOSE_PROJECT_NAME: visiomilhas-prod
+      APP_ENV: production
+      ACTIVE_DATABASE_TARGET: production
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+      SSH_USER: root
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET || secrets.AUTH_SECRET }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      MONGODB_SERVER_IP: ${{ secrets.MONGODB_SERVER_IP }}
+      MONGODB_USER: ${{ secrets.MONGODB_USER }}
+      MONGODB_USER_PASSWORD: ${{ secrets.MONGODB_USER_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Download release image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: visiomilhas-image-${{ needs.resolve_release.outputs.release_tag }}
+          path: /tmp/release-image
+
+      - name: Load public release config
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f config/production-public.env ]; then
+            echo "Missing config/production-public.env"
+            exit 1
+          fi
+          cat config/production-public.env >> "$GITHUB_ENV"
+          printf 'RELEASE_TAG=%s\n' "${RELEASE_TAG}" >> "$GITHUB_ENV"
+          printf 'APP_ENV=%s\n' "${APP_ENV}" >> "$GITHUB_ENV"
+          printf 'ACTIVE_DATABASE_TARGET=%s\n' "${ACTIVE_DATABASE_TARGET}" >> "$GITHUB_ENV"
+          printf 'VISIOMILIAS_CONTAINER_NAME=%s\n' "${VISIOMILIAS_CONTAINER_NAME}" >> "$GITHUB_ENV"
+          printf 'VISIOMILIAS_PUBLIC_HOST=%s\n' "${VISIOMILIAS_PUBLIC_HOST}" >> "$GITHUB_ENV"
+          printf 'VISIOMILIAS_ROUTER_NAME=%s\n' "${VISIOMILIAS_ROUTER_NAME}" >> "$GITHUB_ENV"
+          printf 'VISIOMILIAS_SERVICE_NAME=%s\n' "${VISIOMILIAS_SERVICE_NAME}" >> "$GITHUB_ENV"
+          printf 'COMPOSE_PROJECT_NAME=%s\n' "${COMPOSE_PROJECT_NAME}" >> "$GITHUB_ENV"
+          printf 'REMOTE_DIR=%s\n' "${REMOTE_DIR}" >> "$GITHUB_ENV"
+
+      - name: Validate production secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            SSH_HOST
+            SSH_PORT
+            SSH_USER
+            SSH_PRIVATE_KEY
+            GOOGLE_CLIENT_ID
+            GOOGLE_CLIENT_SECRET
+            BETTER_AUTH_SECRET
+            POSTGRES_USER
+            POSTGRES_PASSWORD
+            MONGODB_SERVER_IP
+            MONGODB_USER
+            MONGODB_USER_PASSWORD
+          )
+          for name in "${required[@]}"; do
+            if [ -z "${!name:-}" ]; then
+              echo "Missing required secret/env: ${name}"
+              exit 1
+            fi
+          done
+
+      - name: Configure SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${SSH_PRIVATE_KEY}" > ~/.ssh/visiomilhas_deploy_key
+          chmod 600 ~/.ssh/visiomilhas_deploy_key
+          selected_port=""
+          for port in "${SSH_PORT}" 22; do
+            for attempt in 1 2 3 4 5 6; do
+              if ssh-keyscan -T 10 -p "${port}" "${SSH_HOST}" >> ~/.ssh/known_hosts; then
+                selected_port="${port}"
+                break 2
+              fi
+              sleep 5
+            done
+          done
+          if [ -z "${selected_port}" ]; then
+            echo "Unable to capture SSH host key from ${SSH_HOST} using ports ${SSH_PORT} and 22"
+            exit 1
+          fi
+          echo "SSH_PORT=${selected_port}" >> "$GITHUB_ENV"
+
+      - name: Ensure remote directory exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "mkdir -p '${REMOTE_DIR}' && test -w '${REMOTE_DIR}'"
+
+      - name: Sync source to production server
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "rm -rf '${REMOTE_DIR}' && mkdir -p '${REMOTE_DIR}'"
+          rsync -az --delete \
+            --exclude '.git' \
+            --exclude 'node_modules' \
+            --exclude '.next' \
+            --exclude '.env' \
+            --exclude '.env.*' \
+            --exclude 'tests' \
+            --exclude 'test-results' \
+            --exclude 'playwright-report' \
+            --exclude 'coverage' \
+            --exclude 'docs' \
+            --exclude '.agents' \
+            --exclude '.claude' \
+            --exclude 'dumps' \
+            --exclude 'backups' \
+            --exclude 'logs' \
+            --exclude '*.log' \
+            --exclude '*.tmp' \
+            --exclude '*.cache' \
+            --exclude '*.sqlite' \
+            --exclude '*.sqlite3' \
+            --exclude '*.dump' \
+            --exclude '*.bak' \
+            --exclude '*.backup' \
+            --exclude '*.zip' \
+            --exclude '*.tar' \
+            --exclude '*.tgz' \
+            --exclude '*.gz' \
+            -e "ssh -i ~/.ssh/visiomilhas_deploy_key -p ${SSH_PORT}" \
+            ./ "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/"
+
+      - name: Load release image on PROD host
+        shell: bash
+        run: |
+          set -euo pipefail
+          scp -i ~/.ssh/visiomilhas_deploy_key -P "${SSH_PORT}" "/tmp/release-image/release-image.tar" "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/release-image.tar"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && docker load -i release-image.tar && rm -f release-image.tar"
+
+      - name: Render production env on server
+        shell: bash
+        run: |
+          set -euo pipefail
+          env_file="$(mktemp)"
+          trap 'rm -f "${env_file}"' EXIT
+
+          printf '%s\n' \
+            "APP_NAME=${APP_NAME}" \
+            "APP_URL=${APP_URL}" \
+            "NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}" \
+            "NODE_ENV=${NODE_ENV}" \
+            "APP_ENV=${APP_ENV}" \
+            "USE_FIFO_MOVEMENTS_ENGINE=${USE_FIFO_MOVEMENTS_ENGINE}" \
+            "POSTGRES_HOST=${POSTGRES_HOST}" \
+            "POSTGRES_PORT=${POSTGRES_PORT}" \
+            "POSTGRES_DB=${POSTGRES_DB}" \
+            "SAAS_DB=${SAAS_DB}" \
+            "APP_DB=${APP_DB}" \
+            "PLANO=${PLANO}" \
+            "PLANO_ANUAL=${PLANO_ANUAL}" \
+            "ACTIVE_DATABASE_TARGET=${ACTIVE_DATABASE_TARGET}" \
+            "VISIOMILIAS_IMAGE_TAG=${RELEASE_TAG}" \
+            "VISIOMILIAS_CONTAINER_NAME=${VISIOMILIAS_CONTAINER_NAME}" \
+            "VISIOMILIAS_PUBLIC_HOST=${VISIOMILIAS_PUBLIC_HOST}" \
+            "VISIOMILIAS_ROUTER_NAME=${VISIOMILIAS_ROUTER_NAME}" \
+            "VISIOMILIAS_SERVICE_NAME=${VISIOMILIAS_SERVICE_NAME}" \
+            "COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}" \
+            "DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}" \
+            "ADM_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${SAAS_DB}" \
+            "APP_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${APP_DB}" \
+            "BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}" \
+            "GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}" \
+            "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}" \
+            "POSTGRES_USER=${POSTGRES_USER}" \
+            "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" \
+            "MONGODB_SERVER_IP=${MONGODB_SERVER_IP}" \
+            "MONGODB_USER=${MONGODB_USER}" \
+            "MONGODB_USER_PASSWORD=${MONGODB_USER_PASSWORD}" \
+            "MONGODB_DATABASE=${MONGODB_DATABASE}" \
+            "MONGODB_URI=mongodb://${MONGODB_USER}:${MONGODB_USER_PASSWORD}@${MONGODB_SERVER_IP}/${MONGODB_DATABASE}" > "${env_file}"
+
+          chmod 600 "${env_file}"
+          scp -i ~/.ssh/visiomilhas_deploy_key -P "${SSH_PORT}" "${env_file}" "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/.env.production.tmp"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && mv .env.production.tmp .env.production && chmod 600 .env.production && test -s .env.production"
+
+      - name: Deploy release artifact to PROD
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && docker rm -f '${VISIOMILIAS_CONTAINER_NAME}' >/dev/null 2>&1 || true && docker compose --env-file .env.production -f docker-compose.visiomilhas.standalone.yml up -d"
+
+      - name: Validate PROD runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "container_id=\$(docker ps -q --filter name=${VISIOMILIAS_CONTAINER_NAME} | head -n1) && test -n \"\$container_id\" && docker exec \"\$container_id\" node scripts/healthcheck.js"
+          for route in / /sign-in /subscribe /app /app/dashboard /app/accounts /app/programs /app/purchases; do
+            status="$(curl -k -s -o /dev/null -w '%{http_code}' --max-time 20 "${APP_URL}${route}" || true)"
+            if [ "${status}" != "200" ] && [ "${status}" != "307" ]; then
+              echo "PROD route ${route} returned HTTP ${status}"
+              exit 1
+            fi
+          done
+
+      - name: Inspect Traefik routing state
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "curl -s http://127.0.0.1:8082/api/http/routers | grep -n visiomilhas.visiochat.cloud || true"
+
+      - name: Prune old Docker images on PROD host
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && bash scripts/prune-docker-images.sh datavisio/visiomilhas 4"
+
+  smoke_prod:
+    name: Playwright smoke on PROD
+    runs-on: ubuntu-latest
+    needs:
+      - resolve_release
+      - deploy_prod
+    env:
+      PLAYWRIGHT_MODE: headless
+      PLAYWRIGHT_BASE_URL: https://visiomilhas.visiochat.cloud
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        shell: bash
+        run: npm ci
+
+      - name: Run PROD smoke tests
+        shell: bash
+        run: npx playwright test --config=playwright.config.ts
+
+  publish_rc_release:
+    name: Publish GitHub pre-release
+    runs-on: ubuntu-latest
+    needs:
+      - resolve_release
+      - integration_tests
+    if: needs.resolve_release.outputs.is_rc == 'true'
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ needs.resolve_release.outputs.release_tag }}
+    steps:
+      - name: Publish pre-release
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            gh release edit "${RELEASE_TAG}" --prerelease --title "${RELEASE_TAG}" --notes "Release candidate ${RELEASE_TAG}"
+          else
+            gh release create "${RELEASE_TAG}" --prerelease --title "${RELEASE_TAG}" --notes "Release candidate ${RELEASE_TAG}"
+          fi
+
+  publish_prod_release:
+    name: Publish GitHub release
+    runs-on: ubuntu-latest
+    needs:
+      - resolve_release
+      - smoke_prod
+    if: needs.resolve_release.outputs.is_production == 'true'
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ needs.resolve_release.outputs.release_tag }}
+    steps:
+      - name: Publish release
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            gh release edit "${RELEASE_TAG}" --latest --title "${RELEASE_TAG}" --notes "Production release ${RELEASE_TAG}"
+          else
+            gh release create "${RELEASE_TAG}" --latest --title "${RELEASE_TAG}" --notes "Production release ${RELEASE_TAG}"
+          fi

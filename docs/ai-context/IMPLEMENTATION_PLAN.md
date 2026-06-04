@@ -773,3 +773,16 @@ Progresso estimado (MVP1) atualizado:
 - Enforce mandatory reply fields in all operational outputs: `AGENT`, `SKILLS`, `SOURCES CONSULTED`, and `STATUS`.
 - Self-correct any draft that misses the mandatory fields before responding.
 - Before surfacing `FAIL`, consult the failure registry; before surfacing `HUMAN_ACTION_REQUIRED`, consult the applicable recovery playbook.
+
+## 2026-06-04 - Release promotion pipeline rollout
+
+1. Keep the existing HM validation path as the release-candidate gate.
+2. Build each release artifact once in GitHub Actions.
+3. Promote that same artifact to HM.
+4. Run HM smoke validation and integration tests.
+5. Publish GitHub pre-releases for RC tags.
+6. For production tags, wait on the `production` environment approval rule.
+7. Promote the same artifact to PROD.
+8. Run PROD smoke validation.
+9. Publish the final GitHub Release and mark it latest.
+10. Keep the old deploy workflows only as manual fallback paths.

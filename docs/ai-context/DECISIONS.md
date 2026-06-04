@@ -415,3 +415,12 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - Decision: `.agents/skills/` is the official skill tree.
 - Decision: the agent tree and skill tree are separate on purpose; agent definitions must declare the skills they depend on.
 
+## 2026-06-04 - Release promotion pipeline
+
+- Decision: the official release model for VisioMilhas is Build Once, Promote Many.
+- Decision: release promotion is the primary process; independent HM and PROD deploys are legacy fallback workflows only.
+- Decision: RC tags use semantic pre-release forms and publish GitHub pre-releases after HM smoke and integration tests pass.
+- Decision: production tags use semantic final releases, pause on the `production` GitHub Environment approval rule, and publish GitHub Releases marked latest only after PROD smoke passes.
+- Decision: the same Docker image artifact must be promoted from HM to PROD for a given release tag.
+- Decision: `release-promotion.yml` is the official release pipeline entrypoint.
+

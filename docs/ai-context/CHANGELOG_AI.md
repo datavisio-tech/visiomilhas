@@ -2756,3 +2756,11 @@ Resultado esperado:
 - Defined `.github/agents/` as the canonical agent tree and `.agents/skills/` as the canonical skill tree.
 - Added an explicit agent-to-skill mapping so every agent family carries the skills required for execution, recovery, orchestration, and deployment validation.
 
+## 2026-06-04 - Release promotion pipeline
+
+- Added the official release promotion pipeline for VisioMilhas.
+- Introduced Build Once, Promote Many as the release contract.
+- Added GitHub pre-release support for RC tags and final latest releases for production tags.
+- Demoted the old HM and PROD deploy workflows to legacy manual fallback paths.
+- Added release context, architecture, process, pipeline, and cutover documentation under `docs/ai-context/`.
+
