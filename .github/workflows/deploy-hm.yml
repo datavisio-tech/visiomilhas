@@ -22,6 +22,9 @@ jobs:
       STACK_NAME: visiomilhas
       SERVICE_NAME: visiomilhas_visiomilhas_app
       VISIOMILHAS_CONTAINER_NAME: visiomilhas_hm
+      VISIOMILIAS_PUBLIC_HOST: hm.visiomilhas.visiochat.cloud
+      VISIOMILIAS_ROUTER_NAME: visiomilhas_hm
+      VISIOMILIAS_SERVICE_NAME: visiomilhas_hm
       COMPOSE_PROJECT_NAME: visiomilhas-hm
       SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
       SSH_USER: root
@@ -45,9 +48,11 @@ jobs:
           printf 'NEXT_PUBLIC_APP_URL=%s\n' "${HM_URL}" >> "$GITHUB_ENV"
           printf 'APP_ENV=%s\n' "hm" >> "$GITHUB_ENV"
           printf 'COMPOSE_PROJECT_NAME=%s\n' "visiomilhas-hm" >> "$GITHUB_ENV"
-          printf 'VISIOMILHAS_CONTAINER_NAME=%s\n' "visiomilhas_hm" >> "$GITHUB_ENV"
+          printf 'VISIOMILIAS_CONTAINER_NAME=%s\n' "visiomilhas_hm" >> "$GITHUB_ENV"
+          printf 'VISIOMILIAS_PUBLIC_HOST=%s\n' "hm.visiomilhas.visiochat.cloud" >> "$GITHUB_ENV"
+          printf 'VISIOMILIAS_ROUTER_NAME=%s\n' "visiomilhas_hm" >> "$GITHUB_ENV"
+          printf 'VISIOMILIAS_SERVICE_NAME=%s\n' "visiomilhas_hm" >> "$GITHUB_ENV"
           printf 'REMOTE_DIR=%s\n' "/opt/datavisio/visiomilhas-hm" >> "$GITHUB_ENV"
-
       - name: Validate required secrets
         shell: bash
         run: |
@@ -245,7 +250,7 @@ jobs:
             --build-arg BETTER_AUTH_SECRET \
             --build-arg GOOGLE_CLIENT_ID \
             --build-arg GOOGLE_CLIENT_SECRET \
-            -t '${IMAGE_NAME}:${GITHUB_SHA}' . && { docker rm -f \"${VISIOMILHAS_CONTAINER_NAME}\" >/dev/null 2>&1 || true; } && VISIOMILHAS_IMAGE_TAG=${GITHUB_SHA} VISIOMILHAS_CONTAINER_NAME=${VISIOMILHAS_CONTAINER_NAME} COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME} docker compose -f docker-compose.visiomilhas.standalone.yml up -d"
+            -t '${IMAGE_NAME}:${GITHUB_SHA}' . && { docker rm -f "${VISIOMILHAS_CONTAINER_NAME}" >/dev/null 2>&1 || true; } && VISIOMILIAS_IMAGE_TAG=${GITHUB_SHA} VISIOMILIAS_CONTAINER_NAME=${VISIOMILHAS_CONTAINER_NAME} VISIOMILIAS_PUBLIC_HOST=${VISIOMILIAS_PUBLIC_HOST} VISIOMILIAS_ROUTER_NAME=${VISIOMILIAS_ROUTER_NAME} VISIOMILIAS_SERVICE_NAME=${VISIOMILIAS_SERVICE_NAME} COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME} docker compose -f docker-compose.visiomilhas.standalone.yml up -d"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: root
