@@ -138,6 +138,7 @@ consumes:
 - docs/ai-context/
 - docs/specs/
 - docs/ai-skills/
+- docs/ai-context/knowledge-base/
 
 produces:
 
@@ -263,6 +264,7 @@ execution_protocol:
 
 - validate_inputs
 - gather_evidence
+- if_blank_screen_or_hydration_failure_route_runtime_forensics_first
 - route_environment_discovery
 - route_project_discovery
 - route_business_discovery
@@ -279,3 +281,37 @@ execution_protocol:
 - generate_execution_plan
 - validate_outputs
 - report_results
+
+runtime_forensics_policy:
+
+- trigger_conditions:
+  - tela_branca
+  - white_screen
+  - hydration_failure
+  - React_418
+  - React_423
+  - HierarchyRequestError
+  - NotFoundError
+  - document_doctype_null
+
+- mandatory_flow:
+  - Runtime Forensics
+  - HTML Validation
+  - Container Validation
+  - Deploy Validation
+  - Proxy Routing Validation
+  - Browser Hydration Validation
+  - Frontend Investigation
+
+- governance_rule: |
+  When production shows a blank screen, hydration failure, React #418,
+  React #423, HierarchyRequestError, NotFoundError, or missing
+  document.doctype, agents must first validate raw HTML, active container,
+  active image, deploy provenance, and proxy routing before changing React
+  components.
+
+- required_skill:
+  - .agents/skills/runtime-deploy-forensics/SKILL.md
+
+- reference_knowledge_base:
+  - docs/ai-context/knowledge-base/KB-0001-DOCKER-WORKDIR-APP-ROUTER-COLLISION.md

@@ -1,7 +1,7 @@
 services:
   visiomilhas_app:
-    image: datavisio/visiomilhas:${VISIOMILHAS_IMAGE_TAG:-a00e7b74a1df93287965fc81801e2d326c3338b9}
-    container_name: visiomilhas_app
+    image: datavisio/visiomilhas:${VISIOMILIAS_IMAGE_TAG}
+    container_name: ${VISIOMILIAS_CONTAINER_NAME:-visiomilhas_app}
     command: ["node", "server.js"]
     env_file:
       - .env.production
@@ -9,13 +9,14 @@ services:
     networks:
       - traefik_public
     labels:
-      traefik.enable: "true"
-      traefik.docker.network: "traefik_public"
-      traefik.http.routers.visiomilhas.rule: "Host(`visiomilhas.visiochat.cloud`)"
-      traefik.http.routers.visiomilhas.entrypoints: "websecure"
-      traefik.http.routers.visiomilhas.tls: "true"
-      traefik.http.routers.visiomilhas.tls.certresolver: "le"
-      traefik.http.services.visiomilhas.loadbalancer.server.port: "3000"
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_public"
+      - "traefik.http.routers.${VISIOMILIAS_ROUTER_NAME}.rule=Host(`${VISIOMILIAS_PUBLIC_HOST}`)"
+      - "traefik.http.routers.${VISIOMILIAS_ROUTER_NAME}.entrypoints=websecure"
+      - "traefik.http.routers.${VISIOMILIAS_ROUTER_NAME}.tls=true"
+      - "traefik.http.routers.${VISIOMILIAS_ROUTER_NAME}.tls.certresolver=le"
+      - "traefik.http.routers.${VISIOMILIAS_ROUTER_NAME}.service=${VISIOMILIAS_SERVICE_NAME}"
+      - "traefik.http.services.${VISIOMILIAS_SERVICE_NAME}.loadbalancer.server.port=3000"
 
 networks:
   traefik_public:

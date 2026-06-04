@@ -86,6 +86,12 @@ If Google OAuth or Better Auth fails in production:
 4. validate environment loading in the container
 5. only then inspect provider configuration
 
+For this repository:
+
+- DEV OAuth is local-only in `.env.local`
+- HM and PROD share the same Google OAuth client
+- `BETTER_AUTH_SECRET` is shared across DEV, HM and PROD
+
 ## Outputs expected from an agent using this skill
 
 The agent should report:
@@ -103,4 +109,3 @@ The agent should report:
 - do not change Google Console values from this skill
 - do not change secrets from this skill
 - do not skip runtime validation because local build passed
-

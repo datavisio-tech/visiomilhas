@@ -1,5 +1,15 @@
 # Subscription UX Refinement — ✅ COMPLETE
 
+## 2026-06-03 - Environment Segregation Implementation
+
+- [x] PR-03: criar workflows `deploy-hm.yml` e `deploy-prod.yml`
+- [x] PR-04: adicionar gates `lint`, `typecheck`, `build` e smoke tests
+- [x] PR-05: criar `scripts/bootstrap-production-v2.ts`
+- [x] PR-06: criar migration explícita para Better Auth (`ba_*`)
+- [ ] Validar a sintaxe dos workflows em CI
+- [ ] Preparar secrets por ambiente antes do primeiro go-live
+- [ ] Confirmar manualmente o cutover de HM e o bootstrap do Production V2
+
 **Status**: ✅ `/subscribe` refinado para explicar trial, planos e política de acesso
 
 **Realizado**:
@@ -573,7 +583,7 @@ Decisões registradas:
 Seguranca adicional a auditar:
 
 - secrets historicos no git e em logs de actions.
-- GOOGLE_CLIENT_SECRET, AUTH_SECRET, DATABASE_URL e SSH_PRIVATE_KEY.
+- GOOGLE_CLIENT_SECRET, BETTER_AUTH_SECRET, DATABASE_URL e SSH_PRIVATE_KEY.
 - .gitignore e historico git.
 
 ## 2.2 — Better Auth foundation
@@ -925,3 +935,20 @@ Status 1.3.20 — integração atômica da compra ao motor FIFO:
 - Validar `docker run` e conferir HTML bruto de `/`, `/subscribe`, `/app` e `/app/accounts`.
 - Confirmar em navegador que nao ha React #418, React #423, `HierarchyRequestError` ou tela branca.
 - Apos validacao local, executar deploy via GitHub Actions e repetir smoke test em producao.
+## 2026-06-03 - Pipeline Hardening for Environment Segregation
+
+- [x] Remover a dependência de `.next/types/**/*.ts` do `tsconfig.json`
+- [x] Validar `<!DOCTYPE html>` nos workflows HM e PROD
+- [x] Validar bootstrap OAuth Google nos workflows HM e PROD
+- [ ] Reexecutar a auditoria dos workflows após o hardening
+- [ ] Preparar o merge da arquitetura DEV -> HM -> PROD após a reauditoria
+
+## 2026-06-03 - SaaS Operational Readiness
+
+- [x] Criar `SAAS_OPERATIONS.md`
+- [x] Criar `INCIDENT_RESPONSE.md`
+- [x] Criar `RUNBOOK.md`
+- [x] Criar `FIRST_CUSTOMER_CHECKLIST.md`
+- [x] Criar `GO_LIVE_OPERATIONS_CHECKLIST.md`
+- [ ] Confirmar se parte do material operacional deve virar knowledge base permanente
+- [ ] Vincular o checklist de primeiro cliente ao fluxo de go-live quando houver a primeira execução real

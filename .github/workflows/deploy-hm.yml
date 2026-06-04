@@ -1,40 +1,35 @@
-name: Production Deploy - VisioMilhas
+name: HM Deploy - VisioMilhas
 
 on:
   push:
     branches:
-      - main
+      - develop
   workflow_dispatch:
-    inputs:
-      confirm_production_deploy:
-        description: "Digite DEPLOY para confirmar o deploy em producao"
-        required: true
-        type: string
-      image_tag:
-        description: "Tag da imagem Docker a ser usada no deploy"
-        required: false
-        default: "latest"
-        type: string
-  repository_dispatch:
-    types:
-      - production_deploy
 
 permissions:
   contents: read
 
 jobs:
+  # Official matrix: DEV uses local-only OAuth; HM and PROD share the same Google OAuth client and BETTER_AUTH_SECRET.
   deploy:
-    name: Deploy to production standalone
+    name: Deploy to HM standalone
     runs-on: ubuntu-latest
-    environment: production
+    environment: hm
 
     env:
-      REMOTE_DIR: /opt/datavisio/visiomilhas-clean
+      REMOTE_DIR: /opt/datavisio/visiomilhas-hm
       IMAGE_NAME: datavisio/visiomilhas
       STACK_NAME: visiomilhas
       SERVICE_NAME: visiomilhas_visiomilhas_app
+      VISIOMILHAS_CONTAINER_NAME: visiomilhas_hm
+      VISIOMILIAS_PUBLIC_HOST: hm.visiomilhas.visiochat.cloud
+      VISIOMILIAS_ROUTER_NAME: visiomilhas_hm
+      VISIOMILIAS_SERVICE_NAME: visiomilhas_hm
+      COMPOSE_PROJECT_NAME: visiomilhas-hm
       SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
       SSH_USER: root
+      HM_URL: https://hm.visiomilhas.visiochat.cloud
+      HM_HOST: hm.visiomilhas.visiochat.cloud
 
     steps:
       - name: Checkout
@@ -49,24 +44,15 @@ jobs:
             exit 1
           fi
           cat config/production-public.env >> "$GITHUB_ENV"
-
-      - name: Validate production deploy confirmation
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ "${GITHUB_EVENT_NAME}" != "push" ]; then
-            if [ "${CONFIRM_PRODUCTION_DEPLOY}" != "DEPLOY" ]; then
-              echo "Production deploy not confirmed. Type DEPLOY to continue."
-              exit 1
-            fi
-            echo "Production deploy confirmation accepted."
-          else
-            echo "Push-triggered deploy accepted."
-          fi
-        env:
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-          CONFIRM_PRODUCTION_DEPLOY: ${{ github.event.inputs.confirm_production_deploy || github.event.client_payload.confirm_production_deploy }}
-
+          printf 'APP_URL=%s\n' "${HM_URL}" >> "$GITHUB_ENV"
+          printf 'NEXT_PUBLIC_APP_URL=%s\n' "${HM_URL}" >> "$GITHUB_ENV"
+          printf 'APP_ENV=%s\n' "hm" >> "$GITHUB_ENV"
+          printf 'COMPOSE_PROJECT_NAME=%s\n' "visiomilhas-hm" >> "$GITHUB_ENV"
+          printf 'VISIOMILIAS_CONTAINER_NAME=%s\n' "visiomilhas_hm" >> "$GITHUB_ENV"
+          printf 'VISIOMILIAS_PUBLIC_HOST=%s\n' "hm.visiomilhas.visiochat.cloud" >> "$GITHUB_ENV"
+          printf 'VISIOMILIAS_ROUTER_NAME=%s\n' "visiomilhas_hm" >> "$GITHUB_ENV"
+          printf 'VISIOMILIAS_SERVICE_NAME=%s\n' "visiomilhas_hm" >> "$GITHUB_ENV"
+          printf 'REMOTE_DIR=%s\n' "/opt/datavisio/visiomilhas-hm" >> "$GITHUB_ENV"
       - name: Validate required secrets
         shell: bash
         run: |
@@ -104,16 +90,7 @@ jobs:
             exit 1
           fi
 
-          case "${REMOTE_DIR}" in
-            /opt/datavisio/visiomilhas|/opt/datavisio/visiomilhas-clean|/opt/datavisio/visiomilhas-*)
-              ;;
-            *)
-              echo "REMOTE_DIR fora do padrao seguro: ${REMOTE_DIR}"
-              exit 1
-              ;;
-          esac
-
-          echo "Required production secrets are present."
+          echo "Required HM secrets are present."
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
@@ -127,7 +104,6 @@ jobs:
           MONGODB_SERVER_IP: ${{ vars.MONGODB_SERVER_IP || secrets.MONGODB_SERVER_IP }}
           MONGODB_USER: ${{ secrets.MONGODB_USER }}
           MONGODB_USER_PASSWORD: ${{ secrets.MONGODB_USER_PASSWORD }}
-          MONGODB_DATABASE: ${{ vars.MONGODB_DATABASE || secrets.MONGODB_DATABASE }}
 
       - name: Configure SSH
         shell: bash
@@ -137,27 +113,11 @@ jobs:
           chmod 700 ~/.ssh
           printf '%s\n' "${SSH_PRIVATE_KEY}" > ~/.ssh/visiomilhas_deploy_key
           chmod 600 ~/.ssh/visiomilhas_deploy_key
-          selected_port=""
-          for port in "${SSH_PORT}" 22; do
-            for attempt in 1 2 3 4 5 6; do
-              if ssh-keyscan -T 10 -p "${port}" "${SSH_HOST}" >> ~/.ssh/known_hosts; then
-                echo "SSH host key captured on port ${port} at attempt ${attempt}."
-                selected_port="${port}"
-                break 2
-              fi
-              echo "ssh-keyscan attempt ${attempt} failed on port ${port}, retrying..."
-              sleep 5
-            done
-          done
-          if [ -z "${selected_port}" ]; then
-            echo "Unable to capture SSH host key from ${SSH_HOST} using ports ${SSH_PORT} and 22"
-            exit 1
+          ssh-keyscan -T 10 -p "${SSH_PORT}" "${SSH_HOST}" >> ~/.ssh/known_hosts
+          if [ "${SSH_PORT}" != "22" ]; then
+            ssh-keyscan -T 10 -p 22 "${SSH_HOST}" >> ~/.ssh/known_hosts || true
           fi
-          echo "SSH_PORT=${selected_port}" >> "$GITHUB_ENV"
-          if [ ! -s ~/.ssh/known_hosts ]; then
-            echo "Unable to capture SSH host key from ${SSH_HOST}:${SSH_PORT}"
-            exit 1
-          fi
+          echo "SSH_PORT=${SSH_PORT}" >> "$GITHUB_ENV"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
@@ -167,34 +127,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          case "${REMOTE_DIR}" in
-            /opt/datavisio/visiomilhas|/opt/datavisio/visiomilhas-clean|/opt/datavisio/visiomilhas-*) ;;
-            *) echo "REMOTE_DIR fora do padrao seguro: ${REMOTE_DIR}"; exit 1 ;;
-          esac
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "mkdir -p '${REMOTE_DIR}' && test -w '${REMOTE_DIR}'"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
-          SSH_USER: root
-
-      - name: Ensure swarm public network exists
-        shell: bash
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "docker network inspect traefik_public >/dev/null 2>&1 || docker network create traefik_public"
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
           SSH_USER: root
 
       - name: Sync source to server
         shell: bash
         run: |
           set -euo pipefail
-          case "${REMOTE_DIR}" in
-            /opt/datavisio/visiomilhas|/opt/datavisio/visiomilhas-clean|/opt/datavisio/visiomilhas-*) ;;
-            *) echo "REMOTE_DIR fora do padrao seguro: ${REMOTE_DIR}"; exit 1 ;;
-          esac
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "rm -rf '${REMOTE_DIR}' && mkdir -p '${REMOTE_DIR}'"
           rsync -az --delete \
             --exclude '.git' \
@@ -223,34 +164,21 @@ jobs:
             ./ "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
           SSH_USER: root
 
-      - name: Refresh Traefik stack
-        shell: bash
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "if docker container inspect traefik >/dev/null 2>&1; then echo 'Traefik already running'; else cd '${REMOTE_DIR}' && docker compose --env-file .env.production -f docker-compose.traefik.standalone.yml up -d; fi"
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
-          SSH_USER: root
-
-      - name: Render production env on server
+      - name: Render HM env on server
         shell: bash
         run: |
           set -euo pipefail
           env_file="$(mktemp)"
           trap 'rm -f "${env_file}"' EXIT
 
-          if ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "test -f '${REMOTE_DIR}/.env.production'"; then
-            ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cat '${REMOTE_DIR}/.env.production'" > "${env_file}"
-          fi
-
           printf '%s\n' \
             "APP_NAME=${APP_NAME}" \
             "APP_URL=${APP_URL}" \
             "NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}" \
+            "APP_ENV=${APP_ENV}" \
+            "ACTIVE_DATABASE_TARGET=hm" \
             "NODE_ENV=${NODE_ENV}" \
             "USE_FIFO_MOVEMENTS_ENGINE=${USE_FIFO_MOVEMENTS_ENGINE}" \
             "POSTGRES_HOST=${POSTGRES_HOST}" \
@@ -270,6 +198,12 @@ jobs:
             "MONGODB_USER=${MONGODB_USER}" \
             "MONGODB_USER_PASSWORD=${MONGODB_USER_PASSWORD}" \
             "MONGODB_DATABASE=${MONGODB_DATABASE}" \
+            "VISIOMILIAS_IMAGE_TAG=${GITHUB_SHA}" \
+            "VISIOMILIAS_CONTAINER_NAME=visiomilhas_hm" \
+            "VISIOMILIAS_PUBLIC_HOST=${VISIOMILIAS_PUBLIC_HOST}" \
+            "VISIOMILIAS_ROUTER_NAME=${VISIOMILIAS_ROUTER_NAME}" \
+            "VISIOMILIAS_SERVICE_NAME=${VISIOMILIAS_SERVICE_NAME}" \
+            "COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}" \
             "MONGODB_URI=mongodb://${MONGODB_USER}:${MONGODB_USER_PASSWORD}@${MONGODB_SERVER_IP}/${MONGODB_DATABASE}" > "${env_file}"
 
           chmod 600 "${env_file}"
@@ -277,7 +211,6 @@ jobs:
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && mv .env.production.tmp .env.production && chmod 600 .env.production && test -s .env.production"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
           SSH_USER: root
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
@@ -287,9 +220,8 @@ jobs:
           MONGODB_SERVER_IP: ${{ vars.MONGODB_SERVER_IP || secrets.MONGODB_SERVER_IP }}
           MONGODB_USER: ${{ secrets.MONGODB_USER }}
           MONGODB_USER_PASSWORD: ${{ secrets.MONGODB_USER_PASSWORD }}
-          MONGODB_DATABASE: ${{ vars.MONGODB_DATABASE || secrets.MONGODB_DATABASE }}
 
-      - name: Build image and deploy stack
+      - name: Build image and deploy HM app
         shell: bash
         run: |
           set -euo pipefail
@@ -312,37 +244,29 @@ jobs:
             --build-arg BETTER_AUTH_SECRET \
             --build-arg GOOGLE_CLIENT_ID \
             --build-arg GOOGLE_CLIENT_SECRET \
-            --build-arg MONGODB_SERVER_IP \
-            --build-arg MONGODB_USER \
-            --build-arg MONGODB_USER_PASSWORD \
-            --build-arg MONGODB_DATABASE \
-            --build-arg MONGODB_URI \
-            -t '${IMAGE_NAME}:${GITHUB_SHA}' . && { docker rm -f visiomilhas_app >/dev/null 2>&1 || true; } && VISIOMILHAS_IMAGE_TAG=${GITHUB_SHA} docker compose -f docker-compose.visiomilhas.standalone.yml up -d"
+            -t '${IMAGE_NAME}:${GITHUB_SHA}' . && { docker rm -f "${VISIOMILHAS_CONTAINER_NAME}" >/dev/null 2>&1 || true; } && docker compose --env-file .env.production -f docker-compose.visiomilhas.standalone.yml up -d"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
           SSH_USER: root
 
       - name: Validate deployment
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "container_id=\$(docker ps -q --filter name=visiomilhas_app | head -n1) && test -n \"\$container_id\" && for attempt in 1 2 3 4 5 6 7 8 9 10; do docker exec \"\$container_id\" node --input-type=module -e \"const res = await fetch('http://127.0.0.1:3000/'); const html = await res.text(); console.log(res.status, html.slice(0, 80)); if (!res.ok) process.exit(1); if (!html.startsWith('<!DOCTYPE html>')) process.exit(2); if (html.includes('Central operacional premium')) process.exit(3);\" && echo 'Production smoke test passed' && exit 0; echo \"Smoke test attempt \$attempt failed, retrying...\"; sleep 5; done; echo 'Production smoke test failed after retries'; docker logs \"\$container_id\" --tail 80 --raw; exit 1"
-          echo "Production smoke test passed for ${IMAGE_NAME}:${GITHUB_SHA}."
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "container_id=\$(docker ps -q --filter name=${VISIOMILHAS_CONTAINER_NAME} | head -n1) && test -n \"\$container_id\" && docker exec \"\$container_id\" node scripts/healthcheck.js"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "container_id=\$(docker ps -q --filter name=${VISIOMILHAS_CONTAINER_NAME} | head -n1) && test -n \"\$container_id\" && docker exec \"\$container_id\" node --input-type=module -e \"const routes=['/','/sign-in','/subscribe','/app','/app/dashboard','/app/accounts','/app/programs','/app/purchases']; for (const route of routes) { const res = await fetch('http://127.0.0.1:3000' + route, { redirect: 'follow' }); const html = await res.text(); if (!html.startsWith('<!DOCTYPE html>')) { console.error('Missing DOCTYPE on', route); process.exit(1); } if (html.includes('React error #418') || html.includes('React error #423') || html.includes('HierarchyRequestError') || html.includes('NotFoundError')) { console.error('Hydration/runtime error text found on', route); process.exit(2); } } const authRes = await fetch('http://127.0.0.1:3000/api/auth/sign-in/social', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ provider: 'google' }) }); const authText = await authRes.text(); if (authRes.status === 503 || authText.includes('AUTH_BOOTSTRAP_FAILED') || authText.includes('503')) { console.error('OAuth bootstrap failed'); process.exit(3); } console.log('HM smoke checks passed');\""
+          echo "HM smoke checks passed for ${IMAGE_NAME}:${GITHUB_SHA}."
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
           SSH_USER: root
 
       - name: Inspect Traefik routing state
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "set -euo pipefail; echo '=== Traefik routers ==='; curl -s http://127.0.0.1:8082/api/http/routers | grep -n visiomilhas || true"
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "set -euo pipefail; echo '=== App containers ==='; docker ps --filter name=visiomilhas_app"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "set -euo pipefail; echo '=== Traefik routers ==='; curl -s http://127.0.0.1:8082/api/http/routers | grep -n hm.visiomilhas.visiochat.cloud || true; echo '=== App containers ==='; docker ps --filter name=visiomilhas_app"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
           SSH_USER: root
 
       - name: Validate public URL via Traefik
@@ -350,14 +274,23 @@ jobs:
         run: |
           set -euo pipefail
           for attempt in 1 2 3 4 5 6 7 8 9 10; do
-            status="$(curl -k -s -o /dev/null -w '%{http_code}' --max-time 20 https://visiomilhas.visiochat.cloud/sign-in || true)"
-            if [ "${status}" = "200" ]; then
-              echo "Public URL is reachable through Traefik."
+            status="$(curl -k -s -o /dev/null -w '%{http_code}' --max-time 20 https://hm.visiomilhas.visiochat.cloud/sign-in || true)"
+            if [ "${status}" = "200" ] || [ "${status}" = "307" ]; then
+              echo "Public HM URL is reachable through Traefik."
               exit 0
             fi
-            echo "Public URL attempt ${attempt} returned HTTP ${status}, retrying..."
+            echo "Public HM attempt ${attempt} returned HTTP ${status}, retrying..."
             sleep 5
           done
-          echo "Public URL not reachable through Traefik after retries."
-          curl -k -I https://visiomilhas.visiochat.cloud/sign-in || true
+          echo "Public HM URL not reachable through Traefik after retries."
+          curl -k -I https://hm.visiomilhas.visiochat.cloud/sign-in || true
           exit 1
+
+      - name: Prune old Docker images on HM host
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && bash scripts/prune-docker-images.sh datavisio/visiomilhas 4"
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: root

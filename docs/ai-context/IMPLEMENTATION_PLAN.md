@@ -1,4 +1,26 @@
+## 2026-06-03 - OAuth matrix correction
+
+- DEV OAuth is local-only in `.env.local`.
+- HM and PROD share the same Google OAuth client.
+- `BETTER_AUTH_SECRET` is the shared secret across DEV, HM and PROD.
+
 # IMPLEMENTATION_PLAN - MVP1 (VisioMilhas)
+
+## 2026-06-03 - Pipeline Hardening for Environment Segregation
+
+- Criar `tsconfig.typecheck.json` source-only para que `npm run typecheck` rode em checkout limpo sem depender de artefatos gerados pelo build.
+- Validar explicitamente `<!DOCTYPE html>` nos workflows `deploy-hm.yml` e `deploy-prod.yml` para routes públicas e redirecionadas.
+- Validar explicitamente bootstrap OAuth Google nos dois workflows com resposta não-503, sem `AUTH_BOOTSTRAP_FAILED` e com redirect para `accounts.google.com`.
+- Manter os gates obrigatórios na ordem `lint -> typecheck -> build`, agora com `typecheck` independente de build.
+- Parar novamente em `Status: READY_FOR_EXECUTION` após a auditoria e o merge readiness.
+
+## 2026-06-03 - Environment Segregation Implementation
+
+- PR-03: separar HM e PROD com workflows próprios e documentação de ambiente.
+- PR-04: adicionar gates obrigatórios de lint, typecheck, build e smoke tests pós-deploy.
+- PR-05: preparar bootstrap Production V2 com script de planejamento sem executar migrations.
+- PR-06: corrigir estruturalmente o bootstrap do Better Auth com migration explícita para `ba_*`.
+- Parar na revisão de implementação com `Status: READY_FOR_EXECUTION`.
 
 ## 4.3-C — Campaign Catalog Engine
 
@@ -695,3 +717,22 @@ Progresso estimado (MVP1) atualizado:
 - Objetivo: preparar a execução controlada do QA manual da compra FIFO em staging.
 - Entregáveis: checklist de QA expandido, validador read-only parametrizado, comando npm explícito e instruções de ativação/rollback da flag em staging.
 - Regras: não executar compra automaticamente, não alterar produção, não usar `DATABASE_URL`/`TEST_DATABASE_URL` para staging e não ativar `USE_FIFO_MOVEMENTS_ENGINE` sem confirmação do operador.
+# 2026-06-03
+
+## Final discovery gate before implementation
+
+- Separate DEV, HM, and PROD workstreams only after the bootstrap requirements are explicit.
+- First implementation target: PostgreSQL Production V2 bootstrap flow and the associated validation gates.
+- Do not treat MongoDB as a release blocker for the current system.
+- Keep Better Auth provisioning and auth bootstrap validation in the critical path for production readiness.
+
+## 2026-06-03 - SaaS Operational Readiness
+
+- Add the operational documents required for first customer readiness and go-live control.
+- New artifacts:
+  - `SAAS_OPERATIONS.md`
+  - `INCIDENT_RESPONSE.md`
+  - `RUNBOOK.md`
+  - `FIRST_CUSTOMER_CHECKLIST.md`
+  - `GO_LIVE_OPERATIONS_CHECKLIST.md`
+- Keep this phase documentation-only: no code, workflow, migration, or deploy changes.
