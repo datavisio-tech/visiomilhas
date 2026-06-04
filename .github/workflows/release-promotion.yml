@@ -497,29 +497,6 @@ jobs:
         shell: bash
         run: npm run test:integration
 
-  publish_rc_release:
-    name: Publish GitHub pre-release
-    runs-on: ubuntu-latest
-    needs:
-      - resolve_release
-      - integration_tests
-    if: needs.resolve_release.outputs.is_rc == 'true'
-    permissions:
-      contents: write
-    env:
-      GH_TOKEN: ${{ github.token }}
-      RELEASE_TAG: ${{ needs.resolve_release.outputs.release_tag }}
-    steps:
-      - name: Publish pre-release
-        shell: bash
-        run: |
-          set -euo pipefail
-          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
-            gh release edit "${RELEASE_TAG}" --prerelease --title "${RELEASE_TAG}" --notes "Release candidate ${RELEASE_TAG}"
-          else
-            gh release create "${RELEASE_TAG}" --prerelease --title "${RELEASE_TAG}" --notes "Release candidate ${RELEASE_TAG}"
-          fi
-
   deploy_prod:
     name: Deploy promoted release to PROD
     runs-on: ubuntu-latest
