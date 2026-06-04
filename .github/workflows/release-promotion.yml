@@ -305,21 +305,20 @@ jobs:
           chmod 700 ~/.ssh
           printf '%s\n' "${SSH_PRIVATE_KEY}" > ~/.ssh/visiomilhas_deploy_key
           chmod 600 ~/.ssh/visiomilhas_deploy_key
-          selected_port=""
-          for port in "${SSH_PORT}" 22; do
-            for attempt in 1 2 3 4 5 6; do
-              if ssh-keyscan -T 10 -p "${port}" "${SSH_HOST}" >> ~/.ssh/known_hosts; then
-                selected_port="${port}"
-                break 2
-              fi
-              sleep 5
-            done
-          done
-          if [ -z "${selected_port}" ]; then
-            echo "Unable to capture SSH host key from ${SSH_HOST} using ports ${SSH_PORT} and 22"
-            exit 1
-          fi
-          echo "SSH_PORT=${selected_port}" >> "$GITHUB_ENV"
+          cat > ~/.ssh/config <<EOF
+          Host ${SSH_HOST}
+            HostName ${SSH_HOST}
+            User ${SSH_USER}
+            Port ${SSH_PORT:-22}
+            IdentityFile ~/.ssh/visiomilhas_deploy_key
+            IdentitiesOnly yes
+            StrictHostKeyChecking accept-new
+            UserKnownHostsFile ~/.ssh/known_hosts
+          EOF
+          chmod 600 ~/.ssh/config
+          touch ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          echo "SSH_PORT=${SSH_PORT:-22}" >> "$GITHUB_ENV"
 
       - name: Ensure remote directory exists
         shell: bash
@@ -596,21 +595,20 @@ jobs:
           chmod 700 ~/.ssh
           printf '%s\n' "${SSH_PRIVATE_KEY}" > ~/.ssh/visiomilhas_deploy_key
           chmod 600 ~/.ssh/visiomilhas_deploy_key
-          selected_port=""
-          for port in "${SSH_PORT}" 22; do
-            for attempt in 1 2 3 4 5 6; do
-              if ssh-keyscan -T 10 -p "${port}" "${SSH_HOST}" >> ~/.ssh/known_hosts; then
-                selected_port="${port}"
-                break 2
-              fi
-              sleep 5
-            done
-          done
-          if [ -z "${selected_port}" ]; then
-            echo "Unable to capture SSH host key from ${SSH_HOST} using ports ${SSH_PORT} and 22"
-            exit 1
-          fi
-          echo "SSH_PORT=${selected_port}" >> "$GITHUB_ENV"
+          cat > ~/.ssh/config <<EOF
+          Host ${SSH_HOST}
+            HostName ${SSH_HOST}
+            User ${SSH_USER}
+            Port ${SSH_PORT:-22}
+            IdentityFile ~/.ssh/visiomilhas_deploy_key
+            IdentitiesOnly yes
+            StrictHostKeyChecking accept-new
+            UserKnownHostsFile ~/.ssh/known_hosts
+          EOF
+          chmod 600 ~/.ssh/config
+          touch ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          echo "SSH_PORT=${SSH_PORT:-22}" >> "$GITHUB_ENV"
 
       - name: Ensure remote directory exists
         shell: bash
