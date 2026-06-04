@@ -1,3 +1,8 @@
+﻿## 2026-06-04 - Agent routing enforcement
+
+- Added `.agents/AGENT_ROUTER.md` as the mandatory routing layer between task type, agent file, and skill set.
+- Updated the root `AGENTS.md` and `.agents/HANDOVER.md` so operational replies must select a routed agent instead of using a generic identity.
+- Document precedence now explicitly includes `.github/agents/` as the agent tree and `.agents/AGENT_ROUTER.md` as the selection entry point.
 ## 2026-06-03 â€” Environment Segregation Pipeline Hardening â€” IN PROGRESS
 
 ## 2026-06-03 - OAuth matrix correction
@@ -2743,3 +2748,4 @@ Resultado esperado:
 
 - Defined `.github/agents/` as the canonical agent tree and `.agents/skills/` as the canonical skill tree.
 - Added an explicit agent-to-skill mapping so every agent family carries the skills required for execution, recovery, orchestration, and deployment validation.
+

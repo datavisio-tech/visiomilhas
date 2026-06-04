@@ -15,6 +15,16 @@ Every operational reply must include, at minimum:
 
 If any of those fields are missing, the agent must treat the draft as a `PROCESS_VIOLATION`, correct the format internally, and then respond.
 
+Before any execution, the agent must:
+
+1. Identify the task type.
+2. Consult `.agents/AGENT_ROUTER.md`.
+3. Select the routed agent from `.github/agents/`.
+4. Select the required skills from `.agents/skills/`.
+5. Execute with that routed identity.
+
+Replies that use a generic agent identity without routing are invalid and must be corrected internally before responding.
+
 Before acting, agents must consult documentation in the official order listed below.
 Before declaring `FAIL`, agents must consult the failure registry.
 Before declaring `HUMAN_ACTION_REQUIRED`, agents must consult the relevant recovery playbook.
@@ -43,6 +53,8 @@ Before declaring `HUMAN_ACTION_REQUIRED`, agents must consult the relevant recov
 `.github/agents/` contains agents.  
 `.agents/skills/` contains skills.
 
+`.agents/AGENT_ROUTER.md` is the mandatory routing layer for choosing the active agent and skill set.
+
 Official agent-to-skill map:
 
 - `000-bootstrap.agent.md` -> `ia-first-engine-discipline`
@@ -57,11 +69,23 @@ Official agent-to-skill map:
 ## Required documentation consultation order
 
 1. `docs/ai-context/`
-2. `.agents/`
-3. `docs/ai-context/CHANGELOG_AI.md`
-4. `docs/ai-context/DECISIONS.md`
-5. `docs/ai-context/IMPLEMENTATION_PLAN.md`
-6. `docs/ai-context/failure-registry/`
+2. `.agents/AGENT_ROUTER.md`
+3. `.github/agents/`
+4. `.agents/`
+5. `docs/ai-context/CHANGELOG_AI.md`
+6. `docs/ai-context/DECISIONS.md`
+7. `docs/ai-context/IMPLEMENTATION_PLAN.md`
+8. `docs/ai-context/failure-registry/`
+
+The global precedence for agent selection is:
+
+1. `~/.codex/AGENTS.md`
+2. `AGENTS.override.md`
+3. `AGENTS.md`
+4. `.agents/AGENT_ROUTER.md`
+5. `.github/agents/`
+6. `.agents/*`
+7. `docs/ai-context/*`
 
 ## Recovery and orchestration engines
 

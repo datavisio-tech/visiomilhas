@@ -1,3 +1,9 @@
+﻿## 2026-06-04 - Agent routing enforcement
+
+- Decisao: task type must be routed through `.agents/AGENT_ROUTER.md` before selecting the active agent identity.
+- Decisao: `.github/agents/` remains the canonical agent tree and `.agents/skills/` remains the canonical skill tree.
+- Decisao: operational replies must not use generic agent identities when a routed agent exists for the task type.
+- Decisao: `.agents/AGENT_ROUTER.md` is part of the mandatory consultation chain alongside `AGENTS.md` and the ai-context records.
 ## 2026-06-03 â€” Pipeline Hardening for Environment Segregation
 
 - DecisÃ£o: `npm run typecheck` deve rodar em checkout limpo usando `tsconfig.typecheck.json` source-only, sem depender de `.next/types/**/*.ts`.
@@ -402,3 +408,4 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - Decision: `.github/agents/` is the official agent tree.
 - Decision: `.agents/skills/` is the official skill tree.
 - Decision: the agent tree and skill tree are separate on purpose; agent definitions must declare the skills they depend on.
+
