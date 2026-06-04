@@ -223,8 +223,8 @@ jobs:
       ACTIVE_DATABASE_TARGET: hm
       APP_URL: https://hm.visiomilhas.visiochat.cloud
       NEXT_PUBLIC_APP_URL: https://hm.visiomilhas.visiochat.cloud
-      SSH_HOST: ${{ secrets.SSH_HOST }}
-      SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+      SSH_HOST: 72.60.143.197
+      SSH_PORT: "22"
       SSH_USER: root
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
@@ -336,8 +336,8 @@ jobs:
           fi
           echo "SSH_PORT=${selected_port}" >> "$GITHUB_ENV"
         env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          SSH_HOST: 72.60.143.197
+          SSH_PORT: "22"
           SSH_USER: root
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
@@ -347,7 +347,7 @@ jobs:
           set -euo pipefail
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "mkdir -p '${REMOTE_DIR}' && test -w '${REMOTE_DIR}'"
         env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_HOST: 72.60.143.197
           SSH_USER: root
 
       - name: Sync source to HM server

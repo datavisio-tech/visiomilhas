@@ -8,6 +8,7 @@
 - Recurrence prevention: future release promotion SSH changes must be compared against the last successful HM deploy baseline before merge.
 - Follow-up correction: aligned release-promotion SSH step-level env declarations with the proven `deploy-hm.yml` authentication baseline for `SSH_HOST`, `SSH_PORT`, `SSH_PRIVATE_KEY`, and remote preparation `SSH_USER`.
 - Follow-up correction: kept `ssh-keyscan` as the first known-host path and added SSH authentication validation with the same private key when `ssh-keyscan` does not materialize `known_hosts`, without introducing `~/.ssh/config`.
+- Follow-up correction: HM release promotion now uses the approved operational SSH endpoint `72.60.143.197` and port `22` instead of relying on the masked `SSH_HOST` value inside the promotion workflow.
 
 # 2026-06-04 - Release promotion SSH regression fix
 
