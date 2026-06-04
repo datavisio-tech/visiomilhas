@@ -1,0 +1,20 @@
+# Known Limitations
+
+This registry helps recovery, but it does not remove every possible source of failure.
+
+## Operational limits
+
+- Local execution can still fail before a command starts.
+- GitHub API or GitHub App scopes may remain insufficient for write operations.
+- SSH may still require an external host key or key rotation correction.
+- Docker image retention can remove stale images, but active images must remain protected.
+- Browser-level validation may require an attached browser tool that is not always available.
+- Some sessions may expose no usable Browser/DevTools/Playwright runtime even when the SaaS is healthy; in that case use HTTP/runtime checks instead.
+- Playwright can be available while still requiring its own isolated smoke-test lane separate from Vitest or unit-test execution.
+
+## What this registry does not solve
+
+- Missing human credentials or revoked secrets
+- Production-side outages unrelated to the HM stack
+- Destructive user decisions outside the approved architecture
+- External SaaS regressions in OAuth providers or registries

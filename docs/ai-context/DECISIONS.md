@@ -1,3 +1,15 @@
+﻿# 2026-06-04 - PROD V2 cutover readiness decision
+
+- Decision: the current release candidate is **NO-GO** for PROD V2 promotion until schema/bootstrap evidence is closed.
+- Decision: purchases and session refresh warnings are tracked as medium-severity runtime/test instability, not as standalone blockers.
+- Decision: production deploy readiness must include explicit evidence for the APP schema path before cutover to a fresh PROD V2 target.
+
+## 2026-06-04 - Agent routing enforcement
+
+- Decisao: task type must be routed through `.agents/AGENT_ROUTER.md` before selecting the active agent identity.
+- Decisao: `.github/agents/` remains the canonical agent tree and `.agents/skills/` remains the canonical skill tree.
+- Decisao: operational replies must not use generic agent identities when a routed agent exists for the task type.
+- Decisao: `.agents/AGENT_ROUTER.md` is part of the mandatory consultation chain alongside `AGENTS.md` and the ai-context records.
 ## 2026-06-03 â€” Pipeline Hardening for Environment Segregation
 
 - DecisÃ£o: `npm run typecheck` deve rodar em checkout limpo usando `tsconfig.typecheck.json` source-only, sem depender de `.next/types/**/*.ts`.
@@ -376,3 +388,30 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - MongoDB is not part of the current required runtime path.
 - The production deploy pipeline must be validated end-to-end through GitHub Actions -> SSH -> Docker -> Traefik -> container -> public URL.
 - Healthcheck, auth runtime events, and post-deploy smoke tests are mandatory gates for readiness.
+# 2026-06-04
+
+- Adopted a Failure Recovery Layer as part of the delivery workflow.
+- Agents must consult the failure registry and run the matching recovery playbook before returning `FAIL`.
+- Local execution/runtime failures should be reclassified to `WARNING` when the issue is agent-side or environment-side rather than a SaaS defect.
+- Playwright browser automation is available and must run in an isolated lane from Vitest/unit automation.
+- Adopted an Autonomous Delivery Engine flow for HM/PROD delivery: implement, test, validate, fix, retest, document, classify, continue, and only escalate to humans for credentials, business decisions, or destructive actions.
+- Standardized `DEPLOY_CONFIDENCE_SCORE` across Infrastructure, Authentication, Smoke, Functional, and Runtime categories for HM and PROD.
+- Formalized the test suite organization contract: `tests/domain` for pure unit rules, `tests/integration` for persistence/service checks, `tests/runtime` for browser-like journeys, `tests-e2e` only for a future dedicated browser lane, and `test-results` for artifacts only.
+## 2026-06-04 - VisioMilhas Project Operating System
+
+- Decision: `AGENTS.md` at the repository root is the canonical operating-system document for all DataVisio work on VisioMilhas.
+- Decision: the official agent set is `autonomous-delivery-engine`, `failure-recovery-engine`, `browser-validation`, `test-orchestration-engine`, and `deployment-runtime-validation`.
+- Decision: browser validation uses visible Chromium for DEV/HM and headless mode for PROD.
+- Decision: QA identities must come from the official synthetic test-user discovery layer and must never be human or personal accounts.
+- Decision: every handover must use the standard `DE / PARA / MOTIVO / SKILLS / DOCUMENTOS CONSULTADOS / AÇÃO EXECUTADA / PRÓXIMO PASSO` structure.
+## 2026-06-04 - IA-1stEngine discipline enforcement
+
+- Decision: every operational reply must expose `AGENT`, `SKILLS`, `SOURCES CONSULTED`, and `STATUS`.
+- Decision: missing mandatory response fields are treated as `PROCESS_VIOLATION` and must be corrected internally before the final answer is emitted.
+- Decision: `FAIL` requires consulting the failure registry first, and `HUMAN_ACTION_REQUIRED` requires consulting the relevant recovery playbook first.
+## 2026-06-04 - Agent / skill governance alignment
+
+- Decision: `.github/agents/` is the official agent tree.
+- Decision: `.agents/skills/` is the official skill tree.
+- Decision: the agent tree and skill tree are separate on purpose; agent definitions must declare the skills they depend on.
+

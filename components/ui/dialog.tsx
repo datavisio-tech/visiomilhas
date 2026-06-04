@@ -93,6 +93,8 @@ export function DialogContent({
         onClick={() => context.setOpen(false)}
       />
       <div
+        role="dialog"
+        aria-modal="true"
         className={`relative z-10 max-h-[calc(100vh-3rem)] w-full max-w-2xl overflow-y-auto rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_24px_120px_rgba(15,23,42,0.18)] ${className}`}
       >
         {children}

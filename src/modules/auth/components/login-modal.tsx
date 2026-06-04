@@ -34,6 +34,8 @@ export default function LoginModal({
   onRequestForgotPassword,
   onContinueWithGoogle,
 }: LoginModalProps) {
+  const emailInputId = "login-email";
+  const passwordInputId = "login-password";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -95,8 +97,14 @@ export default function LoginModal({
 
         <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Email</label>
+            <label
+              htmlFor={emailInputId}
+              className="text-sm font-medium text-slate-700"
+            >
+              Email
+            </label>
             <Input
+              id={emailInputId}
               autoFocus
               type="email"
               value={email}
@@ -108,8 +116,14 @@ export default function LoginModal({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Senha</label>
+            <label
+              htmlFor={passwordInputId}
+              className="text-sm font-medium text-slate-700"
+            >
+              Senha
+            </label>
             <Input
+              id={passwordInputId}
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}

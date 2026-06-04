@@ -1,3 +1,15 @@
+﻿# 2026-06-04 - PROD V2 cutover readiness audit
+
+- Audited the current HM release candidate for production readiness.
+- Documented that purchases and session refresh warnings are not hard blockers on their own.
+- Identified a production-cutover blocker around schema/bootstrap evidence for the APP lot migration path.
+- Added the cutover readiness report, production deploy checklist, rollback plan, and post-deploy validation guide.
+
+## 2026-06-04 - Agent routing enforcement
+
+- Added `.agents/AGENT_ROUTER.md` as the mandatory routing layer between task type, agent file, and skill set.
+- Updated the root `AGENTS.md` and `.agents/HANDOVER.md` so operational replies must select a routed agent instead of using a generic identity.
+- Document precedence now explicitly includes `.github/agents/` as the agent tree and `.agents/AGENT_ROUTER.md` as the selection entry point.
 ## 2026-06-03 â€” Environment Segregation Pipeline Hardening â€” IN PROGRESS
 
 ## 2026-06-03 - OAuth matrix correction
@@ -2722,3 +2734,25 @@ Resultado esperado:
   - `docs/ai-context/GO_LIVE_OPERATIONS_CHECKLIST.md`
 - Purpose:
   - formalize onboarding, trial, subscription, cancellation, reactivation, support, incident response and rollback procedures.
+# 2026-06-04
+
+- Added the Failure Recovery Layer to turn recurring operational errors into registry-backed recovery paths before surfacing `FAIL`.
+- Documented known failure patterns: `spawn setup refresh`, `403 Resource not accessible by integration`, SSH port/auth issues, Docker pull denial, and container-name conflicts.
+- Registered FP-008 for browser automation availability: Playwright runtime confirmed and should be treated as a dedicated smoke-test lane.
+- Introduced the Autonomous Delivery Engine directive and the HM/PROD `DEPLOY_CONFIDENCE_SCORE` model.
+- Formalized the official test suite organization contract for `tests/domain`, `tests/integration`, `tests/runtime`, `tests-e2e`, and `test-results`.
+## 2026-06-04 - VisioMilhas Project Operating System
+
+- Added the repository-root `AGENTS.md` as the canonical operating system for IA-1stEngine on VisioMilhas.
+- Added `.agents/HANDOVER.md` as the standard handover format for every agent transition.
+- Standardized the required document consultation order, official agents, deploy policy, failure recovery policy, and HUMAN_ACTION_REQUIRED criteria for the project.
+## 2026-06-04 - IA-1stEngine discipline enforcement
+
+- Strengthened the repository operating system with mandatory operational response fields: `AGENT`, `SKILLS`, `SOURCES CONSULTED`, and `STATUS`.
+- Added explicit `PROCESS_VIOLATION` self-correction guidance for any response draft missing the mandatory fields.
+- Expanded the handover template to include `STATUS`, `SOURCES CONSULTED`, and `AGENT` so formal transitions remain machine-checkable.
+## 2026-06-04 - Agent / skill governance alignment
+
+- Defined `.github/agents/` as the canonical agent tree and `.agents/skills/` as the canonical skill tree.
+- Added an explicit agent-to-skill mapping so every agent family carries the skills required for execution, recovery, orchestration, and deployment validation.
+
