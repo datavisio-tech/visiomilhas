@@ -179,7 +179,6 @@ jobs:
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "mkdir -p '${REMOTE_DIR}' && test -w '${REMOTE_DIR}'"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
           SSH_USER: root
 
       - name: Sync source to server
@@ -218,7 +217,6 @@ jobs:
             ./ "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
           SSH_USER: root
 
       - name: Render production env on server
@@ -254,7 +252,6 @@ jobs:
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && mv .env.production.tmp .env.production && chmod 600 .env.production && test -s .env.production"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
           SSH_USER: root
           APP_NAME: ${{ vars.APP_NAME || secrets.APP_NAME }}
           APP_URL: ${{ vars.APP_URL || secrets.APP_URL }}
@@ -298,7 +295,6 @@ jobs:
             -t '${IMAGE_NAME}:${GITHUB_SHA}' . && { docker rm -f ${SERVICE_NAME} >/dev/null 2>&1 || true; } && VISIOMILHAS_IMAGE_TAG=${GITHUB_SHA} docker compose -f docker-compose.visiomilhas.standalone.yml up -d"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
           SSH_USER: root
 
       - name: Validate deployment
@@ -308,7 +304,6 @@ jobs:
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "container_id=\$(docker ps -q --filter name=${SERVICE_NAME} | head -n1) && test -n \"\$container_id\" && docker exec \"\$container_id\" node scripts/healthcheck.js"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
           SSH_USER: root
 
       - name: Validate PROD HTML and OAuth bootstrap
