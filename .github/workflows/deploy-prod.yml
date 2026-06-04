@@ -1,4 +1,4 @@
-name: Production Deploy - VisioMilhas
+name: Deploy PROD - VisioMilhas
 
 on:
   push:
@@ -15,9 +15,6 @@ on:
         required: false
         default: "latest"
         type: string
-  repository_dispatch:
-    types:
-      - production_deploy
 
 permissions:
   contents: read
@@ -29,10 +26,11 @@ jobs:
     environment: production
 
     env:
-      REMOTE_DIR: /opt/datavisio/visiomilhas-clean
+      REMOTE_DIR: /opt/datavisio/visiomilhas-prod-v2
       IMAGE_NAME: datavisio/visiomilhas
-      STACK_NAME: visiomilhas
-      SERVICE_NAME: visiomilhas_visiomilhas_app
+      STACK_NAME: visiomilhas-prod
+      SERVICE_NAME: visiomilhas_prod_app
+      PUBLIC_BASE_URL: https://visiomilhas.visiochat.cloud
       SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
       SSH_USER: root
 
@@ -40,17 +38,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Load public production config
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ ! -f config/production-public.env ]; then
-            echo "Missing config/production-public.env"
-            exit 1
-          fi
-          cat config/production-public.env >> "$GITHUB_ENV"
-
-      - name: Validate production deploy confirmation
+      - name: Validate deploy confirmation
         shell: bash
         run: |
           set -euo pipefail
@@ -65,9 +53,9 @@ jobs:
           fi
         env:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
-          CONFIRM_PRODUCTION_DEPLOY: ${{ github.event.inputs.confirm_production_deploy || github.event.client_payload.confirm_production_deploy }}
+          CONFIRM_PRODUCTION_DEPLOY: ${{ github.event.inputs.confirm_production_deploy }}
 
-      - name: Validate required secrets
+      - name: Validate required environment
         shell: bash
         run: |
           set -euo pipefail
@@ -82,14 +70,16 @@ jobs:
             NEXT_PUBLIC_APP_URL
             NODE_ENV
             USE_FIFO_MOVEMENTS_ENGINE
-            PLANO
-            PLANO_ANUAL
+            POSTGRES_HOST
+            POSTGRES_PORT
+            POSTGRES_USER
+            POSTGRES_PASSWORD
+            POSTGRES_DB
+            SAAS_DB
+            APP_DB
+            BETTER_AUTH_SECRET
             GOOGLE_CLIENT_ID
             GOOGLE_CLIENT_SECRET
-            MONGODB_SERVER_IP
-            MONGODB_USER
-            MONGODB_USER_PASSWORD
-            MONGODB_DATABASE
           )
 
           for name in "${required[@]}"; do
@@ -105,7 +95,7 @@ jobs:
           fi
 
           case "${REMOTE_DIR}" in
-            /opt/datavisio/visiomilhas|/opt/datavisio/visiomilhas-clean|/opt/datavisio/visiomilhas-*)
+            /opt/datavisio/visiomilhas-prod-v2|/opt/datavisio/visiomilhas-prod-v2-*|/opt/datavisio/visiomilhas-prod|/opt/datavisio/visiomilhas-clean)
               ;;
             *)
               echo "REMOTE_DIR fora do padrao seguro: ${REMOTE_DIR}"
@@ -119,15 +109,29 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
           SSH_USER: root
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET || secrets.AUTH_SECRET }}
+          APP_NAME: ${{ vars.APP_NAME || secrets.APP_NAME }}
+          APP_URL: ${{ vars.APP_URL || secrets.APP_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL || secrets.NEXT_PUBLIC_APP_URL }}
+          NODE_ENV: ${{ vars.NODE_ENV || secrets.NODE_ENV }}
+          USE_FIFO_MOVEMENTS_ENGINE: ${{ vars.USE_FIFO_MOVEMENTS_ENGINE || secrets.USE_FIFO_MOVEMENTS_ENGINE }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          MONGODB_SERVER_IP: ${{ vars.MONGODB_SERVER_IP || secrets.MONGODB_SERVER_IP }}
-          MONGODB_USER: ${{ secrets.MONGODB_USER }}
-          MONGODB_USER_PASSWORD: ${{ secrets.MONGODB_USER_PASSWORD }}
-          MONGODB_DATABASE: ${{ vars.MONGODB_DATABASE || secrets.MONGODB_DATABASE }}
+          POSTGRES_DB: ${{ vars.POSTGRES_DB || secrets.POSTGRES_DB }}
+          SAAS_DB: ${{ vars.SAAS_DB || secrets.SAAS_DB }}
+          APP_DB: ${{ vars.APP_DB || secrets.APP_DB }}
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET || secrets.AUTH_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+
+      - name: Run quality gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run lint
+          npm run typecheck
+          npm run build
 
       - name: Configure SSH
         shell: bash
@@ -154,10 +158,6 @@ jobs:
             exit 1
           fi
           echo "SSH_PORT=${selected_port}" >> "$GITHUB_ENV"
-          if [ ! -s ~/.ssh/known_hosts ]; then
-            echo "Unable to capture SSH host key from ${SSH_HOST}:${SSH_PORT}"
-            exit 1
-          fi
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
@@ -168,20 +168,14 @@ jobs:
         run: |
           set -euo pipefail
           case "${REMOTE_DIR}" in
-            /opt/datavisio/visiomilhas|/opt/datavisio/visiomilhas-clean|/opt/datavisio/visiomilhas-*) ;;
-            *) echo "REMOTE_DIR fora do padrao seguro: ${REMOTE_DIR}"; exit 1 ;;
+            /opt/datavisio/visiomilhas-prod-v2|/opt/datavisio/visiomilhas-prod-v2-*|/opt/datavisio/visiomilhas-prod|/opt/datavisio/visiomilhas-clean)
+              ;;
+            *)
+              echo "REMOTE_DIR fora do padrao seguro: ${REMOTE_DIR}"
+              exit 1
+              ;;
           esac
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "mkdir -p '${REMOTE_DIR}' && test -w '${REMOTE_DIR}'"
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
-          SSH_USER: root
-
-      - name: Ensure swarm public network exists
-        shell: bash
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "docker network inspect traefik_public >/dev/null 2>&1 || docker network create traefik_public"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
@@ -192,7 +186,7 @@ jobs:
         run: |
           set -euo pipefail
           case "${REMOTE_DIR}" in
-            /opt/datavisio/visiomilhas|/opt/datavisio/visiomilhas-clean|/opt/datavisio/visiomilhas-*) ;;
+            /opt/datavisio/visiomilhas-prod-v2|/opt/datavisio/visiomilhas-prod-v2-*|/opt/datavisio/visiomilhas-prod|/opt/datavisio/visiomilhas-clean) ;;
             *) echo "REMOTE_DIR fora do padrao seguro: ${REMOTE_DIR}"; exit 1 ;;
           esac
           ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "rm -rf '${REMOTE_DIR}' && mkdir -p '${REMOTE_DIR}'"
@@ -226,26 +220,12 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
           SSH_USER: root
 
-      - name: Refresh Traefik stack
-        shell: bash
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "if docker container inspect traefik >/dev/null 2>&1; then echo 'Traefik already running'; else cd '${REMOTE_DIR}' && docker compose --env-file .env.production -f docker-compose.traefik.standalone.yml up -d; fi"
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
-          SSH_USER: root
-
       - name: Render production env on server
         shell: bash
         run: |
           set -euo pipefail
           env_file="$(mktemp)"
           trap 'rm -f "${env_file}"' EXIT
-
-          if ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "test -f '${REMOTE_DIR}/.env.production'"; then
-            ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cat '${REMOTE_DIR}/.env.production'" > "${env_file}"
-          fi
 
           printf '%s\n' \
             "APP_NAME=${APP_NAME}" \
@@ -265,12 +245,7 @@ jobs:
             "APP_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${APP_DB}" \
             "BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}" \
             "GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}" \
-            "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}" \
-            "MONGODB_SERVER_IP=${MONGODB_SERVER_IP}" \
-            "MONGODB_USER=${MONGODB_USER}" \
-            "MONGODB_USER_PASSWORD=${MONGODB_USER_PASSWORD}" \
-            "MONGODB_DATABASE=${MONGODB_DATABASE}" \
-            "MONGODB_URI=mongodb://${MONGODB_USER}:${MONGODB_USER_PASSWORD}@${MONGODB_SERVER_IP}/${MONGODB_DATABASE}" > "${env_file}"
+            "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}" > "${env_file}"
 
           chmod 600 "${env_file}"
           scp -i ~/.ssh/visiomilhas_deploy_key -P "${SSH_PORT}" "${env_file}" "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/.env.production.tmp"
@@ -279,15 +254,21 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
           SSH_USER: root
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET || secrets.AUTH_SECRET }}
+          APP_NAME: ${{ vars.APP_NAME || secrets.APP_NAME }}
+          APP_URL: ${{ vars.APP_URL || secrets.APP_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL || secrets.NEXT_PUBLIC_APP_URL }}
+          NODE_ENV: ${{ vars.NODE_ENV || secrets.NODE_ENV }}
+          USE_FIFO_MOVEMENTS_ENGINE: ${{ vars.USE_FIFO_MOVEMENTS_ENGINE || secrets.USE_FIFO_MOVEMENTS_ENGINE }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          MONGODB_SERVER_IP: ${{ vars.MONGODB_SERVER_IP || secrets.MONGODB_SERVER_IP }}
-          MONGODB_USER: ${{ secrets.MONGODB_USER }}
-          MONGODB_USER_PASSWORD: ${{ secrets.MONGODB_USER_PASSWORD }}
-          MONGODB_DATABASE: ${{ vars.MONGODB_DATABASE || secrets.MONGODB_DATABASE }}
+          POSTGRES_DB: ${{ vars.POSTGRES_DB || secrets.POSTGRES_DB }}
+          SAAS_DB: ${{ vars.SAAS_DB || secrets.SAAS_DB }}
+          APP_DB: ${{ vars.APP_DB || secrets.APP_DB }}
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET || secrets.AUTH_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
 
       - name: Build image and deploy stack
         shell: bash
@@ -312,12 +293,7 @@ jobs:
             --build-arg BETTER_AUTH_SECRET \
             --build-arg GOOGLE_CLIENT_ID \
             --build-arg GOOGLE_CLIENT_SECRET \
-            --build-arg MONGODB_SERVER_IP \
-            --build-arg MONGODB_USER \
-            --build-arg MONGODB_USER_PASSWORD \
-            --build-arg MONGODB_DATABASE \
-            --build-arg MONGODB_URI \
-            -t '${IMAGE_NAME}:${GITHUB_SHA}' . && { docker rm -f visiomilhas_app >/dev/null 2>&1 || true; } && VISIOMILHAS_IMAGE_TAG=${GITHUB_SHA} docker compose -f docker-compose.visiomilhas.standalone.yml up -d"
+            -t '${IMAGE_NAME}:${GITHUB_SHA}' . && { docker rm -f ${SERVICE_NAME} >/dev/null 2>&1 || true; } && VISIOMILHAS_IMAGE_TAG=${GITHUB_SHA} docker compose -f docker-compose.visiomilhas.standalone.yml up -d"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
@@ -327,37 +303,52 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "container_id=\$(docker ps -q --filter name=visiomilhas_app | head -n1) && test -n \"\$container_id\" && for attempt in 1 2 3 4 5 6 7 8 9 10; do docker exec \"\$container_id\" node --input-type=module -e \"const res = await fetch('http://127.0.0.1:3000/'); const html = await res.text(); console.log(res.status, html.slice(0, 80)); if (!res.ok) process.exit(1); if (!html.startsWith('<!DOCTYPE html>')) process.exit(2); if (html.includes('Central operacional premium')) process.exit(3);\" && echo 'Production smoke test passed' && exit 0; echo \"Smoke test attempt \$attempt failed, retrying...\"; sleep 5; done; echo 'Production smoke test failed after retries'; docker logs \"\$container_id\" --tail 80 --raw; exit 1"
-          echo "Production smoke test passed for ${IMAGE_NAME}:${GITHUB_SHA}."
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "container_id=\$(docker ps -q --filter name=${SERVICE_NAME} | head -n1) && test -n \"\$container_id\" && docker exec \"\$container_id\" node scripts/healthcheck.js"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
           SSH_USER: root
 
-      - name: Inspect Traefik routing state
+      - name: Validate PROD HTML and OAuth bootstrap
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "set -euo pipefail; echo '=== Traefik routers ==='; curl -s http://127.0.0.1:8082/api/http/routers | grep -n visiomilhas || true"
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "set -euo pipefail; echo '=== App containers ==='; docker ps --filter name=visiomilhas_app"
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
-          SSH_USER: root
-
-      - name: Validate public URL via Traefik
-        shell: bash
-        run: |
-          set -euo pipefail
-          for attempt in 1 2 3 4 5 6 7 8 9 10; do
-            status="$(curl -k -s -o /dev/null -w '%{http_code}' --max-time 20 https://visiomilhas.visiochat.cloud/sign-in || true)"
-            if [ "${status}" = "200" ]; then
-              echo "Public URL is reachable through Traefik."
-              exit 0
+          validate_doctype() {
+            local route="$1"
+            local target="/tmp/prod$(echo "${route}" | tr '/.' '__').html"
+            local status
+            status="$(curl -k -sSL --max-time 20 -o "${target}" -w '%{http_code}' "${PUBLIC_BASE_URL}${route}" || true)"
+            if [ "${status}" != "200" ]; then
+              echo "PROD HTML validation failed for ${route} with HTTP ${status}"
+              exit 1
             fi
-            echo "Public URL attempt ${attempt} returned HTTP ${status}, retrying..."
-            sleep 5
-          done
-          echo "Public URL not reachable through Traefik after retries."
-          curl -k -I https://visiomilhas.visiochat.cloud/sign-in || true
-          exit 1
+            if ! grep -qi '<!DOCTYPE html>' "${target}"; then
+              echo "PROD HTML validation failed for ${route}: missing DOCTYPE"
+              exit 1
+            fi
+          }
+
+          validate_doctype /
+          validate_doctype /sign-in
+          validate_doctype /subscribe
+          validate_doctype /app
+          validate_doctype /app/accounts
+          validate_doctype /app/programs
+          validate_doctype /app/purchases
+          validate_doctype /app/dashboard
+
+          oauth_file="/tmp/prod-oauth-google.json"
+          oauth_status="$(curl -k -sS --max-time 20 -o "${oauth_file}" -w '%{http_code}' -X POST "${PUBLIC_BASE_URL}/api/auth/sign-in/social" -H 'content-type: application/json' -d '{"provider":"google","callbackURL":"/app/dashboard"}' || true)"
+          if [ "${oauth_status}" = "503" ]; then
+            echo "Auth bootstrap failed on PROD"
+            cat "${oauth_file}" || true
+            exit 1
+          fi
+          if grep -qi 'AUTH_BOOTSTRAP_FAILED' "${oauth_file}"; then
+            echo "Auth bootstrap failure detected in PROD OAuth response"
+            cat "${oauth_file}"
+            exit 1
+          fi
+          python3 -c 'import json,sys;from pathlib import Path;raw=Path(sys.argv[1]).read_text(encoding="utf-8").strip();\nif not raw: raise SystemExit("PROD OAuth bootstrap response was empty");\ndata=json.loads(raw);url=data.get("url") or "";\nif "accounts.google.com" not in url: raise SystemExit(f"PROD OAuth bootstrap did not return Google redirect URL: {url!r}")' "${oauth_file}"
+        env:
+          PUBLIC_BASE_URL: ${{ env.PUBLIC_BASE_URL }}

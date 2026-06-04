@@ -7,6 +7,38 @@
 - Nunca imprimir, versionar ou registrar valores reais de secrets.
 - `DATABASE_URL` não deve ser usado como fallback silencioso para `APP_DATABASE_URL`.
 
+## Segregação oficial de ambientes
+
+### DEV
+
+- URL: `localhost`
+- Uso: desenvolvimento local
+- Bancos: compartilha `postgres_db` e `mongodb` com HM por enquanto
+
+### HM
+
+- URL: `hm.visiomilhas.visiochat.cloud`
+- Uso: validação funcional, OAuth, jornada e pré-produção
+- Bancos: `visiomilhas_app`, `postgres_db`, `mongodb`
+- Branch alvo: `develop`
+
+### PROD
+
+- URL: `visiomilhas.visiochat.cloud`
+- Uso: ambiente público
+- Bancos: `controle_adm_saas_datavisio`, `visiomilhas_app`
+- Branch alvo: `main`
+
+### Matriz de workflows
+
+- `develop` -> `.github/workflows/deploy-hm.yml`
+- `main` -> `.github/workflows/deploy-prod.yml`
+
+### Matriz de validação
+
+- Antes do deploy: `npm run lint`, `npm run typecheck`, `npm run build`
+- Depois do deploy: healthcheck, auth bootstrap, Google OAuth bootstrap, smoke tests e validação de Traefik/public URL
+
 ## Variáveis base do app
 
 - `APP_NAME`

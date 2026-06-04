@@ -1,4 +1,30 @@
+## 2026-06-03 â€” Pipeline Hardening for Environment Segregation
+
+- DecisÃ£o: `npm run typecheck` deve rodar em checkout limpo usando `tsconfig.typecheck.json` source-only, sem depender de `.next/types/**/*.ts`.
+- DecisÃ£o: os workflows HM e PROD passam a validar explicitamente `<!DOCTYPE html>` nas rotas pÃºblicas e redirecionadas.
+- DecisÃ£o: os workflows HM e PROD passam a validar bootstrap OAuth Google por resposta nÃ£o-503, sem `AUTH_BOOTSTRAP_FAILED` e com redirect para `accounts.google.com`.
+- DecisÃ£o: os gates permanecem em ordem `lint -> typecheck -> build`, mas o `typecheck` agora Ã© independente do artefato gerado pelo build.
+
 # DECISIONS - VisioMilhas
+
+## 2026-06-03 — Environment Segregation Implementation
+
+- Decisão: HM e PROD devem ter workflows próprios e progressão por branch (`develop` e `main`).
+- Decisão: o workflow de produção passa a ser explicitado em `deploy-prod.yml`.
+- Decisão: a preparação do Production V2 exige migration explícita para Better Auth antes do primeiro bootstrap vazio.
+- Decisão: a fase atual não executa deploy, migrations nem seeds; apenas prepara o caminho de implementação.
+
+# 2026-06-03 — Environment Segregation Architecture v1
+
+- Decisão: DEV e HM compartilham `postgres_db` e `mongodb` neste momento para reduzir custo operacional e acelerar validação.
+- Decisão: HM passa a ser o ambiente de validação funcional e pre-produção em `hm.visiomilhas.visiochat.cloud`.
+- Decisão: PROD deve entrar com bootstrap limpo, sem herdar dados de DEV/HM e sem migração de dados.
+- Decisão: o contrato de produção permanece com os bancos lógicos `controle_adm_saas_datavisio` e `visiomilhas_app`, agora apontando para a nova infraestrutura PostgreSQL de produção.
+- Decisão: `mongodb_prod_v2` fica como futuro e nao bloqueia o primeiro cutover se não houver dependência runtime comprovada.
+- Decisão: Google OAuth deve ser compartilhado entre HM e PROD, com redirecionamentos autorizados para ambos os domínios.
+- Decisão: os workflows de deploy devem ser separados em `deploy-hm.yml` e `deploy-prod.yml`, ambos com gates obrigatórios de lint, typecheck, build e healthcheck.
+- Decisão: o branch `develop` alimenta HM e o branch `main` alimenta PROD.
+- Decisão: qualquer deploy deve falhar se lint, typecheck, build ou healthcheck falharem.
 
 # 2026-06-01 — Subscription UX Refinement
 
@@ -336,3 +362,11 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - Decisao: `BETTER_AUTH_SECRET` passa a ser o segredo primario do Better Auth em producao; `AUTH_SECRET` continua como fallback tecnico, nao como substituto silencioso de um env vazio.
 - Motivo: a producao retornou `AUTH_BOOTSTRAP_FAILED` porque o processo Node recebeu `BETTER_AUTH_SECRET` vazio, apesar de outros segredos estarem presentes.
 - Resultado esperado: o provider Google so inicializa com um segredo valido e nao vazio.
+# 2026-06-03
+
+## Final discovery decisions before implementation
+
+- Better Auth must be treated as requiring provisioning before an empty production database can be considered ready.
+- MongoDB is not part of the current required runtime path.
+- The production deploy pipeline must be validated end-to-end through GitHub Actions -> SSH -> Docker -> Traefik -> container -> public URL.
+- Healthcheck, auth runtime events, and post-deploy smoke tests are mandatory gates for readiness.

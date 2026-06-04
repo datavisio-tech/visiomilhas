@@ -1,3 +1,67 @@
+## 2026-06-03 â€” Environment Segregation Pipeline Hardening â€” IN PROGRESS
+
+### Status: os workflows HM e PROD foram endurecidos para remover a dependÃªncia de `.next/types` no typecheck e validar DOCTYPE + OAuth bootstrap explicitamente
+
+**Achievements**:
+
+1. **Typecheck Hardening** â€” âœ… COMPLETE
+
+- Criado `tsconfig.typecheck.json` source-only para isolar o gate de typecheck.
+- `npm run typecheck` passa em checkout limpo sem precisar de build prÃ©vio.
+
+2. **HTML Smoke Validation** â€” âœ… COMPLETE
+
+- Os workflows HM e PROD agora validam explicitamente a presenÃ§a de `<!DOCTYPE html>` nas rotas pÃºblicas e redirecionadas.
+
+3. **OAuth Bootstrap Validation** â€” âœ… COMPLETE
+
+- Os workflows HM e PROD agora validam bootstrap OAuth Google com resposta nÃ£o-503, sem `AUTH_BOOTSTRAP_FAILED` e com redirect efetivo para `accounts.google.com`.
+
+# 2026-06-03 - Environment Segregation Planning v1 - \u2705 PLANNED
+
+### Status: arquitetura oficial DEV / HM / PROD formalizada para a nova release estrutural
+
+**Achievements**:
+
+1. **Environment Matrix** \u2014 \u2705 COMPLETE
+
+- Definidas as matrizes oficiais de DEV, HM e PROD.
+- Consolidado o principio de que DEV e HM compartilham as bases atuais neste momento.
+- Consolidado o corte de PROD com bootstrap limpo e sem herdar dados de DEV/HM.
+
+2. **Workflow Direction** \u2014 \u2705 COMPLETE
+
+- Formalizada a estrategia de branches `develop -> HM` e `main -> PROD`.
+- Definida a necessidade de workflows separados para HM e PROD com gates obrigatorios de lint, typecheck, build e healthcheck.
+
+3. **Deployment Contract** \u2014 \u2705 COMPLETE
+
+- Documentado que o OAuth Google permanece compartilhado entre HM e PROD.
+- Documentado que o PROD deve usar banco vazio e bootstrap limpo.
+- Registrado que `mongodb_prod_v2` permanece como futuro, nao como requisito imediato do primeiro cutover.
+
+# 2026-06-03 — Environment Segregation Implementation — IN PROGRESS
+
+### Status: PR-03/PR-04/PR-05/PR-06 preparados com workflows, plano de bootstrap e migration explícita do Better Auth
+
+**Achievements**:
+
+1. **Workflow Segregation** — ✅ COMPLETE
+
+- Criados `deploy-hm.yml` e `deploy-prod.yml`
+- Adicionados gates de lint, typecheck e build antes do deploy
+- Adicionados smoke tests pós-deploy para routes e auth bootstrap
+
+2. **Bootstrap Planning** — ✅ COMPLETE
+
+- Criado `scripts/bootstrap-production-v2.ts` como planejador sem side effects
+- Documentada a ordem mínima de bootstrap para banco vazio
+
+3. **Better Auth Fix** — ✅ COMPLETE
+
+- Criada migration explícita para `ba_users`, `ba_sessions`, `ba_accounts` e `ba_verification`
+- Atualizado o journal do Drizzle para reconhecer a nova migration
+
 # 2026-06-01 — Subscription UX Refinement Phase 2 — ✅ COMPLETE
 
 ### Status: `/subscribe` evoluiu para uma tela de ativação e conversão com hero dominante, benefícios operacionais e reforço de confiança
@@ -2635,3 +2699,20 @@ Resultado esperado:
 
 - O bootstrap do Better Auth volta a inicializar o provider Google em producao.
 - O erro `AUTH_BOOTSTRAP_FAILED` nao deve mais surgir por secret vazio.
+# 2026-06-03
+
+- Added production readiness discovery for empty PostgreSQL V2 bootstrap.
+- Added Better Auth deep audit, MongoDB dependency audit, deployment pipeline map, and observability audit.
+- Documented that MongoDB is not a current runtime blocker and that Better Auth requires a provisioning/bootstrap step for empty admin databases.
+
+## 2026-06-03 - SaaS Operational Readiness
+
+- Added the operational readiness package for first customer and go-live execution.
+- New artifacts:
+  - `docs/ai-context/SAAS_OPERATIONS.md`
+  - `docs/ai-context/INCIDENT_RESPONSE.md`
+  - `docs/ai-context/RUNBOOK.md`
+  - `docs/ai-context/FIRST_CUSTOMER_CHECKLIST.md`
+  - `docs/ai-context/GO_LIVE_OPERATIONS_CHECKLIST.md`
+- Purpose:
+  - formalize onboarding, trial, subscription, cancellation, reactivation, support, incident response and rollback procedures.

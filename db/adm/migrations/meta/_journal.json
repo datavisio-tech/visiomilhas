@@ -8,6 +8,13 @@
       "when": 1778972146270,
       "tag": "0000_strange_thor_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1780444800000,
+      "tag": "0001_better_auth_tables",
+      "breakpoints": true
     }
   ]
 }
