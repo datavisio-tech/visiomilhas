@@ -297,3 +297,12 @@ jobs:
           echo "Public HM URL not reachable through Traefik after retries."
           curl -k -I https://hm.visiomilhas.visiochat.cloud/sign-in || true
           exit 1
+
+      - name: Prune old Docker images on HM host
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && bash scripts/prune-docker-images.sh datavisio/visiomilhas 4"
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: root

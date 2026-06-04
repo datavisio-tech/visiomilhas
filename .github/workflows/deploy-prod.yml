@@ -362,3 +362,12 @@ jobs:
           python3 -c 'import json,sys;from pathlib import Path;raw=Path(sys.argv[1]).read_text(encoding="utf-8").strip();\nif not raw: raise SystemExit("PROD OAuth bootstrap response was empty");\ndata=json.loads(raw);url=data.get("url") or "";\nif "accounts.google.com" not in url: raise SystemExit(f"PROD OAuth bootstrap did not return Google redirect URL: {url!r}")' "${oauth_file}"
         env:
           PUBLIC_BASE_URL: ${{ env.PUBLIC_BASE_URL }}
+
+      - name: Prune old Docker images on PROD host
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && bash scripts/prune-docker-images.sh datavisio/visiomilhas 4"
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: root
