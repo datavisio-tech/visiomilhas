@@ -20,6 +20,7 @@ This registry tracks recurring operational failures so agents can recover before
 | `PRECHECK_INFRASTRUCTURE failed` | Deployment pipeline / target readiness | Target resolution, ssh-keyscan retry, SSH handshake, remote directory access, disk space, or Docker runtime is not ready for deployment | `FAIL` until the target passes the gate; rerun only after the target is ready |
 | `intermittent runner SSH timeout` | SSH / runner egress path | GitHub runner attempts sometimes time out or hit preauth negotiation variance even while the server is healthy and accepting other SSH sessions | `WARNING` when retries or reruns succeed on a fresh runner; `FAIL` only if the same pattern persists with no successful SSH sessions |
 | `release-promotion SSH retry amplification` | Release pipeline / SSH bootstrap | Release promotion repeats the same SSH port probes and remote setup calls more than necessary, amplifying transient runner-to-VPS variance | `WARNING` when the workflow can recover with backoff and deduped probes; `FAIL` only if the reduced SSH path still cannot complete |
+| `remote release env not propagated` | Release pipeline / remote execution | Runner env values are written to a staged env file but are not available inside the remote SSH process before the script validates them | `PIPELINE_REGRESSION`; load the staged remote env file before validating runtime variables |
 | `ssh timeout after release workflow change` | Release pipeline / SSH preparation | Release workflow diverged from the last known-good HM SSH bootstrap, including selected-port `ssh-keyscan` retry behavior, then timed out at the first remote command | `PIPELINE_REGRESSION`; restore the last known-good selected-port SSH bootstrap before investigating host infrastructure |
 | `SSH_DEPLOY_TIMEOUT_RELEASE_PROMOTION` | Release pipeline / SSH endpoint resolution | HM release promotion used masked/inconsistent `SSH_HOST` resolution while the operational HM SSH endpoint was known and reachable | `PIPELINE_REGRESSION`; pin HM release promotion to the approved SSH endpoint and port, then rerun |
 
@@ -91,3 +92,11 @@ If the failure persists after recovery and directly blocks delivery, the agent m
   - Root cause: the pipeline repeated equivalent SSH work across precheck, directory preparation, and remote orchestration instead of consolidating remote setup behind a single orchestration step.
   - Recovery: dedupe the SSH port list, use exponential backoff on `ssh-keyscan` and handshake retries, remove standalone remote-directory SSH calls, and let the remote orchestration script own the target-side setup.
   - Recurrence prevention: keep the release promotion SSH path minimized to one precheck gate, one sync transport, and one remote orchestration session per environment.
+- `FP-015`: Remote release deploy env propagation.
+  - Classification: `PIPELINE_REGRESSION`.
+  - Symptom: `Run remote HM deployment orchestration` failed with `scripts/remote-release-deploy.sh: line 4: VISIOMILIAS_CONTAINER_NAME: parameter null or not set`.
+  - Affected workflow: `.github/workflows/release-promotion.yml`.
+  - Affected script: `scripts/remote-release-deploy.sh`.
+  - Root cause: `VISIOMILIAS_CONTAINER_NAME`, `VISIOMILIAS_PUBLIC_HOST`, `VISIOMILIAS_ROUTER_NAME`, `VISIOMILIAS_SERVICE_NAME`, and `COMPOSE_PROJECT_NAME` existed in the runner and in `.env.production.tmp`, but were not exported into the remote SSH process before the script validated them.
+  - Recovery: move validation of runtime variables until after `.env.production.tmp` is promoted to `.env.production` and sourced by the remote script.
+  - Recurrence prevention: remote orchestration scripts must treat the staged remote env file as the source of runtime configuration and must not assume runner env variables cross SSH boundaries.

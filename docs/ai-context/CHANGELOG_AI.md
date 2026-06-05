@@ -1,3 +1,10 @@
+# 2026-06-05 - Remote release deploy env propagation fix
+
+- Fixed `scripts/remote-release-deploy.sh` so required runtime variables are loaded from the staged `.env.production` before validation.
+- Affected variables: `VISIOMILIAS_CONTAINER_NAME`, `VISIOMILIAS_PUBLIC_HOST`, `VISIOMILIAS_ROUTER_NAME`, `VISIOMILIAS_SERVICE_NAME`, and `COMPOSE_PROJECT_NAME`.
+- Cause: those values existed in the runner and were written to `.env.production.tmp`, but the SSH session does not automatically inherit runner environment variables.
+- Result: remote HM/PROD orchestration now uses the same env-file strategy already used by Docker Compose.
+
 # 2026-06-05 - Release promotion SSH retry consolidation
 
 - Deduped the release-promotion SSH port probe lists so `${SSH_PORT}` and `22` are only attempted once per gate.

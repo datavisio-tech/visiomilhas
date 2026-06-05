@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-: "${VISIOMILIAS_CONTAINER_NAME:?}"
-: "${VISIOMILIAS_PUBLIC_HOST:?}"
-: "${REMOTE_DIR:?}"
-
 RELEASE_IMAGE_TAR="${RELEASE_IMAGE_TAR:-release-image.tar}"
 PRUNE_KEEP="${PRUNE_KEEP:-4}"
+REMOTE_DIR="${REMOTE_DIR:-$(pwd)}"
 
 mkdir -p "${REMOTE_DIR}"
 cd "${REMOTE_DIR}"
@@ -29,6 +26,12 @@ chmod 600 .env.production
 set -a
 . ./.env.production
 set +a
+
+: "${VISIOMILIAS_CONTAINER_NAME:?}"
+: "${VISIOMILIAS_PUBLIC_HOST:?}"
+: "${VISIOMILIAS_ROUTER_NAME:?}"
+: "${VISIOMILIAS_SERVICE_NAME:?}"
+: "${COMPOSE_PROJECT_NAME:?}"
 
 docker rm -f "${VISIOMILIAS_CONTAINER_NAME}" >/dev/null 2>&1 || true
 docker compose --env-file .env.production -f docker-compose.visiomilhas.standalone.yml up -d
