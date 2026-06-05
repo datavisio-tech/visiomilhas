@@ -122,6 +122,7 @@
 3. Check the failed item in order:
    - DNS or host resolution for the target
    - `ssh-keyscan` retry on `${SSH_PORT}` and `22`
+   - fallback SSH handshake with `StrictHostKeyChecking=accept-new`
    - SSH handshake
    - remote directory existence and writability
    - free disk space on the target

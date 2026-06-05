@@ -73,5 +73,5 @@ If the failure persists after recovery and directly blocks delivery, the agent m
   - Symptom: deploy HM or PROD stops before build/deploy because target resolution, `ssh-keyscan`, SSH handshake, remote directory access, disk space, or Docker availability fails the mandatory precheck.
   - Affected workflows: `.github/workflows/deploy-hm.yml` and `.github/workflows/release-promotion.yml`.
   - Root cause: the target environment is not ready to receive a deployment.
-  - Recovery: do not continue the pipeline; fix the target readiness issue first, then rerun the same workflow. The gate already retries `ssh-keyscan` on `${SSH_PORT}` and `22` before failing.
-  - Recurrence prevention: keep the precheck as the first gate before any deploy/build stage that can touch HM or PROD, and keep the retry loop short enough to preserve fast failure.
+  - Recovery: do not continue the pipeline; fix the target readiness issue first, then rerun the same workflow. The gate already retries `ssh-keyscan` on `${SSH_PORT}` and `22`, then falls back to a real SSH handshake with `StrictHostKeyChecking=accept-new` before failing.
+  - Recurrence prevention: keep the precheck as the first gate before any deploy/build stage that can touch HM or PROD, and keep the fallback SSH handshake bounded so the workflow still fails fast when the target is truly unavailable.

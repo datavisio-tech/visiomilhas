@@ -10,6 +10,12 @@
 - Reason: the HM release pipeline needed the precheck to match the proven SSH bootstrap behavior instead of failing on a single transient keyscan attempt.
 - Result: the gate stays fast-fail, but no longer rejects a valid target due to one transient `ssh-keyscan` miss.
 
+# 2026-06-05 - PRECHECK_INFRASTRUCTURE SSH handshake fallback
+
+- Updated the infrastructure precheck so a transient `ssh-keyscan` miss can fall back to a real SSH handshake using `StrictHostKeyChecking=accept-new`.
+- Reason: the target was reachable, but keyscan was not reliably seeding `known_hosts` in the GitHub runner.
+- Result: the gate still fails when SSH itself or the remote checks fail, but no longer blocks a ready target on a keyscan-only miss.
+
 # 2026-06-05 - HM smoke retry-window hardening
 
 - Updated `tests-e2e/hm-smoke.spec.ts` so the homepage preflight and browser navigations use a wider CI retry window.

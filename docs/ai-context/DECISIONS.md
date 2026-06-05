@@ -3,6 +3,7 @@
 - Decision: `PRECHECK_INFRASTRUCTURE` must remain the first gate before any HM or PROD build/deploy step.
 - Decision: `ssh-keyscan` inside the precheck should retry on `${SSH_PORT}` and `22` to avoid rejecting a valid target on a single transient miss.
 - Decision: the retry window must remain short enough to keep the failure fast and preserve the gate's purpose.
+- Decision: if `ssh-keyscan` still misses after the short retry window, the precheck may validate the target with a real SSH handshake using `StrictHostKeyChecking=accept-new` instead of blocking a known-good host on the keyscan alone.
 # 2026-06-04 - Release promotion SSH baseline decision
 
 - Decision: `.github/workflows/release-promotion.yml` must preserve the same SSH bootstrap behavior proven by `.github/workflows/deploy-hm.yml`.

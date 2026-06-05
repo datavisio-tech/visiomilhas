@@ -35,11 +35,13 @@ fi
 
 echo "Precheck: capturing SSH host key on ${SSH_HOST}:${SSH_PORT}"
 selected_port=""
+scan_success="false"
 for port in "${SSH_PORT}" 22; do
   for attempt in 1 2 3; do
     if ssh-keyscan -T 2 -p "${port}" "${SSH_HOST}" >> "${KNOWN_HOSTS_PATH}" 2>/dev/null; then
       echo "Precheck: SSH host key captured on port ${port} at attempt ${attempt}"
       selected_port="${port}"
+      scan_success="true"
       break 2
     fi
     echo "Precheck: ssh-keyscan attempt ${attempt} failed on port ${port}, retrying..."
@@ -47,26 +49,34 @@ for port in "${SSH_PORT}" 22; do
   done
 done
 
-if [ -z "${selected_port}" ]; then
-  echo "PRECHECK_INFRASTRUCTURE failed: ssh-keyscan could not capture host key"
+if [ "${scan_success}" != "true" ]; then
+  echo "Precheck: ssh-keyscan did not capture a host key; validating SSH handshake as fallback"
+fi
+
+if [ ! -s "${KNOWN_HOSTS_PATH}" ]; then
+  : > "${KNOWN_HOSTS_PATH}"
+fi
+
+handshake_port="${selected_port:-${SSH_PORT}}"
+handshake_ok="false"
+for port in "${handshake_port}" "${SSH_PORT}" 22; do
+  if [ -n "${port}" ] && ssh -i "${SSH_KEY_PATH}" -o BatchMode=yes -o ConnectTimeout=2 -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile="${KNOWN_HOSTS_PATH}" -p "${port}" "${SSH_USER}@${SSH_HOST}" "true"; then
+    echo "Precheck: SSH handshake validated on port ${port}"
+    selected_port="${port}"
+    handshake_ok="true"
+    break
+  fi
+done
+
+if [ "${handshake_ok}" != "true" ]; then
+  echo "PRECHECK_INFRASTRUCTURE failed: SSH handshake could not be established"
   exit 1
 fi
 
 printf 'SSH_PORT=%s\n' "${selected_port}" >> "${GITHUB_ENV:-/dev/null}"
 
-if [ ! -s "${KNOWN_HOSTS_PATH}" ]; then
-  echo "PRECHECK_INFRASTRUCTURE failed: known_hosts was not materialized"
-  exit 1
-fi
-
-echo "Precheck: validating SSH handshake"
-if ! ssh -i "${SSH_KEY_PATH}" -o BatchMode=yes -o ConnectTimeout=2 -o StrictHostKeyChecking=accept-new -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "true"; then
-  echo "PRECHECK_INFRASTRUCTURE failed: SSH handshake could not be established"
-  exit 1
-fi
-
 echo "Precheck: validating remote directory, disk space and Docker runtime"
-if ! ssh -i "${SSH_KEY_PATH}" -o BatchMode=yes -o ConnectTimeout=2 -o StrictHostKeyChecking=accept-new -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "set -euo pipefail
+if ! ssh -i "${SSH_KEY_PATH}" -o BatchMode=yes -o ConnectTimeout=2 -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile="${KNOWN_HOSTS_PATH}" -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "set -euo pipefail
 test -d '${REMOTE_DIR}'
 test -w '${REMOTE_DIR}'
 free_kb=\$(df -Pk '${REMOTE_DIR}' | awk 'NR==2 { print \$4 }')
