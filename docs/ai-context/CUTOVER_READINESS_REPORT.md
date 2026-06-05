@@ -7,7 +7,8 @@ Update 2026-06-05:
 - The GitHub-hosted runner -> VPS SSH timeout RCA was closed as a network-path issue before `sshd`.
 - The VisioMilhas deploy path now uses a self-hosted GitHub Actions runner on the `visiochat` VPS for deploy jobs, labeled `self-hosted`, `linux`, `x64`, `visiomilhas-deploy`.
 - Build, lint, typecheck, tests, Playwright smoke, integration tests, and release publishing remain on GitHub-hosted runners.
-- HM certification still requires a successful release-promotion run through deploy, runtime, and smoke on the updated runner topology.
+- Release promotion run `27035246181` passed build, artifact upload, self-hosted HM precheck, SSH configuration, source sync, HM deployment, runtime health, and public Traefik URL validation.
+- HM certification remains incomplete because Playwright smoke passed 6/10 tests and failed 4 authenticated scenarios waiting for the login dialog.
 
 Update 2026-06-04:
 

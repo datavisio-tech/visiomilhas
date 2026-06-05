@@ -8,6 +8,7 @@
 - Removed infrastructure precheck from GitHub-hosted build/smoke lanes; `PRECHECK_INFRASTRUCTURE` now belongs to deploy jobs.
 - Fixed remote deploy env parsing so operational variables are extracted by key instead of sourcing the full `.env.production`, which contains public pricing values with spaces.
 - Added retry around the internal container healthcheck so deploy validation waits for the Next.js runtime to listen on `127.0.0.1:3000` after container start.
+- Validation run `27035246181`: build, artifact, self-hosted deploy precheck, SSH, source sync, HM deployment orchestration, runtime health, and public Traefik URL validation passed; HM certification remains blocked by Playwright smoke login-dialog expectations.
 
 # 2026-06-05 - Runner to VPS RCA closure and mitigation proposal
 
