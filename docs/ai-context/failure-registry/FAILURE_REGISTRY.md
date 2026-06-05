@@ -21,6 +21,7 @@ This registry tracks recurring operational failures so agents can recover before
 | `intermittent runner SSH timeout` | SSH / runner egress path | GitHub runner attempts sometimes time out or hit preauth negotiation variance even while the server is healthy and accepting other SSH sessions | `WARNING` when retries or reruns succeed on a fresh runner; `FAIL` only if the same pattern persists with no successful SSH sessions |
 | `release-promotion SSH retry amplification` | Release pipeline / SSH bootstrap | Release promotion repeats the same SSH port probes and remote setup calls more than necessary, amplifying transient runner-to-VPS variance | `WARNING` when the workflow can recover with backoff and deduped probes; `FAIL` only if the reduced SSH path still cannot complete |
 | `remote release env not propagated` | Release pipeline / remote execution | Runner env values are written to a staged env file but are not available inside the remote SSH process before the script validates them | `PIPELINE_REGRESSION`; load the staged remote env file before validating runtime variables |
+| `remote env source fails on public values` | Release pipeline / remote execution | Remote script sources `.env.production` as shell while the env file contains public values with spaces or currency symbols | `PIPELINE_REGRESSION`; parse only required operational keys instead of sourcing the full env file |
 | `ssh timeout after release workflow change` | Release pipeline / SSH preparation | Release workflow diverged from the last known-good HM SSH bootstrap, including selected-port `ssh-keyscan` retry behavior, then timed out at the first remote command | `PIPELINE_REGRESSION`; restore the last known-good selected-port SSH bootstrap before investigating host infrastructure |
 | `SSH_DEPLOY_TIMEOUT_RELEASE_PROMOTION` | Release pipeline / SSH endpoint resolution | HM release promotion used masked/inconsistent `SSH_HOST` resolution while the operational HM SSH endpoint was known and reachable | `PIPELINE_REGRESSION`; pin HM release promotion to the approved SSH endpoint and port, then rerun |
 
@@ -101,3 +102,9 @@ If the failure persists after recovery and directly blocks delivery, the agent m
   - Root cause: `VISIOMILIAS_CONTAINER_NAME`, `VISIOMILIAS_PUBLIC_HOST`, `VISIOMILIAS_ROUTER_NAME`, `VISIOMILIAS_SERVICE_NAME`, and `COMPOSE_PROJECT_NAME` existed in the runner and in `.env.production.tmp`, but were not exported into the remote SSH process before the script validated them.
   - Recovery: move validation of runtime variables until after `.env.production.tmp` is promoted to `.env.production` and sourced by the remote script.
   - Recurrence prevention: remote orchestration scripts must treat the staged remote env file as the source of runtime configuration and must not assume runner env variables cross SSH boundaries.
+- `FP-016`: Remote env source fails on public pricing values.
+  - Classification: `PIPELINE_REGRESSION`.
+  - Symptom: `Run remote HM deployment orchestration` failed with `./.env.production: line 12: 4,99/mês: No such file or directory`.
+  - Root cause: `.env.production` contains public display values such as `PLANO=R$ 4,99/mês`; sourcing the whole file as shell executes the value after the space as a command.
+  - Recovery: parse only required operational keys from `.env.production` and export those variables explicitly.
+  - Recurrence prevention: remote deploy scripts must not source env files that contain display copy, currency, or values with spaces.

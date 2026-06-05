@@ -23,9 +23,21 @@ if [ ! -s .env.production ]; then
 fi
 
 chmod 600 .env.production
-set -a
-. ./.env.production
-set +a
+
+load_env_value() {
+  local name="$1"
+  local value
+  value="$(grep -E "^${name}=" .env.production | tail -n 1 | cut -d= -f2- || true)"
+  if [ -n "${value}" ]; then
+    export "${name}=${value}"
+  fi
+}
+
+load_env_value VISIOMILIAS_CONTAINER_NAME
+load_env_value VISIOMILIAS_PUBLIC_HOST
+load_env_value VISIOMILIAS_ROUTER_NAME
+load_env_value VISIOMILIAS_SERVICE_NAME
+load_env_value COMPOSE_PROJECT_NAME
 
 : "${VISIOMILIAS_CONTAINER_NAME:?}"
 : "${VISIOMILIAS_PUBLIC_HOST:?}"

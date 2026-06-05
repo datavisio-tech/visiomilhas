@@ -6,6 +6,7 @@
 - Runner labels: `self-hosted`, `Linux`, `X64`, `visiomilhas-deploy`.
 - Moved deploy jobs to `runs-on: [self-hosted, linux, x64, visiomilhas-deploy]` while keeping build, lint, typecheck, tests, Playwright smoke, integration tests, and release publishing on GitHub-hosted runners.
 - Removed infrastructure precheck from GitHub-hosted build/smoke lanes; `PRECHECK_INFRASTRUCTURE` now belongs to deploy jobs.
+- Fixed remote deploy env parsing so operational variables are extracted by key instead of sourcing the full `.env.production`, which contains public pricing values with spaces.
 
 # 2026-06-05 - Runner to VPS RCA closure and mitigation proposal
 
