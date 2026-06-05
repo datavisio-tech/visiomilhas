@@ -2795,3 +2795,11 @@ Resultado esperado:
 - Demoted the old HM and PROD deploy workflows to legacy manual fallback paths.
 - Added release context, architecture, process, pipeline, and cutover documentation under `docs/ai-context/`.
 
+# 2026-06-04 - PROD V2 migration operational validation
+
+- Validated `db/app/migrations/0001_add_mile_point_lots.sql` operationally against the active HM runtime container `visiomilhas_hm`.
+- Read-only SQL checks returned `FOUND` for `mile_point_lots`, auxiliary `mile_entries` and `mile_transfers` columns, expected indexes, `fk_mpl_account`, and `chk_mpl_acquired_positive`.
+- Confirmed the temporary validator was removed from the container after execution.
+- PROD V2 validation could not be completed from runtime because `/opt/datavisio/visiomilhas/.env.production` was not present on the host.
+- Updated cutover readiness, cutover plan, deploy checklist, and post-deploy validation docs.
+- Final production decision: **NO-GO** until the same read-only validation passes on PROD V2 after applying the migration.

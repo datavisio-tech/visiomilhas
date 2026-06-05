@@ -438,3 +438,9 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - Decision: the same Docker image artifact must be promoted from HM to PROD for a given release tag.
 - Decision: `release-promotion.yml` is the official release pipeline entrypoint.
 
+# 2026-06-04 - PROD V2 migration validation decision
+
+- Decision: `db/app/migrations/0001_add_mile_point_lots.sql` is operationally validated in HM through read-only SQL metadata checks.
+- Decision: production remains **NO-GO** because the same validation was not executed against PROD V2; `/opt/datavisio/visiomilhas/.env.production` was not present on the host.
+- Decision: production can move to GO only after applying the migration to PROD V2 APP DB and confirming every required object returns `FOUND`.
+- Decision: the migration blocker is not a code blocker anymore; it is an operational PROD V2 evidence blocker.
