@@ -154,11 +154,12 @@ async function ensureSignedIn(page: Page, user: TestUser) {
     .getByRole("button", { name: "Entrar com e-mail" })
     .first();
   if ((await openEmailLogin.count()) > 0) {
+    await expect(openEmailLogin).toBeVisible({ timeout: 15_000 });
     await openEmailLogin.click();
   }
 
   const dialog = page.getByRole("dialog").first();
-  await expect(dialog).toBeVisible();
+  await expect(dialog).toBeVisible({ timeout: 15_000 });
 
   const emailField = dialog
     .getByLabel(/e-?mail|email/i)
