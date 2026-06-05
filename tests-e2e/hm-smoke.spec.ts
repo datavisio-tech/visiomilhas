@@ -61,17 +61,32 @@ async function gotoWithRetry(
   options: { waitUntil?: "commit" | "domcontentloaded" | "load" | "networkidle"; timeout?: number } = {},
 ) {
   const waitUntil = options.waitUntil ?? "commit";
-  const timeout = options.timeout ?? 20_000;
+  const timeout = options.timeout ?? 45_000;
   let lastError: unknown;
 
-  for (let attempt = 1; attempt <= 3; attempt += 1) {
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
     try {
       await page.goto(path, { waitUntil, timeout });
       await page.waitForLoadState("domcontentloaded").catch(() => undefined);
       return;
     } catch (error) {
       lastError = error;
-      await page.waitForTimeout(attempt * 1000);
+      await page.waitForTimeout(attempt * 2000);
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error(String(lastError));
+}
+
+async function requestGetWithRetry(page: Page, path: string, timeout = 45_000) {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
+    try {
+      return await page.request.get(path, { timeout });
+    } catch (error) {
+      lastError = error;
+      await page.waitForTimeout(attempt * 2000);
     }
   }
 
@@ -221,7 +236,7 @@ async function signOut(page: Page) {
 }
 
 test("homepage renders and stays clean", async ({ page }) => {
-  const response = await page.request.get("/");
+  const response = await requestGetWithRetry(page, "/");
   expect(response.status()).toBe(200);
   const html = await response.text();
   expect(html).toMatch(/central operacional para milhas/i);

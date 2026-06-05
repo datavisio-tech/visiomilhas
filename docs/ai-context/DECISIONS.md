@@ -443,6 +443,7 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - Decision: HM browser-smoke jobs in `release-promotion.yml` must install Chromium explicitly before `npx playwright test`.
 - Decision: headless Playwright runs in HM certification should not inherit the visible-mode slowMo setting.
 - Decision: HM smoke navigation should use a retry-capable helper so transient page navigation stalls do not block certification of the homepage and adjacent routes.
+- Decision: the HM smoke suite may use a wider navigation/request retry window in CI (45s timeout, 4 attempts) to absorb transient runner/network latency while preserving the same assertions.
 
 # 2026-06-04 - PROD V2 migration validation decision
 
