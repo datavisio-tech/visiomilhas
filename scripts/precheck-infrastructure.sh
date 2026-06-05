@@ -36,8 +36,8 @@ fi
 echo "Precheck: capturing SSH host key on ${SSH_HOST}:${SSH_PORT}"
 selected_port=""
 for port in "${SSH_PORT}" 22; do
-  for attempt in 1 2; do
-    if ssh-keyscan -T 3 -p "${port}" "${SSH_HOST}" >> "${KNOWN_HOSTS_PATH}" 2>/dev/null; then
+  for attempt in 1 2 3; do
+    if ssh-keyscan -T 2 -p "${port}" "${SSH_HOST}" >> "${KNOWN_HOSTS_PATH}" 2>/dev/null; then
       echo "Precheck: SSH host key captured on port ${port} at attempt ${attempt}"
       selected_port="${port}"
       break 2
@@ -60,13 +60,13 @@ if [ ! -s "${KNOWN_HOSTS_PATH}" ]; then
 fi
 
 echo "Precheck: validating SSH handshake"
-if ! ssh -i "${SSH_KEY_PATH}" -o BatchMode=yes -o ConnectTimeout=3 -o StrictHostKeyChecking=accept-new -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "true"; then
+if ! ssh -i "${SSH_KEY_PATH}" -o BatchMode=yes -o ConnectTimeout=2 -o StrictHostKeyChecking=accept-new -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "true"; then
   echo "PRECHECK_INFRASTRUCTURE failed: SSH handshake could not be established"
   exit 1
 fi
 
 echo "Precheck: validating remote directory, disk space and Docker runtime"
-if ! ssh -i "${SSH_KEY_PATH}" -o BatchMode=yes -o ConnectTimeout=3 -o StrictHostKeyChecking=accept-new -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "set -euo pipefail
+if ! ssh -i "${SSH_KEY_PATH}" -o BatchMode=yes -o ConnectTimeout=2 -o StrictHostKeyChecking=accept-new -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "set -euo pipefail
 test -d '${REMOTE_DIR}'
 test -w '${REMOTE_DIR}'
 free_kb=\$(df -Pk '${REMOTE_DIR}' | awk 'NR==2 { print \$4 }')
