@@ -1,4 +1,10 @@
-﻿# 2026-06-04 - SSH_DEPLOY_TIMEOUT_RELEASE_PROMOTION operational memory
+# 2026-06-05 - HM smoke retry-window hardening
+
+- Updated `tests-e2e/hm-smoke.spec.ts` so the homepage preflight and browser navigations use a wider CI retry window.
+- Reason: the release-promotion smoke job was still timing out in GitHub Actions even though the suite passed locally against HM.
+- Result: local HM smoke validation returned green again with 10/10 passing.
+
+# 2026-06-04 - SSH_DEPLOY_TIMEOUT_RELEASE_PROMOTION operational memory
 
 - Symptom observed: `release-promotion.yml` failed in `Deploy promoted release to HM` at `Configure SSH` with repeated `ssh-keyscan` and SSH connection timeouts.
 - Root cause confirmed: HM release promotion depended on masked/inconsistent `SSH_HOST` resolution from the GitHub Environment instead of the approved operational HM SSH endpoint.
@@ -95,337 +101,337 @@
 
 **Achievements**:
 
-1. **Workflow Segregation** — ✅ COMPLETE
+1. **Workflow Segregation** — ? COMPLETE
 
 - Criados `deploy-hm.yml` e `deploy-prod.yml`
 - Adicionados gates de lint, typecheck e build antes do deploy
 - Adicionados smoke tests pós-deploy para routes e auth bootstrap
 
-2. **Bootstrap Planning** — ✅ COMPLETE
+2. **Bootstrap Planning** — ? COMPLETE
 
 - Criado `scripts/bootstrap-production-v2.ts` como planejador sem side effects
 - Documentada a ordem mínima de bootstrap para banco vazio
 
-3. **Better Auth Fix** — ✅ COMPLETE
+3. **Better Auth Fix** — ? COMPLETE
 
 - Criada migration explícita para `ba_users`, `ba_sessions`, `ba_accounts` e `ba_verification`
 - Atualizado o journal do Drizzle para reconhecer a nova migration
 
-# 2026-06-01 — Subscription UX Refinement Phase 2 — ✅ COMPLETE
+# 2026-06-01 — Subscription UX Refinement Phase 2 — ? COMPLETE
 
 ### Status: `/subscribe` evoluiu para uma tela de ativação e conversão com hero dominante, benefícios operacionais e reforço de confiança
 
 **Achievements**:
 
-1. **Conversion Hero** — ✅ COMPLETE
+1. **Conversion Hero** — ? COMPLETE
 
 - O hero foi centralizado com foco em ativação.
 - A proposta de valor passou a comunicar clareza operacional para contas, compras bonificadas, saldos e resultados.
 - O CTA principal ganhou mais protagonismo visual e ficou alinhado ao início do trial.
 
-2. **Value Blocks** — ✅ COMPLETE
+2. **Value Blocks** — ? COMPLETE
 
 - Criada a seção `O que você desbloqueia` com cards para Contas Operacionais, Compras Bonificadas, Controle de Saldos e Resultado Operacional.
 - Os cards usam ícones e linguagem objetiva para reforçar percepção de valor.
 
-3. **Trust & Pricing** — ✅ COMPLETE
+3. **Trust & Pricing** — ? COMPLETE
 
 - O reforço de confiança agora aparece junto do CTA.
 - O plano mensal ganhou badge de `Mais popular`.
 - O plano anual ganhou destaque comercial com `Melhor economia`.
 
-# 2026-06-01 — Subscription UX Refinement — ✅ COMPLETE
+# 2026-06-01 — Subscription UX Refinement — ? COMPLETE
 
 ### Status: `/subscribe` passou a explicar trial, planos mensal/anual e modo somente leitura com foco em ERP operacional financeiro
 
 **Achievements**:
 
-1. **Subscribe Clarity** — ✅ COMPLETE
+1. **Subscribe Clarity** — ? COMPLETE
 
 - A página agora comunica o teste grátis de 15 dias, ausência de cobrança imediata e ausência de cartão obrigatório.
 - A copy posiciona o VisioMilhas como ERP operacional financeiro para milhas.
 - O CTA principal foi simplificado para `Começar teste grátis`.
 
-2. **Plan Visibility** — ✅ COMPLETE
+2. **Plan Visibility** — ? COMPLETE
 
 - O plano mensal passou a consumir `process.env.PLANO`.
 - O plano anual passou a consumir `process.env.PLANO_ANUAL`.
 - Nenhum valor de preço foi hardcoded na UI da página.
 
-3. **Access Policy Explanation** — ✅ COMPLETE
+3. **Access Policy Explanation** — ? COMPLETE
 
 - A matriz `NOT_AUTH`, `TRIAL`, `ACTIVE` e `NO_SUB` foi explicada visualmente.
 - A tela deixa claro que o usuário não perde dados ao ficar sem assinatura ativa; ele permanece em modo somente leitura.
 
-# 2026-05-31 — RELEASE purchases-analytics-stabilization — ✅ COMPLETE
+# 2026-05-31 — RELEASE purchases-analytics-stabilization — ? COMPLETE
 
 ### Status: o erro SQL dos KPIs de Purchases foi corrigido e o carregamento da página voltou a operar com agregação válida por status
 
 **Achievements**:
 
-1. **KPI SQL Fix** — ✅ COMPLETE
+1. **KPI SQL Fix** — ? COMPLETE
 
 - A query de KPI de Purchases passou a usar `GROUP BY status`
 - O erro Postgres `42803` foi eliminado sem remover o filtro por `organizationId`
 - O `accountId` foi deixado como filtro opcional, sem alterar o comportamento atual da página
 
-2. **Runtime Validation** — ✅ COMPLETE
+2. **Runtime Validation** — ? COMPLETE
 
 - `npm run purchases:test -- emailteste04` passou em `http://localhost:3002`
 - A página de Purchases voltou a renderizar com o carregamento dos KPIs sem erro SQL
 
-3. **Quality Gate** — ✅ COMPLETE
+3. **Quality Gate** — ? COMPLETE
 
 - `npm run lint` continua com warnings conhecidos de `<img>` nas UIs de Purchases
 - `npm run typecheck` continua falhando apenas em erros antigos de `tests/runtime/access-audit-runner.ts` e `tests/runtime/accounts/journey.ts`
 
-# 2026-05-31 — RELEASE purchases-journey-stabilization — ✅ COMPLETE
+# 2026-05-31 — RELEASE purchases-journey-stabilization — ? COMPLETE
 
 ### Status: a jornada runtime de Purchases foi estabilizada para resolver conta operacional real, derivar o programa a partir da conta e evitar mismatch de account/program
 
 **Achievements**:
 
-1. **Runtime Journey Fix** — ✅ COMPLETE
+1. **Runtime Journey Fix** — ? COMPLETE
 
 - O runner de Purchases passou a descobrir a conta operacional pelo runtime real em vez de usar `accountId`/`programId` fixos
 - A criação da compra agora reutiliza o `programId` da própria conta selecionada, eliminando o 422 de incompatibilidade
 
-2. **Runtime Validation** — ✅ COMPLETE
+2. **Runtime Validation** — ? COMPLETE
 
 - `npm run purchases:test -- emailteste04` passou em `http://localhost:3002` após liberar o conflito da porta 3001
 - A jornada validou Accounts -> Programs -> Purchases -> Movement -> FIFO Lot -> Balance -> Dashboard no runtime real
 
-3. **Quality Gate** — ✅ COMPLETE
+3. **Quality Gate** — ? COMPLETE
 
 - `npm run lint` continua limpo, com warnings pré-existentes de `<img>` em Purchases UI
 - `npm run typecheck` continua falhando apenas em erros antigos de `tests/runtime/access-audit-runner.ts` e `tests/runtime/accounts/journey.ts`
 
-# 2026-05-30 — RELEASE 4.3-B.3 — Purchases Accounting Atomicity — ✅ COMPLETE
+# 2026-05-30 — RELEASE 4.3-B.3 — Purchases Accounting Atomicity — ? COMPLETE
 
 ### Status: Compra Bonificada passou a registrar entry, lote FIFO e saldo operacional na mesma transação, com reversão e restauração de `PROBLEM -> RECEIVED`
 
 **Achievements**:
 
-1. **Atomic Accounting** — ✅ COMPLETE
+1. **Atomic Accounting** — ? COMPLETE
 
 - `RECEIVED` agora cria `PURCHASE_BONUS`, lote FIFO e atualiza `program_accounts.currentPointsBalance` na mesma transação
 - `PURCHASE_BONUS` persiste `related_entity_type` e `related_entity_id` para rastreio e idempotência
 
-2. **Reversal & Recovery** — ✅ COMPLETE
+2. **Reversal & Recovery** — ? COMPLETE
 
 - `RECEIVED -> PROBLEM/APPROVED` fecha o lote, marca a entry original como reversed e desfaz o saldo
 - `PROBLEM -> RECEIVED` restaura a entry, reabre o lote e recompõe o saldo operacional
 
-3. **Validation** — ✅ COMPLETE
+3. **Validation** — ? COMPLETE
 
 - `npm exec vitest run tests/integration/purchases.accounting.test.ts` passou com 3 testes
 - `npm run lint` passou com warnings pré-existentes de `<img>` apenas
 - `npm run typecheck` ainda falha em `tests/runtime/accounts/journey.ts` por redeclarações já existentes no workspace
 
-# 2026-05-30 — RELEASE 4.3-B.2.A — Purchases Cockpit Operacional Completo — ✅ COMPLETE
+# 2026-05-30 — RELEASE 4.3-B.2.A — Purchases Cockpit Operacional Completo — ? COMPLETE
 
 ### Status: Purchases convertido em cockpit Kanban operacional, com criação de compra, drag & drop, persistência de status e validação MCP real
 
 **Achievements**:
 
-1. **Kanban Operational View** — ✅ COMPLETE
+1. **Kanban Operational View** — ? COMPLETE
 
 - O cockpit de Purchases passou a priorizar Kanban como visualização principal
 - A tabela permaneceu como leitura secundária
 - O cartão exibe loja, produto, programa, conta, valor, multiplicador, pontos previstos e datas operacionais
 
-2. **Drag & Drop & Persistence** — ✅ COMPLETE
+2. **Drag & Drop & Persistence** — ? COMPLETE
 
 - Mover card chama `POST /api/purchases/change-status`
 - O status é persistido e a UI é atualizada sem reload manual
 - O `RECEIVED` segue criando `PURCHASE_BONUS` de forma idempotente
 
-3. **MCP Runtime** — ✅ COMPLETE
+3. **MCP Runtime** — ? COMPLETE
 
 - Jornada atualizada para criar compra, mover card e validar o fluxo operacional no runtime real
 - Validação executada com `npm run purchases -- emailteste01`
 
-4. **Validation** — ✅ COMPLETE
+4. **Validation** — ? COMPLETE
 
 - `npm run lint` passou
 - `npm run typecheck` passou
 - `npm run purchases -- emailteste01` passou
 
-# 2026-05-29 — Validação operacional oficial de autenticação — ✅ COMPLETE
+# 2026-05-29 — Validação operacional oficial de autenticação — ? COMPLETE
 
 ### Status: criada a bateria recorrente de validação da autenticação no runtime real com Chrome DevTools MCP
 
 **Achievements**:
 
-1. **Testing Docs** — ✅ COMPLETE
+1. **Testing Docs** — ? COMPLETE
 
 - Criado `docs/testing/AUTH_TEST_USERS.md` com usuários sintéticos de referência e padrão expansível
 - Criado `docs/testing/AUTH_INTEGRATION_CHECKLIST.md` com rotina operacional para cadastro, login, logout, persistência, rotas protegidas, organização e Better Auth
 - Criado `docs/testing/AUTH_RUNTIME_REPORT_TEMPLATE.md` para registrar os resultados de cada rodada
 
-2. **Operational Rule** — ✅ COMPLETE
+2. **Operational Rule** — ? COMPLETE
 
 - Toda mudança em autenticação, sessão, onboarding ou proteção de rotas passa a exigir a bateria antes de qualquer merge para `main`
 - A validação deve ocorrer no runtime real de desenvolvimento, sem ambiente paralelo, mocks, Playwright, Cypress ou banco extra
 
-3. **Context Update** — ✅ COMPLETE
+3. **Context Update** — ? COMPLETE
 
 - `docs/ai-context/PROJECT_CONTEXT.md` foi atualizado com a regra oficial de validação operacional
 
-# 2026-05-29 — Fase 3.7-E — Sign-In Marketing/Auth Split Hardening — ✅ COMPLETE
+# 2026-05-29 — Fase 3.7-E — Sign-In Marketing/Auth Split Hardening — ? COMPLETE
 
-# 2026-05-29 — Fase 3.7-E — Sign-In Marketing/Auth Split Hardening — ✅ COMPLETE
+# 2026-05-29 — Fase 3.7-E — Sign-In Marketing/Auth Split Hardening — ? COMPLETE
 
 ### Status: `/sign-in` consolidado com marketing à esquerda e autenticação pura à direita
 
 **Achievements**:
 
-1. **Column Separation** — ✅ COMPLETE
+1. **Column Separation** — ? COMPLETE
 
 - A coluna esquerda permaneceu dedicada à conversão, com headline, subheadline, mockup e storytelling do produto
 - A coluna direita foi reduzida a uma superfície de autenticação mínima, sem conteúdo de marketing ou preview operacional
 
-2. **Auth Surface** — ✅ COMPLETE
+2. **Auth Surface** — ? COMPLETE
 
 - Mantidos apenas logo, título, Google, divisor, login por e-mail, links de criação/recuperação e termos/privacidade
 - O visual da direita ficou neutro, claro e consistente com acesso ao produto
 
-3. **Validation** — ✅ COMPLETE
+3. **Validation** — ? COMPLETE
 
 - `npm run lint` passou
 - `npm run typecheck` passou
 - `npm run test` passou com 82 testes
 - `git diff --check` ficou limpo
 
-# 2026-05-29 — Fase 3.7-D — Sign-In Premium Continuity Polish — ✅ COMPLETE
+# 2026-05-29 — Fase 3.7-D — Sign-In Premium Continuity Polish — ? COMPLETE
 
 ### Status: `/sign-in` refinado para parecer uma única plataforma premium, com transição suave entre marketing e operação
 
 **Achievements**:
 
-1. **Visual Continuity** — ✅ COMPLETE
+1. **Visual Continuity** — ? COMPLETE
 
 - A transição entre as colunas foi suavizada com gradiente horizontal e glow central discreto
 - O lado operacional permanece claro, mas passa a nascer visualmente do mesmo contexto da área de marketing
 
-2. **Operational Preview** — ✅ COMPLETE
+2. **Operational Preview** — ? COMPLETE
 
 - O mini preview ganhou feed de últimas movimentações para parecer uma captura real de dashboard
 - Os dados continuam totalmente mockados e sem dependência de backend
 
-3. **Copy & Trust** — ✅ COMPLETE
+3. **Copy & Trust** — ? COMPLETE
 
 - Headline ajustada para `Controle suas milhas como um operador profissional.`
 - Prova social operacional adicionada no hero e sinais de confiança reforçados no card de login
 
-4. **Validation** — ✅ COMPLETE
+4. **Validation** — ? COMPLETE
 
 - `npm run lint` passou
 - `npm run typecheck` passou
 - `npm run test` passou com 82 testes
 - `git diff --check` ficou limpo
 
-# 2026-05-29 — Fase 3.7-C — Sign-In Marketing/Operação Split — ✅ COMPLETE
+# 2026-05-29 — Fase 3.7-C — Sign-In Marketing/Operação Split — ? COMPLETE
 
 ### Status: `/sign-in` reorganizado em duas leituras visuais, com marketing escuro à esquerda e operação clara à direita
 
 **Achievements**:
 
-1. **Layout Split** — ✅ COMPLETE
+1. **Layout Split** — ? COMPLETE
 
 - A tela pública passou a usar grid de duas colunas no desktop, preservando o hero de marketing à esquerda
 - A coluna operacional ganhou fundo claro, borda lateral e card branco para reforçar o contexto de uso
 
-2. **Operational Card** — ✅ COMPLETE
+2. **Operational Card** — ? COMPLETE
 
 - CTA principal atualizado para `Entrar com Google`
 - CTA secundário por e-mail mantido como fallback visual mais direto
 - Mini preview operacional adicionado com leitura de dashboard mockado
 
-3. **Validation** — ✅ COMPLETE
+3. **Validation** — ? COMPLETE
 
 - `npm run lint` passou
 - `npm run typecheck` passou
 - `npm run test` passou com 82 testes
 - `git diff --check` ficou limpo
 
-# 2026-05-28 — Fase 3.7-B — Auth Modal Unification — ✅ COMPLETE
+# 2026-05-28 — Fase 3.7-B — Auth Modal Unification — ? COMPLETE
 
 ### Status: `/sign-in` consolidado como hub de autenticação Google-first com fallback por credenciais
 
 **Achievements**:
 
-1. **Auth Hub UI** — ✅ COMPLETE
+1. **Auth Hub UI** — ? COMPLETE
 
 - Fluxo principal de Google OAuth preservado
 - CTA secundário de e-mail/senha incorporado ao card premium existente
 - Login, cadastro e recuperação migrados para modais com diálogo padrão da interface
 
-2. **Credential Runtime** — ✅ COMPLETE
+2. **Credential Runtime** — ? COMPLETE
 
 - `emailAndPassword` habilitado no Better Auth para login/cadastro credencial
 - Recuperação via `request-password-reset` e redefinição via `reset-password` com token temporário
 - Fluxo de recuperação sem revelar existência de e-mail
 
-3. **Reset Flow** — ✅ COMPLETE
+3. **Reset Flow** — ? COMPLETE
 
 - Nova rota `/reset-password` criada como única página adicional do ciclo
 - Formulário dedicado de nova senha + confirmação + redirecionamento para `/sign-in`
 
-4. **Validation** — ✅ COMPLETE
+4. **Validation** — ? COMPLETE
 
 - `npm run lint` passou
 - `npm run typecheck` passou
 
-# 2026-05-27 — Fase 3.6-A — Accounts Operational Center — ✅ COMPLETE
+# 2026-05-27 — Fase 3.6-A — Accounts Operational Center — ? COMPLETE
 
 ### Status: central de contas refatorada para leitura operacional premium, com múltiplas contas por programa e modal simples
 
 **Achievements**:
 
-1. **Accounts UX Refresh** — ✅ COMPLETE
+1. **Accounts UX Refresh** — ? COMPLETE
 
 - A tela `/app/accounts` saiu da tabela técnica e passou a operar como lista limpa e premium
 - Cada linha agora prioriza nome visual da conta, programa, saldo atual, CPM médio e estado ativo/inativo
 
-2. **Operational Model** — ✅ COMPLETE
+2. **Operational Model** — ? COMPLETE
 
 - A conta passou a ser tratada como unidade operacional de programa de milhas
 - Múltiplas contas do mesmo programa continuam suportadas e agora são apresentadas com naming visual automático
 - Saldo inicial e CPM inicial podem ser informados no cadastro e geram operação seed `INITIAL_BALANCE` quando aplicável
 
-3. **Actions & Modals** — ✅ COMPLETE
+3. **Actions & Modals** — ? COMPLETE
 
 - Modal premium de criação/edição com foco em clareza operacional
 - Ações rápidas: visualizar, editar, ajustar saldo, inativar e excluir com soft delete
 - Visual de programa com branding simples por cor/ícone circular e fallback genérico
 
-4. **UI System** — ✅ COMPLETE
+4. **UI System** — ? COMPLETE
 
 - Criados primitives locais no padrão shadcn-like para suportar Card, Dialog, DropdownMenu, Badge, Input, Select, Separator e Switch
 - A tela mantém branco predominante, bordas suaves e baixo ruído visual
 
-# 2026-05-26 — Fase 3.0-C — FIFO Replay/Lineage Stabilization — ✅ COMPLETE
+# 2026-05-26 — Fase 3.0-C — FIFO Replay/Lineage Stabilization — ? COMPLETE
 
 ### Status: runtime FIFO reparado e replay auditável alinhado ao modelo materializado
 
 **Achievements**:
 
-1. **FIFO Runtime Fix** — ✅ COMPLETE
+1. **FIFO Runtime Fix** — ? COMPLETE
 
 - Removida a referência indevida a `consumedLots` de `acquireMiles()`
 - A aquisição volta a operar sem `ReferenceError`
 
-2. **Audit Timeline** — ✅ COMPLETE
+2. **Audit Timeline** — ? COMPLETE
 
 - `buildFinancialTimeline()` passa a refletir a linha materializada sem duplicar o registro de transferência
 - O teste de replay foi alinhado para incluir o evento de lote FIFO como parte da timeline auditável
 
-3. **FIFO Lineage** — ✅ COMPLETE
+3. **FIFO Lineage** — ? COMPLETE
 
 - `buildFifoLineage()` continua derivando lineage do runtime persistido e dos registros de transferência sem romper o fluxo de leitura
 
-4. **Validation** — ✅ COMPLETE
+4. **Validation** — ? COMPLETE
 
 - Suíte focada de runtime e actions ficou verde novamente
 
@@ -433,12 +439,12 @@
 
 | Capability      | Status | Note                                     |
 | --------------- | ------ | ---------------------------------------- |
-| FIFO purchase   | ✅     | `acquireMiles()` estabilizado            |
-| FIFO sale       | ✅     | Continuidade preservada                  |
-| FIFO transfer   | ✅     | Continua registrando lineage             |
-| Replay timeline | ✅     | Materializada sem duplicidade conceitual |
-| FIFO lineage    | ✅     | Derivada do runtime persistido           |
-| Validation      | ✅     | Suíte focada passou                      |
+| FIFO purchase   | ?     | `acquireMiles()` estabilizado            |
+| FIFO sale       | ?     | Continuidade preservada                  |
+| FIFO transfer   | ?     | Continua registrando lineage             |
+| Replay timeline | ?     | Materializada sem duplicidade conceitual |
+| FIFO lineage    | ?     | Derivada do runtime persistido           |
+| Validation      | ?     | Suíte focada passou                      |
 
 # CHANGELOG_AI
 
@@ -450,18 +456,18 @@
 
 **Achievements**:
 
-1. **Subscription Access Audit** — ✅ COMPLETE
+1. **Subscription Access Audit** — ? COMPLETE
 
 - A auditoria passou a separar `NO_SUB` de `TRIAL` e `ACTIVE` com usuários reais de teste
 - `NO_SUB` agora fica visível como `accessState: NO_SUBSCRIPTION` e bloqueia escrita em Purchases
 
-2. **Runtime Evidence** — ✅ COMPLETE
+2. **Runtime Evidence** — ? COMPLETE
 
 - `NOT_AUTH` continua redirecionando para `/sign-in`
 - `TRIAL` e `ACTIVE` continuam com acesso completo para escrita em Purchases
 - A causa raiz de `INVALID_ORIGIN` permaneceu documentada e a correção de origem continua válida
 
-3. **Audit Harness Fix** — ✅ COMPLETE
+3. **Audit Harness Fix** — ? COMPLETE
 
 - O runner de auditoria foi ajustado para não promover o usuário `NO_SUB` antes da coleta
 - Um usuário fresco (`emailteste05@teste.com`) foi usado para tornar o estado read-only observável
@@ -472,91 +478,91 @@
 
 **Achievements**:
 
-1. **Auth Origin Alignment** — ✅ COMPLETE
+1. **Auth Origin Alignment** — ? COMPLETE
 
 - O resolver de auth passou a priorizar a origem do runtime em desenvolvimento via `PORT`
 - `BETTER_AUTH_URL`, `APP_URL`, `NEXT_PUBLIC_APP_URL` e `trustedOrigins` ficaram coerentes com o servidor Next local
 
-2. **Runtime MCP Purchases** — ✅ COMPLETE
+2. **Runtime MCP Purchases** — ? COMPLETE
 
 - `npm run purchases:test` voltou a passar após alinhar a origem e liberar o browser MCP
-- O fluxo real login → sessão → subscription → purchases foi validado no runtime
+- O fluxo real login ? sessão ? subscription ? purchases foi validado no runtime
 
-3. **Scenario Evidence** — ✅ COMPLETE
+3. **Scenario Evidence** — ? COMPLETE
 
 - `NO_AUTH` continua redirecionando para `/sign-in`
 - `TRIAL` e `ACTIVE` conseguem escrever em Purchases
 - `NO_SUB` ainda deriva para `TRIAL` no runtime atual, então o estado read-only independente permanece como pendência de produto/runtime
 
-# 2026-05-30 — RELEASE 4.3-C — Campaign Catalog Engine — ✅ COMPLETE
+# 2026-05-30 — RELEASE 4.3-C — Campaign Catalog Engine — ? COMPLETE
 
 ### Status: novo domínio de campanhas parceiras consolidado com schema, seed JSON, providers vazios e preparação para autofill futuro sem scraping automático
 
 **Achievements**:
 
-1. **Domain Split** — ✅ COMPLETE
+1. **Domain Split** — ? COMPLETE
 
 - Criado `src/modules/campaigns` com camadas de domínio, aplicação, infraestrutura, UI, testes e MCP
 - Definidos enums de campanha e contrato do provider para manter o motor extensível
 
-2. **Database & Seeds** — ✅ COMPLETE
+2. **Database & Seeds** — ? COMPLETE
 
 - `partner_campaigns` foi estendido com os novos campos de catálogo
 - `campaign_snapshots` foi criada para preservar histórico de captura
 - `db/seed/campaigns-seed.json` entrou como seed inicial idempotente com exemplos de Livelo, Azul, Smiles, LATAM Pass e Esfera
 
-3. **Future Autofill Prep** — ✅ COMPLETE
+3. **Future Autofill Prep** — ? COMPLETE
 
 - Providers vazios foram criados para Livelo, Azul, Smiles, LATAM Pass e Esfera
 - O campo de seleção de campanhas está preparado para futura integração com compra bonificada, sem scraping automático nesta fase
 
-# 2026-05-29 — Fase 4.2-B — Programs Operational Cockpit — ✅ COMPLETE
+# 2026-05-29 — Fase 4.2-B — Programs Operational Cockpit — ? COMPLETE
 
 ### Status: `Programs` promovido a cockpit operacional da conta, com extrato, gráficos por período e navegação persistida na URL
 
 **Achievements**:
 
-1. **Module Split** — ✅ COMPLETE
+1. **Module Split** — ? COMPLETE
 
 - Criado `src/modules/programs` com camadas de domínio, aplicação, infraestrutura e apresentação
 - `app/app/programs/page.tsx` virou entrada fina para o módulo novo
 
-2. **Cockpit UI** — ✅ COMPLETE
+2. **Cockpit UI** — ? COMPLETE
 
 - Header operacional da conta, ações rápidas, abas e sidebar contextual implementados
 - Extrato operacional com tabela, filtros e detalhe do lançamento
 - Gráficos operacionais com período persistido em `period`
 
-3. **Runtime Validation** — ✅ COMPLETE
+3. **Runtime Validation** — ? COMPLETE
 
 - `npm run programs:test -- emailteste01` passou no runtime real com Chrome DevTools MCP
-- Cobriu login page, Accounts → Programs, header, troca de conta, extrato, gráficos, pendências, assinaturas, refresh e roundtrip para sign-in
+- Cobriu login page, Accounts ? Programs, header, troca de conta, extrato, gráficos, pendências, assinaturas, refresh e roundtrip para sign-in
 
-## 2026-05-29 — 4.2-B.1 — Programs UX Refinement — ✅ COMPLETE
+## 2026-05-29 — 4.2-B.1 — Programs UX Refinement — ? COMPLETE
 
 ### Status: refinamento visual do cockpit para alinhar com padrão premium das outras telas (Accounts, Purchases, Sales, Transfers)
 
 **Achievements**:
 
-1. **Header Compacto** — ✅ COMPLETE
+1. **Header Compacto** — ? COMPLETE
 
 - Header reduzido e reorganizado com breadcrumb, seletor de conta embutido e ação `Trocar conta`
 - KPIs executivos agora ficam condensados no topo, evitando duplicação com os cards operacionais
 
-2. **Operação Primeiro** — ✅ COMPLETE
+2. **Operação Primeiro** — ? COMPLETE
 
-- Aba `Resumo` continua priorizando `KPIs` → `Extrato` → `Gráficos`
+- Aba `Resumo` continua priorizando `KPIs` ? `Extrato` ? `Gráficos`
 - Sidebar contextual voltou em modo sticky com blocos de `Conta`, `Pendências` e `Assinaturas`
 - Cards operacionais passaram a destacar resultado, pendências, compras, vendas e transferências abertas
 
-3. **Validation** — ✅ COMPLETE
+3. **Validation** — ? COMPLETE
 
 - `npm run lint` passou
 - `npm run typecheck` passou
 - `npm run programs:test -- emailteste01` passou no runtime real com Chrome DevTools MCP
 
 - Header reduzido e seletor de conta movido para dentro do header; ação `Trocar conta` adicionada.
-- Aba `Resumo` reorganizada: KPIs → Extrato operacional resumido → Gráficos.
+- Aba `Resumo` reorganizada: KPIs ? Extrato operacional resumido ? Gráficos.
 - Timeline substituída por tabela operacional com colunas: `Data`, `Operação`, `Tipo`, `Pontos`, `Valor`, `CPM`, `Status`.
 - Sidebar contextual reintroduzida à direita em versão compacta e sticky.
 - Responsividade revisada e ajustes de altura/espacamento para reduzir necessidade de rolagem nas larguras 1920/1440/1366 e tablet.
@@ -565,23 +571,23 @@ Validação:
 
 - `npm run programs:test -- emailteste01` (runtime MCP) deve ser executado após PR; verificar troca de conta, persistência de URL, carregamento do extrato e troca de abas.
 
-# 2026-05-26 — Fase 3.0-A — Milhas Ledger Runtime Foundation — ✅ COMPLETE
+# 2026-05-26 — Fase 3.0-A — Milhas Ledger Runtime Foundation — ? COMPLETE
 
 ### Status: runtime FIFO do ledger consolidado com transferência creditando destino e rollback transacional preservado
 
 **Achievements**:
 
-1. **FIFO Transfer Runtime** — ✅ COMPLETE
+1. **FIFO Transfer Runtime** — ? COMPLETE
 
 - `transferMiles()` agora valida a conta de destino, consome a origem e credita o destino com entry, lote e saldo
 - O runtime FIFO deixa de parar no débito da origem e passa a manter o ledger bilateral consistente
 
-2. **Transactional Actions** — ✅ COMPLETE
+2. **Transactional Actions** — ? COMPLETE
 
 - `createSaleAction` e `createTransferAction` só fazem `COMMIT` depois do use case FIFO concluir
 - As actions passaram a respeitar `deps.appPool`, `deps.revalidatePath`, `deps.isFifoMovementsEngineEnabled` e o use case injetado, como purchase já fazia
 
-3. **Validation** — ✅ COMPLETE
+3. **Validation** — ? COMPLETE
 
 - Testes unitários novos cobrem ordem transacional e rollback para sale/transfer
 - `npm run typecheck` e `git diff --check` passaram
@@ -590,37 +596,37 @@ Validação:
 
 | Capability         | Status | Note                                  |
 | ------------------ | ------ | ------------------------------------- |
-| FIFO purchase      | ✅     | Mantido                               |
-| FIFO sale          | ✅     | Commit só após o use case             |
-| FIFO transfer      | ✅     | Credita destino e mantém rollback     |
-| Testability        | ✅     | Dependências críticas injetáveis      |
-| Ledger consistency | ✅     | Destino deixa de ficar sem lote/saldo |
+| FIFO purchase      | ?     | Mantido                               |
+| FIFO sale          | ?     | Commit só após o use case             |
+| FIFO transfer      | ?     | Credita destino e mantém rollback     |
+| Testability        | ?     | Dependências críticas injetáveis      |
+| Ledger consistency | ?     | Destino deixa de ficar sem lote/saldo |
 
 ---
 
-## 2026-05-26 — Fase 2.4-L — Commercial Trial Activation Runtime — ✅ COMPLETE
+## 2026-05-26 — Fase 2.4-L — Commercial Trial Activation Runtime — ? COMPLETE
 
 ### Status: trial activation server-side com persistencia comercial no SAAS_DB
 
 **Achievements**:
 
-1. **Trial Activation Runtime** — ✅ COMPLETE
+1. **Trial Activation Runtime** — ? COMPLETE
 
 - Criado `activateTrialForOrganization()` com persistencia comercial no SAAS_DB
 - Endpoint `/api/subscription/activate-trial` agora ativa trial server-side
 - Campos comerciais persistidos em `subscriptions`: `access_state`, `activated_at`, `trial_started_at`, `trial_expires_at`, `plan_type`, `tenant_state`
 
-2. **Commercial Lifecycle** — ✅ COMPLETE
+2. **Commercial Lifecycle** — ? COMPLETE
 
 - Estados `TRIAL`, `ACTIVE`, `EXPIRED`, `CANCELED`, `SUSPENDED` passam a bloquear/liberar o dashboard
 - Trial expirado gera bloqueio e atualiza status no SAAS_DB
 
-3. **Subscribe UX** — ✅ COMPLETE
+3. **Subscribe UX** — ? COMPLETE
 
 - Botão “Iniciar trial” com loading/success/retry
 - Redirect automático para `/app/dashboard` após ativação
 
-4. **Validation** — 🟡 PARCIAL
+4. **Validation** — ?? PARCIAL
 
 - Teste unitário atualizado para `EXPIRED`
 - Necessária validação browser-first com sessão Google ativa
@@ -629,37 +635,37 @@ Validação:
 
 | Capability           | Status | Note                                |
 | -------------------- | ------ | ----------------------------------- |
-| Trial activation     | ✅     | Server-side e persistido no SAAS_DB |
-| Commercial lifecycle | ✅     | Estados bloqueiam/liberam dashboard |
-| Subscribe UX         | ✅     | CTA com retry e redirect            |
-| Browser lifecycle    | 🟡     | Falta validação completa no browser |
+| Trial activation     | ?     | Server-side e persistido no SAAS_DB |
+| Commercial lifecycle | ?     | Estados bloqueiam/liberam dashboard |
+| Subscribe UX         | ?     | CTA com retry e redirect            |
+| Browser lifecycle    | ??     | Falta validação completa no browser |
 
 ---
 
-## 2026-05-25 — Fase 2.4-K — SaaS Access & Subscription Enforcement — ✅ COMPLETE
+## 2026-05-25 — Fase 2.4-K — SaaS Access & Subscription Enforcement — ? COMPLETE
 
 ### Status: gate comercial server-side implementado com persistencia no SAAS_DB e /subscribe como etapa obrigatoria
 
 **Achievements**:
 
-1. **Subscription Access Context** — ✅ COMPLETE
+1. **Subscription Access Context** — ? COMPLETE
 
 - Criado `SubscriptionAccessContext` separado de `AuthContext`, `OwnershipContext` e `ReadScope`
 - O runtime agora classifica `ACTIVE`, `TRIAL`, `NO_SUBSCRIPTION`, `CANCELED` e `SUSPENDED`
 - O contexto comercial deriva do ADM DB e preserva a separacao entre SAAS_DB e APP_DB
 
-2. **Server-side Enforcement** — ✅ COMPLETE
+2. **Server-side Enforcement** — ? COMPLETE
 
 - O dashboard agora valida o estado SaaS antes de carregar dados operacionais
 - Usuários sem acesso sao redirecionados para `/subscribe`
 - O onboarding concluído tambem segue para `/subscribe` quando a etapa comercial ainda nao esta liberada
 
-3. **Subscription Gate UI** — ✅ COMPLETE
+3. **Subscription Gate UI** — ? COMPLETE
 
 - Criada a pagina `/subscribe` para explicar trial/plano/status comercial
 - Sem Stripe real e sem checkout real nesta fase
 
-4. **Validation** — 🟡 PARCIAL
+4. **Validation** — ?? PARCIAL
 
 - `evaluateSubscriptionAccess` foi validado com testes unitários
 - A suíte completa ainda precisa ser rerodada apos a integracao final dos docs e do browser
@@ -668,43 +674,43 @@ Validação:
 
 | Capability          | Status | Note                                                      |
 | ------------------- | ------ | --------------------------------------------------------- |
-| SAAS_DB separation  | ✅     | Billing/subscription continuam no ADM DB                  |
-| APP_DB separation   | ✅     | Dados operacionais continuam no APP DB                    |
-| Subscription access | ✅     | Gating server-side implementado                           |
-| Subscribe page      | ✅     | Nova etapa publica/autenticada de gate comercial          |
-| Trial state         | ✅     | Agora e um estado operacional de acesso                   |
-| Cancel/Suspend      | ✅     | Bloqueio comercial classificado                           |
-| Browser runtime     | 🟡     | Ainda falta rerodar o fluxo real com sessao Google válida |
+| SAAS_DB separation  | ?     | Billing/subscription continuam no ADM DB                  |
+| APP_DB separation   | ?     | Dados operacionais continuam no APP DB                    |
+| Subscription access | ?     | Gating server-side implementado                           |
+| Subscribe page      | ?     | Nova etapa publica/autenticada de gate comercial          |
+| Trial state         | ?     | Agora e um estado operacional de acesso                   |
+| Cancel/Suspend      | ?     | Bloqueio comercial classificado                           |
+| Browser runtime     | ??     | Ainda falta rerodar o fluxo real com sessao Google válida |
 
 ### Residual Caveat
 
-- A validacao visual do ciclo login → onboarding → /subscribe → dashboard ainda depende de uma sessao Google ativa no navegador atual.
+- A validacao visual do ciclo login ? onboarding ? /subscribe ? dashboard ainda depende de uma sessao Google ativa no navegador atual.
 
 ---
 
-## 2026-05-25 — Fase 2.4-J — Session Lifecycle & Onboarding Hardening — ✅ COMPLETE
+## 2026-05-25 — Fase 2.4-J — Session Lifecycle & Onboarding Hardening — ? COMPLETE
 
 ### Status: lifecycle de sessão endurecido com logout oficial, invalidação e observabilidade
 
 **Session 4 Achievements**:
 
-1. **Logout Runtime** — ✅ COMPLETE
+1. **Logout Runtime** — ? COMPLETE
 
 - Logout saiu do `fetch` manual e passou a usar `authClient.signOut()`
 - `app/api/auth/[...all]/route.ts` agora registra sucesso/falha e invalidação da sessão no endpoint Better Auth `/sign-out`
 - Redirecionamento pós-logout permanece explícito e o header não depende mais de contrato frágil de request manual
 
-2. **Session Lifecycle** — ✅ COMPLETE
+2. **Session Lifecycle** — ? COMPLETE
 
 - `SESSION_RESTORED`, `SESSION_REFRESH_SUCCESS` e `SESSION_BROWSER_REOPEN_SUCCESS` passaram a ser reportados no runtime
 - `USER_LOGOUT_SUCCESS`, `USER_LOGOUT_FAILED` e `SESSION_INVALIDATED` foram adicionados para auditar o ciclo completo
 
-3. **Onboarding Boundary** — ✅ COMPLETE
+3. **Onboarding Boundary** — ? COMPLETE
 
 - O lifecycle continua onboarding-aware sem alterar arquitetura, banco ou UX estrutural
 - O runtime mantém redirect para onboarding quando ownership não existe
 
-4. **Validation** — ✅ COMPLETE
+4. **Validation** — ? COMPLETE
 
 - `npm run lint`: 0 errors
 - `npm run typecheck`: 0 errors
@@ -715,16 +721,16 @@ Validação:
 
 | Capability           | Status | Note                                           |
 | -------------------- | ------ | ---------------------------------------------- |
-| Google OAuth         | ✅     | Continua funcional                             |
-| Callback             | ✅     | Continua funcional                             |
-| Session persistence  | ✅     | Continua funcional                             |
-| Logout               | ✅     | Agora usa signOut oficial                      |
-| Session invalidation | ✅     | Auditada no handler                            |
-| Refresh              | ✅     | Instrumentado como success                     |
-| Browser reopen       | ✅     | Instrumentado como success                     |
-| Onboarding           | ✅     | Continua onboarding-aware                      |
-| Ownership            | ✅     | Mantido no server                              |
-| Browser runtime      | 🟡     | Sem sessão ativa no browser final da validação |
+| Google OAuth         | ?     | Continua funcional                             |
+| Callback             | ?     | Continua funcional                             |
+| Session persistence  | ?     | Continua funcional                             |
+| Logout               | ?     | Agora usa signOut oficial                      |
+| Session invalidation | ?     | Auditada no handler                            |
+| Refresh              | ?     | Instrumentado como success                     |
+| Browser reopen       | ?     | Instrumentado como success                     |
+| Onboarding           | ?     | Continua onboarding-aware                      |
+| Ownership            | ?     | Mantido no server                              |
+| Browser runtime      | ??     | Sem sessão ativa no browser final da validação |
 
 ### Residual Caveat
 
@@ -733,33 +739,33 @@ Validação:
 
 ---
 
-## 2026-05-25 — Fase 2.4-I — Onboarding Runtime Consistency Hardening — ✅ COMPLETE
+## 2026-05-25 — Fase 2.4-I — Onboarding Runtime Consistency Hardening — ? COMPLETE
 
 ### Status: runtime consistente, onboarding-aware e protegido contra crash por read scope
 
 **Session 3 Achievements**:
 
-1. **Ownership Hydration** — ✅ COMPLETE
+1. **Ownership Hydration** — ? COMPLETE
 
 - `resolveBetterAuthSessionContext()` agora hidrata `organizationId` e ownership quando onboarding já provisionou a conta
 - `SessionContext` deixa de depender apenas do payload Better Auth bruto
 
-2. **Onboarding-Aware Read Scope** — ✅ COMPLETE
+2. **Onboarding-Aware Read Scope** — ? COMPLETE
 
 - `resolveReadScope()` agora redireciona para `/app/onboarding` quando `organizationId` estiver ausente
 - O boundary passou a emitir telemetria operacional em vez de quebrar com erro fatal
 
-3. **Dashboard Boundary** — ✅ COMPLETE
+3. **Dashboard Boundary** — ? COMPLETE
 
 - `app/app/dashboard/page.tsx` ganhou redirect explícito e observabilidade antes de renderizar dados
 - O dashboard não quebra mais quando o usuário ainda está sem ownership resolvida
 
-4. **Observability Expansion** — ✅ COMPLETE
+4. **Observability Expansion** — ? COMPLETE
 
 - Novos códigos adicionados: `ONBOARDING_REQUIRED_REDIRECT`, `ONBOARDING_CONTEXT_MISSING`, `ONBOARDING_RUNTIME_RECOVERY`, `READ_SCOPE_ONBOARDING_RECOVERY`
 - Metadados agora incluem onboarding stage, recovery stage, ownership state, browser context e session lifecycle
 
-5. **Validation** — ✅ COMPLETE
+5. **Validation** — ? COMPLETE
 
 - `npm run lint`: 0 errors
 - `npm run typecheck`: 0 errors
@@ -770,13 +776,13 @@ Validação:
 
 | Capability          | Status | Note                                                                                |
 | ------------------- | ------ | ----------------------------------------------------------------------------------- |
-| Better Auth login   | ✅     | Continua funcional                                                                  |
-| Session persistence | ✅     | Continua funcional                                                                  |
-| Ownership hydration | ✅     | `organizationId` agora entra na session context                                     |
-| Read scope          | ✅     | Redirect onboarding-aware em vez de crash                                           |
-| Dashboard           | ✅     | Boundary explícito, sem uncaught throw                                              |
-| Observability       | ✅     | Novos eventos de onboarding/runtime                                                 |
-| Browser runtime     | 🟡     | Sign-in/Google continuam alcançáveis; dashboard sem sessão redireciona para sign-in |
+| Better Auth login   | ?     | Continua funcional                                                                  |
+| Session persistence | ?     | Continua funcional                                                                  |
+| Ownership hydration | ?     | `organizationId` agora entra na session context                                     |
+| Read scope          | ?     | Redirect onboarding-aware em vez de crash                                           |
+| Dashboard           | ?     | Boundary explícito, sem uncaught throw                                              |
+| Observability       | ?     | Novos eventos de onboarding/runtime                                                 |
+| Browser runtime     | ??     | Sign-in/Google continuam alcançáveis; dashboard sem sessão redireciona para sign-in |
 
 ### Remaining External Caveat
 
@@ -785,25 +791,25 @@ Validação:
 
 ---
 
-## 2026-05-25 — Fase 2.4-H (Session 3) — Better Auth Drizzle Schema Alignment — ✅ COMPLETE
+## 2026-05-25 — Fase 2.4-H (Session 3) — Better Auth Drizzle Schema Alignment — ? COMPLETE
 
 ### Status: schema lógico alinhado, runtime validado localmente
 
 **Session 3 Achievements**:
 
-1. **Schema Alignment** — ✅ COMPLETE
+1. **Schema Alignment** — ? COMPLETE
 
 - Corrigido o shape exportado por `lib/server/better-auth-schema.ts`
 - Exports lógicos agora existem como `user`, `session`, `account` e `verification`
 - Tabelas físicas permaneceram `ba_users`, `ba_sessions`, `ba_accounts` e `ba_verification`
 
-2. **Adapter Wiring** — ✅ COMPLETE
+2. **Adapter Wiring** — ? COMPLETE
 
 - `lib/auth.ts` passou a consumir o namespace do schema
 - `db/adm/client.ts` permanece compatível com o mesmo namespace
 - O ajuste é incremental e rollback-safe; nenhuma migration foi criada
 
-3. **Validation** — ✅ COMPLETE LOCALMENTE
+3. **Validation** — ? COMPLETE LOCALMENTE
 
 - `npm run lint`: 0 errors, 0 warnings
 - `npm run typecheck`: 0 errors
@@ -814,11 +820,11 @@ Validação:
 
 | Capability                | Status | Note                                                       |
 | ------------------------- | ------ | ---------------------------------------------------------- |
-| Better Auth schema lookup | ✅     | `user/session/account/verification` agora exportados       |
-| OAuth callback wiring     | ✅     | Continua apontando para `/api/auth/callback/google`        |
-| Session persistence       | 🟡     | Pronto no runtime; E2E real depende de login Google válido |
-| Onboarding                | 🟡     | Sem regressão observada; aguardando E2E completo           |
-| Browser runtime           | ✅     | Sign-in continua carregando normalmente                    |
+| Better Auth schema lookup | ?     | `user/session/account/verification` agora exportados       |
+| OAuth callback wiring     | ?     | Continua apontando para `/api/auth/callback/google`        |
+| Session persistence       | ??     | Pronto no runtime; E2E real depende de login Google válido |
+| Onboarding                | ??     | Sem regressão observada; aguardando E2E completo           |
+| Browser runtime           | ?     | Sign-in continua carregando normalmente                    |
 
 ### Residual Blocker
 
@@ -830,18 +836,18 @@ Validação:
 
 ---
 
-## 2026-05-25 — Fase 2.4-H (Session 2) — Real User Runtime Validation & OAuth Stabilization — ✅ COMPLETE
+## 2026-05-25 — Fase 2.4-H (Session 2) — Real User Runtime Validation & OAuth Stabilization — ? COMPLETE
 
 ### Status: 100% READY FOR STAGING
 
 **Session 2 Achievements**:
 
-1. **OAuth Flow Validation** — ✅ COMPLETE
+1. **OAuth Flow Validation** — ? COMPLETE
    - Reexecutado fluxo OAuth ponta-a-ponta
    - Confirmado: Google login page alcançada SEM redirect_uri_mismatch
    - Error 500 do Google é transiente, não é problema de código
 
-2. **Database Verification** — ✅ COMPLETE
+2. **Database Verification** — ? COMPLETE
    - Verificadas 4 tabelas Better Auth presentes
    - ba_users: 0 records (ready)
    - ba_sessions: 0 records (ready)
@@ -849,18 +855,18 @@ Validação:
    - ba_verification: 3 records (expected)
    - Banco ADM (controle_adm_saas_datavisio) conectando corretamente
 
-3. **Observability Expansion** — ✅ COMPLETE
+3. **Observability Expansion** — ? COMPLETE
    - Adicionados 3 novos event codes solicitados
    - Total agora: 27 auth event codes + 6 onboarding codes
    - Nova capability: rastrear OAuth E2E, session validation, onboarding completion
 
-4. **Code Quality** — ✅ PERFECT
+4. **Code Quality** — ? PERFECT
    - npm run lint: 0 errors, 0 warnings
    - npm run typecheck: 0 errors
    - npm run test: 57/57 tests passing
    - git diff --check: OK (apenas LF/CRLF warnings Windows)
 
-5. **Documentation** — ✅ UPDATED
+5. **Documentation** — ? UPDATED
    - DAILY_CHECKPOINT.md: Session 2 registrada
    - CHANGELOG_AI.md: Fase 2.4-H complete
    - Readiness matrix consolidada
@@ -870,16 +876,16 @@ Validação:
 
 | Capability          | Code | Testing | Docs | Status     |
 | ------------------- | ---- | ------- | ---- | ---------- |
-| Google OAuth        | ✅   | ✅      | ✅   | 🟢 READY   |
-| Better Auth DB      | ✅   | ✅      | ✅   | 🟢 READY   |
-| Session Persistence | ✅   | ✅      | ✅   | 🟢 READY   |
-| Callback Routing    | ✅   | ✅      | ✅   | 🟢 READY   |
-| Onboarding Flow     | ✅   | ✅      | ✅   | 🟢 READY   |
-| Error Handling      | ✅   | ✅      | ✅   | 🟢 READY   |
-| Observability       | ✅   | ✅      | ✅   | 🟢 READY   |
-| Runtime Hardening   | ✅   | ✅      | ✅   | 🟢 READY   |
-| Recovery Fallback   | ✅   | ✅      | ✅   | 🟢 READY   |
-| Browser Runtime     | ✅   | 🟡\*    | ✅   | 🟡 READY\* |
+| Google OAuth        | ?   | ?      | ?   | ?? READY   |
+| Better Auth DB      | ?   | ?      | ?   | ?? READY   |
+| Session Persistence | ?   | ?      | ?   | ?? READY   |
+| Callback Routing    | ?   | ?      | ?   | ?? READY   |
+| Onboarding Flow     | ?   | ?      | ?   | ?? READY   |
+| Error Handling      | ?   | ?      | ?   | ?? READY   |
+| Observability       | ?   | ?      | ?   | ?? READY   |
+| Runtime Hardening   | ?   | ?      | ?   | ?? READY   |
+| Recovery Fallback   | ?   | ?      | ?   | ?? READY   |
+| Browser Runtime     | ?   | ??\*    | ?   | ?? READY\* |
 
 \*Browser runtime código 100% ready, E2E real login bloqueado por erro transiente do Google
 
@@ -914,7 +920,7 @@ Validação:
 
 ## 2026-05-25 — Fase 2.4-H (Session 1) — Real User Runtime Validation & OAuth Stabilization
 
-### MAJOR BREAKTHROUGH 🎉
+### MAJOR BREAKTHROUGH ??
 
 **Google OAuth Console FIX CONFIRMADO!**
 
@@ -922,7 +928,7 @@ O bloqueador redirect_uri_mismatch que bloqueou 2.4-G foi RESOLVIDO entre sessõ
 
 ### Objetivo desta fase:
 
-- Validar fluxo OAuth REAL ponta-a-ponta (usuario real → callback → onboarding → dashboard)
+- Validar fluxo OAuth REAL ponta-a-ponta (usuario real ? callback ? onboarding ? dashboard)
 - Validar persistência de sessão em banco de dados (ba_users, ba_sessions, ba_accounts)
 - Validar logout e reopen browser
 - Expandir observabilidade para rastrear eventos reais
@@ -930,20 +936,20 @@ O bloqueador redirect_uri_mismatch que bloqueou 2.4-G foi RESOLVIDO entre sessõ
 
 ### Resultado desta etapa (Session 1):
 
-- ✅ Confirmado Google Cloud Console foi atualizado (localhost URIs registradas)
-- ✅ OAuth flow alcançando página de login Google (URL gerada corretamente)
-- ✅ Email entrada validada (test.visiomilhas@gmail.com)
-- ✅ Observabilidade expandida: 4 novos event codes adicionados
+- ? Confirmado Google Cloud Console foi atualizado (localhost URIs registradas)
+- ? OAuth flow alcançando página de login Google (URL gerada corretamente)
+- ? Email entrada validada (test.visiomilhas@gmail.com)
+- ? Observabilidade expandida: 4 novos event codes adicionados
   - `OAUTH_REAL_LOGIN_SUCCESS`
   - `OAUTH_REAL_LOGOUT_SUCCESS`
   - `SESSION_REOPEN_SUCCESS`
   - `ONBOARDING_IDEMPOTENT_RECOVERY`
-- ✅ Documentação de validação criada (OAUTH_VALIDATION_2.4-H.md)
-- ✅ All code quality validations passing (lint/typecheck/test 57/57)
+- ? Documentação de validação criada (OAUTH_VALIDATION_2.4-H.md)
+- ? All code quality validations passing (lint/typecheck/test 57/57)
 
 ### Bloqueador Transiente:
 
-- ⏳ Erro 500 do Google ao clicar em "Avançar"
+- ? Erro 500 do Google ao clicar em "Avançar"
   - Tipo: Transiente (esperado em testes de sandbox)
   - Status: Será resolvido em próxima tentativa
   - Impacto: Bloqueia E2E completo temporariamente
@@ -951,7 +957,7 @@ O bloqueador redirect_uri_mismatch que bloqueou 2.4-G foi RESOLVIDO entre sessõ
 ### Próxima sessão (2.4-H Session 2):
 
 - Tentar OAuth flow novamente (erro 500 era transiente)
-- Completar E2E: callback → onboarding → dashboard
+- Completar E2E: callback ? onboarding ? dashboard
 - Validar persistência em ba_sessions, ba_users, ba_accounts
 - Validar logout
 - Validar refresh e reopen browser
@@ -972,16 +978,16 @@ Objetivos desta sessão:
 
 Resultado desta etapa (Session 2):
 
-- ✅ Procedimento Google Console Fix documentado em detalhes (GOOGLE_OAUTH_CONSOLE_FIX.md)
-- ✅ Readiness consolidado em documento formal (READINESS_2.4-G.md) — 85% pronto
-- ✅ All code quality validations passing (lint/typecheck/test 57/57)
-- ✅ Bloqueador exatamente identificado: Google Console missing localhost URIs
-- ✅ Próximas ações claramente documentadas
-- ✅ 2 commits finais criados com documentação
+- ? Procedimento Google Console Fix documentado em detalhes (GOOGLE_OAUTH_CONSOLE_FIX.md)
+- ? Readiness consolidado em documento formal (READINESS_2.4-G.md) — 85% pronto
+- ? All code quality validations passing (lint/typecheck/test 57/57)
+- ? Bloqueador exatamente identificado: Google Console missing localhost URIs
+- ? Próximas ações claramente documentadas
+- ? 2 commits finais criados com documentação
 
 Bloqueador Residual (Externo):
 
-**Status**: ⏳ PENDING EXTERNAL ACTION
+**Status**: ? PENDING EXTERNAL ACTION
 
 **Problema**:
 
@@ -1001,17 +1007,17 @@ Roadmap de 2.4-G:
 
 ```
 Session 1 (Anterior):
-  - Auditoria OAuth ✅
-  - Observabilidade expandida ✅
-  - Error detection melhorada ✅
-  - Documentação inicial ✅
-  - Bloqueador identificado ✅
+  - Auditoria OAuth ?
+  - Observabilidade expandida ?
+  - Error detection melhorada ?
+  - Documentação inicial ?
+  - Bloqueador identificado ?
 
 Session 2 (Agora):
-  - Procedimento fix documentado ✅
-  - Readiness consolidado ✅
-  - Validações finais ✅
-  - Preparado para fix ✅
+  - Procedimento fix documentado ?
+  - Readiness consolidado ?
+  - Validações finais ?
+  - Preparado para fix ?
 
 Session 3 (Próxima):
   - Google Console update (MANUAL)
@@ -2525,9 +2531,9 @@ Notas:
 
 Validações e resultados:
 
-- `npm run db:check-env` → ALL_PRESENT
-- `npm run db:check-connections` → ADM & APP OK
-- `npm run db:check-tables` → todas as tabelas listadas retornaram OK (inclui `mile_clubs`)
+- `npm run db:check-env` ? ALL_PRESENT
+- `npm run db:check-connections` ? ADM & APP OK
+- `npm run db:check-tables` ? todas as tabelas listadas retornaram OK (inclui `mile_clubs`)
 - `npm run test`, `npm run typecheck`, `npm run lint` e `npm run build` passaram (lint sem warnings após correção)
 
 Decisões:
@@ -2579,7 +2585,7 @@ Próximos passos (documentação/plano 1.3.11):
 
 1. Mapear campos relevantes em `db/app/schema.ts` e produzir especificação de `mile_point_lots` proposta.
 2. Desenhar motor FIFO: criação de lotes na compra, consumo por venda/transferência, cálculo de cost-basis por lote, registro de entradas de reversão e evidenciação de custos por `mile_sales`.
-3. Planejamento incremental: 1.3.12 (migrations & revisão), 1.3.13 (motor FIFO + testes), 1.3.14 (refatorar Server Actions → services), 1.3.15 (UI reintegração), 1.3.16 (estabilidade e PR).
+3. Planejamento incremental: 1.3.12 (migrations & revisão), 1.3.13 (motor FIFO + testes), 1.3.14 (refatorar Server Actions ? services), 1.3.15 (UI reintegração), 1.3.16 (estabilidade e PR).
 4. Documentar a dívida técnica e o racional da pausa em `DECISIONS.md` e `TODO_AI.md`.
 
 Observação: nenhuma alteração de schema será aplicada nesta etapa sem aprovação; este passo é apenas de análise e planejamento.
@@ -2690,7 +2696,7 @@ Objetivo:
 
 Instruções resumidas para o operador:
 
-- No GitHub do repositório: Settings → Secrets and variables → Actions → New repository secret.
+- No GitHub do repositório: Settings ? Secrets and variables ? Actions ? New repository secret.
   - Nome: `TEST_DATABASE_URL`
   - Valor: URL segura do banco de teste (ex.: `postgres://user:pass@host:port/test_db`) — **não** gravar este valor nos arquivos do repositório.
 - Em Actions, selecionar `Integration Tests - MovementsRepo` e clicar em `Run workflow`. Selecionar a branch `1.3.25.3-ci-manual-run-instructions` (ou `1.3.25.2-ci-integration-tests-test-db`) e executar.

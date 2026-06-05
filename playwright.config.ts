@@ -25,6 +25,7 @@ function resolvePlaywrightMode(): PlaywrightMode {
 }
 
 const mode = resolvePlaywrightMode();
+const isVisibleMode = mode === "visible";
 
 export default defineConfig({
   testDir: "./tests-e2e",
@@ -37,7 +38,7 @@ export default defineConfig({
     },
   ],
   use: {
-    headless: mode === "headless",
+    headless: !isVisibleMode,
     baseURL:
       process.env.PLAYWRIGHT_BASE_URL ??
       "https://hm.visiomilhas.visiochat.cloud",
@@ -46,7 +47,7 @@ export default defineConfig({
     video: "retain-on-failure",
     trace: "retain-on-failure",
     launchOptions: {
-      slowMo: 300,
+      slowMo: isVisibleMode ? 300 : 0,
       args: ["--start-maximized"],
     },
   },
