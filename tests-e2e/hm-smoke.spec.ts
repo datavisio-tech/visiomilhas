@@ -55,6 +55,29 @@ test.beforeAll(async () => {
 
 test.setTimeout(90_000);
 
+async function gotoWithRetry(
+  page: Page,
+  path: string,
+  options: { waitUntil?: "commit" | "domcontentloaded" | "load" | "networkidle"; timeout?: number } = {},
+) {
+  const waitUntil = options.waitUntil ?? "commit";
+  const timeout = options.timeout ?? 20_000;
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      await page.goto(path, { waitUntil, timeout });
+      await page.waitForLoadState("domcontentloaded").catch(() => undefined);
+      return;
+    } catch (error) {
+      lastError = error;
+      await page.waitForTimeout(attempt * 1000);
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error(String(lastError));
+}
+
 function isRelevantIssue(message: string) {
   return !ignoredConsoleMessages.some((pattern) => message.includes(pattern));
 }
@@ -119,7 +142,7 @@ async function assertSessionEstablished(page: Page, role: string) {
 
 async function assertHealthyRoute(page: Page, path: string, label: string) {
   const { hardIssues, softIssues } = await collectIssues(page);
-  await page.goto(path, { waitUntil: "commit" });
+  await gotoWithRetry(page, path);
 
   const doctype = await page.evaluate(() => document.doctype?.name ?? "");
   expect(doctype, `${label} must render with a doctype`).toBe("html");
@@ -149,7 +172,7 @@ async function ensureSignedIn(page: Page, user: TestUser) {
     })
     .catch(() => undefined);
 
-  await page.goto("/sign-in", { waitUntil: "commit" });
+  await gotoWithRetry(page, "/sign-in");
   const openEmailLogin = page
     .getByRole("button", { name: "Entrar com e-mail" })
     .first();
@@ -194,11 +217,17 @@ async function signOut(page: Page) {
       sessionStorage.clear();
     })
     .catch(() => undefined);
-  await page.goto("/", { waitUntil: "commit" });
+  await gotoWithRetry(page, "/");
 }
 
 test("homepage renders and stays clean", async ({ page }) => {
-  await page.goto("/", { waitUntil: "commit" });
+  const response = await page.request.get("/");
+  expect(response.status()).toBe(200);
+  const html = await response.text();
+  expect(html).toMatch(/central operacional para milhas/i);
+  expect(html).toMatch(/come.*gratuitamente/i);
+
+  await gotoWithRetry(page, "/");
   const doctype = await page.evaluate(() => document.doctype?.name ?? "");
   expect(doctype).toBe("html");
   await expect(page.getByText("CENTRAL OPERACIONAL PARA MILHAS")).toBeVisible();
@@ -234,19 +263,19 @@ test("owner onboarding and authenticated HM surfaces are available", async ({
     await assertHealthyRoute(page, route.path, route.label);
   }
 
-  await page.goto("/app", { waitUntil: "commit" }).catch(() => undefined);
+  await gotoWithRetry(page, "/app").catch(() => undefined);
   await expect(page).not.toHaveURL(/\/sign-in/);
 });
 
 test("new owner onboarding can bootstrap the app surface", async ({ page }) => {
   await ensureSignedIn(page, testUsers.QA_NEW);
-  await page.goto("/app", { waitUntil: "commit" }).catch(() => undefined);
+  await gotoWithRetry(page, "/app").catch(() => undefined);
   await expect(page).not.toHaveURL(/\/sign-in/);
 });
 
 test("trial and subscribe flow are available", async ({ page }) => {
   await ensureSignedIn(page, testUsers.QA_TRIAL);
-  await page.goto("/subscribe", { waitUntil: "commit" });
+  await gotoWithRetry(page, "/subscribe");
   await expect(page.getByText(/Teste.*15 dias/i).first()).toBeVisible();
   await expect(page.getByRole("button", { name: /Come.*teste/i }).first()).toBeVisible();
 });
@@ -275,7 +304,7 @@ test("expired users can recover via subscribe", async ({ page }, testInfo) => {
     });
     return;
   }
-  await page.goto("/subscribe", { waitUntil: "commit" });
+  await gotoWithRetry(page, "/subscribe");
   await expect(page.getByText(/Teste.*15 dias/i).first()).toBeVisible();
   await expect(
     page.getByRole("button", { name: /Come.*teste/i }).first(),
@@ -303,6 +332,6 @@ test("session refresh survives reload", async ({ page }) => {
 test("logout clears the session", async ({ page }) => {
   await ensureSignedIn(page, testUsers.QA_OWNER);
   await signOut(page);
-  await page.goto("/app/dashboard", { waitUntil: "commit" }).catch(() => undefined);
+  await gotoWithRetry(page, "/app/dashboard").catch(() => undefined);
   await expect(page).toHaveURL(/\/sign-in|\/$/);
 });

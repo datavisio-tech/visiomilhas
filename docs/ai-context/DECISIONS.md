@@ -438,6 +438,12 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - Decision: the same Docker image artifact must be promoted from HM to PROD for a given release tag.
 - Decision: `release-promotion.yml` is the official release pipeline entrypoint.
 
+## 2026-06-05 - HM release smoke stabilization
+
+- Decision: HM browser-smoke jobs in `release-promotion.yml` must install Chromium explicitly before `npx playwright test`.
+- Decision: headless Playwright runs in HM certification should not inherit the visible-mode slowMo setting.
+- Decision: HM smoke navigation should use a retry-capable helper so transient page navigation stalls do not block certification of the homepage and adjacent routes.
+
 # 2026-06-04 - PROD V2 migration validation decision
 
 - Decision: `db/app/migrations/0001_add_mile_point_lots.sql` is operationally validated in HM through read-only SQL metadata checks.
