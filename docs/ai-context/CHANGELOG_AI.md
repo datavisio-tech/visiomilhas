@@ -1,3 +1,11 @@
+# 2026-06-05 - Release promotion SSH retry consolidation
+
+- Deduped the release-promotion SSH port probe lists so `${SSH_PORT}` and `22` are only attempted once per gate.
+- Added exponential backoff to `ssh-keyscan` and SSH handshake retries in the shared precheck helper and in `release-promotion.yml`.
+- Removed standalone remote-directory SSH calls from the promotion workflow and moved directory creation into `rsync` / the remote orchestration script.
+- Consolidated target-side HM/PROD orchestration into `scripts/remote-release-deploy.sh` so image load, env finalization, deploy, validation, and image pruning happen behind one remote session.
+- Result: the release-promotion happy path drops from 10 SSH-touching operations to 8, and the retry-heavy envelope drops from 54 to 28, which lowers sensitivity to runner-to-VPS variance and shortens failure recovery time.
+
 # 2026-06-05 - PRECHECK_INFRASTRUCTURE hard gate
 
 - Added a mandatory `PRECHECK_INFRASTRUCTURE` gate to `deploy-hm.yml` and `release-promotion.yml`.

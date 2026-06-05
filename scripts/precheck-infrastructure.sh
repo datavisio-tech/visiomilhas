@@ -36,7 +36,16 @@ fi
 echo "Precheck: capturing SSH host key on ${SSH_HOST}:${SSH_PORT}"
 selected_port=""
 scan_success="false"
+candidate_ports=()
 for port in "${SSH_PORT}" 22; do
+  case " ${candidate_ports[*]} " in
+    *" ${port} "*) ;;
+    *) candidate_ports+=("${port}") ;;
+  esac
+done
+
+for port in "${candidate_ports[@]}"; do
+  delay=1
   for attempt in 1 2 3; do
     if ssh-keyscan -T 2 -p "${port}" "${SSH_HOST}" >> "${KNOWN_HOSTS_PATH}" 2>/dev/null; then
       echo "Precheck: SSH host key captured on port ${port} at attempt ${attempt}"
@@ -45,7 +54,8 @@ for port in "${SSH_PORT}" 22; do
       break 2
     fi
     echo "Precheck: ssh-keyscan attempt ${attempt} failed on port ${port}, retrying..."
-    sleep 1
+    sleep "${delay}"
+    delay=$((delay * 2))
   done
 done
 
@@ -59,13 +69,27 @@ fi
 
 handshake_port="${selected_port:-${SSH_PORT}}"
 handshake_ok="false"
+handshake_ports=()
 for port in "${handshake_port}" "${SSH_PORT}" 22; do
-  if [ -n "${port}" ] && ssh -i "${SSH_KEY_PATH}" -o BatchMode=yes -o ConnectTimeout=2 -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile="${KNOWN_HOSTS_PATH}" -p "${port}" "${SSH_USER}@${SSH_HOST}" "true"; then
-    echo "Precheck: SSH handshake validated on port ${port}"
-    selected_port="${port}"
-    handshake_ok="true"
-    break
-  fi
+  case " ${handshake_ports[*]} " in
+    *" ${port} "*) ;;
+    *) handshake_ports+=("${port}") ;;
+  esac
+done
+
+for port in "${handshake_ports[@]}"; do
+  delay=1
+  for attempt in 1 2 3; do
+    if [ -n "${port}" ] && ssh -i "${SSH_KEY_PATH}" -o BatchMode=yes -o ConnectTimeout=2 -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile="${KNOWN_HOSTS_PATH}" -p "${port}" "${SSH_USER}@${SSH_HOST}" "true"; then
+      echo "Precheck: SSH handshake validated on port ${port} at attempt ${attempt}"
+      selected_port="${port}"
+      handshake_ok="true"
+      break 2
+    fi
+    echo "Precheck: SSH handshake attempt ${attempt} failed on port ${port}, retrying..."
+    sleep "${delay}"
+    delay=$((delay * 2))
+  done
 done
 
 if [ "${handshake_ok}" != "true" ]; then

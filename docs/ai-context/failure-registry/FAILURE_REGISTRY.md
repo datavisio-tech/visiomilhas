@@ -19,6 +19,7 @@ This registry tracks recurring operational failures so agents can recover before
 | `browserType.launch: Executable doesn't exist` | Playwright runtime / CI preparation | The workflow installed Playwright dependencies but not the browser binary expected by the smoke job | `WARNING` when adding an explicit browser-install step restores the lane; otherwise `FAIL` if the runner cannot provision browsers |
 | `PRECHECK_INFRASTRUCTURE failed` | Deployment pipeline / target readiness | Target resolution, ssh-keyscan retry, SSH handshake, remote directory access, disk space, or Docker runtime is not ready for deployment | `FAIL` until the target passes the gate; rerun only after the target is ready |
 | `intermittent runner SSH timeout` | SSH / runner egress path | GitHub runner attempts sometimes time out or hit preauth negotiation variance even while the server is healthy and accepting other SSH sessions | `WARNING` when retries or reruns succeed on a fresh runner; `FAIL` only if the same pattern persists with no successful SSH sessions |
+| `release-promotion SSH retry amplification` | Release pipeline / SSH bootstrap | Release promotion repeats the same SSH port probes and remote setup calls more than necessary, amplifying transient runner-to-VPS variance | `WARNING` when the workflow can recover with backoff and deduped probes; `FAIL` only if the reduced SSH path still cannot complete |
 | `ssh timeout after release workflow change` | Release pipeline / SSH preparation | Release workflow diverged from the last known-good HM SSH bootstrap, including selected-port `ssh-keyscan` retry behavior, then timed out at the first remote command | `PIPELINE_REGRESSION`; restore the last known-good selected-port SSH bootstrap before investigating host infrastructure |
 | `SSH_DEPLOY_TIMEOUT_RELEASE_PROMOTION` | Release pipeline / SSH endpoint resolution | HM release promotion used masked/inconsistent `SSH_HOST` resolution while the operational HM SSH endpoint was known and reachable | `PIPELINE_REGRESSION`; pin HM release promotion to the approved SSH endpoint and port, then rerun |
 
@@ -83,3 +84,10 @@ If the failure persists after recovery and directly blocks delivery, the agent m
   - Root cause: not a persistent host ban or firewall block; the observed failure sits in the runner-to-host SSH path or client negotiation variance.
   - Recovery: rerun the workflow on a fresh runner, keep the precheck gate, and correlate the run timestamp with `journalctl -u ssh` before opening a host-level RCA.
   - Recurrence prevention: do not label this as host downtime unless the server-side logs stop showing successful SSH sessions and the firewall/ban layers prove a block.
+- `FP-014`: Release promotion SSH retry amplification.
+  - Classification: `PIPELINE_VARIANCE`.
+  - Symptom: release promotion spent extra attempts on duplicated port probes and standalone remote-preparation SSH calls, making transient runner-to-VPS variance more expensive than necessary.
+  - Affected workflows: `.github/workflows/release-promotion.yml` and the shared SSH precheck helper.
+  - Root cause: the pipeline repeated equivalent SSH work across precheck, directory preparation, and remote orchestration instead of consolidating remote setup behind a single orchestration step.
+  - Recovery: dedupe the SSH port list, use exponential backoff on `ssh-keyscan` and handshake retries, remove standalone remote-directory SSH calls, and let the remote orchestration script own the target-side setup.
+  - Recurrence prevention: keep the release promotion SSH path minimized to one precheck gate, one sync transport, and one remote orchestration session per environment.

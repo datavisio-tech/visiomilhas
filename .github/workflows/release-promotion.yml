@@ -323,27 +323,39 @@ jobs:
           printf '%s\n' "${SSH_PRIVATE_KEY}" > ~/.ssh/visiomilhas_deploy_key
           chmod 600 ~/.ssh/visiomilhas_deploy_key
           selected_port=""
+          candidate_ports=()
           for port in "${SSH_PORT}" 22; do
-            for attempt in 1 2 3 4 5 6; do
-              if ssh-keyscan -T 10 -p "${port}" "${SSH_HOST}" >> ~/.ssh/known_hosts; then
+            case " ${candidate_ports[*]} " in
+              *" ${port} "*) ;;
+              *) candidate_ports+=("${port}") ;;
+            esac
+          done
+          for port in "${candidate_ports[@]}"; do
+            delay=1
+            for attempt in 1 2 3; do
+              if ssh-keyscan -T 3 -p "${port}" "${SSH_HOST}" >> ~/.ssh/known_hosts; then
                 echo "SSH host key captured on port ${port} at attempt ${attempt}."
                 selected_port="${port}"
                 break 2
               fi
               echo "ssh-keyscan attempt ${attempt} failed on port ${port}, retrying..."
-              sleep 5
+              sleep "${delay}"
+              delay=$((delay * 2))
             done
           done
           if [ -z "${selected_port}" ]; then
-            for port in "${SSH_PORT}" 22; do
+            echo "SSH keyscan did not materialize known_hosts; retrying with SSH handshake fallback."
+            for port in "${candidate_ports[@]}"; do
+              delay=1
               for attempt in 1 2 3; do
-                if ssh -i ~/.ssh/visiomilhas_deploy_key -o BatchMode=yes -o ConnectTimeout=15 -o StrictHostKeyChecking=accept-new -p "${port}" "${SSH_USER}@${SSH_HOST}" "true"; then
+                if ssh -i ~/.ssh/visiomilhas_deploy_key -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new -p "${port}" "${SSH_USER}@${SSH_HOST}" "true"; then
                   echo "SSH authentication validated on port ${port} at attempt ${attempt}."
                   selected_port="${port}"
                   break 2
                 fi
                 echo "ssh authentication attempt ${attempt} failed on port ${port}, retrying..."
-                sleep 5
+                sleep "${delay}"
+                delay=$((delay * 2))
               done
             done
           fi
@@ -358,21 +370,12 @@ jobs:
           SSH_USER: root
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Ensure remote directory exists
-        shell: bash
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "mkdir -p '${REMOTE_DIR}' && test -w '${REMOTE_DIR}'"
-        env:
-          SSH_HOST: 72.60.143.197
-          SSH_USER: root
-
       - name: Sync source to HM server
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "rm -rf '${REMOTE_DIR}' && mkdir -p '${REMOTE_DIR}'"
           rsync -az --delete \
+            --rsync-path="mkdir -p '${REMOTE_DIR}' && rsync" \
             --exclude '.git' \
             --exclude 'node_modules' \
             --exclude '.next' \
@@ -403,12 +406,11 @@ jobs:
             -e "ssh -i ~/.ssh/visiomilhas_deploy_key -p ${SSH_PORT}" \
             ./ "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/"
 
-      - name: Load release image on HM host
+      - name: Stage release image on HM host
         shell: bash
         run: |
           set -euo pipefail
           scp -i ~/.ssh/visiomilhas_deploy_key -P "${SSH_PORT}" "/tmp/release-image/release-image.tar" "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/release-image.tar"
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && docker load -i release-image.tar && rm -f release-image.tar"
 
       - name: Render HM env on server
         shell: bash
@@ -454,44 +456,30 @@ jobs:
 
           chmod 600 "${env_file}"
           scp -i ~/.ssh/visiomilhas_deploy_key -P "${SSH_PORT}" "${env_file}" "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/.env.production.tmp"
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && mv .env.production.tmp .env.production && chmod 600 .env.production && test -s .env.production"
+          echo "HM env staged on remote host."
 
-      - name: Deploy release artifact to HM
+      - name: Run remote HM deployment orchestration
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && docker rm -f '${VISIOMILIAS_CONTAINER_NAME}' >/dev/null 2>&1 || true && docker compose --env-file .env.production -f docker-compose.visiomilhas.standalone.yml up -d"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && bash scripts/remote-release-deploy.sh"
 
-      - name: Validate HM runtime
+      - name: Validate public URL via Traefik
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "container_id=\$(docker ps -q --filter name=${VISIOMILIAS_CONTAINER_NAME} | head -n1) && test -n \"\$container_id\" && docker exec \"\$container_id\" node scripts/healthcheck.js"
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "container_id=\$(docker ps -q --filter name=${VISIOMILIAS_CONTAINER_NAME} | head -n1) && test -n \"\$container_id\" && docker exec \"\$container_id\" node --input-type=module -e \"const routes=['/','/sign-in','/subscribe','/app','/app/dashboard','/app/accounts','/app/programs','/app/purchases']; for (const route of routes) { const res = await fetch('http://127.0.0.1:3000' + route, { redirect: 'follow' }); const html = await res.text(); if (!html.startsWith('<!DOCTYPE html>')) { console.error('Missing DOCTYPE on', route); process.exit(1); } if (html.includes('React error #418') || html.includes('React error #423') || html.includes('HierarchyRequestError') || html.includes('NotFoundError')) { console.error('Hydration/runtime error text found on', route); process.exit(2); } } const authRes = await fetch('http://127.0.0.1:3000/api/auth/sign-in/social', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ provider: 'google' }) }); const authText = await authRes.text(); if (authRes.status === 503 || authText.includes('AUTH_BOOTSTRAP_FAILED') || authText.includes('503')) { console.error('OAuth bootstrap failed'); process.exit(3); } console.log('HM internal smoke checks passed');\""
-          for attempt in 1 2 3 4 5 6 7 8 9 10; do
-            status="$(curl -k -s -o /dev/null -w '%{http_code}' --max-time 20 "${APP_URL}/sign-in" || true)"
+          for attempt in 1 2 3 4 5 6; do
+            status="$(curl -k -s -o /dev/null -w '%{http_code}' --max-time 15 "${APP_URL}/sign-in" || true)"
             if [ "${status}" = "200" ] || [ "${status}" = "307" ]; then
               echo "Public HM URL is reachable through Traefik."
               exit 0
             fi
             echo "Public HM attempt ${attempt} returned HTTP ${status}, retrying..."
-            sleep 5
+            sleep $((attempt * 2))
           done
           echo "Public HM URL not reachable through Traefik after retries."
           curl -k -I "${APP_URL}/sign-in" || true
           exit 1
-
-      - name: Inspect Traefik routing state
-        shell: bash
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "curl -s http://127.0.0.1:8082/api/http/routers | grep -n hm.visiomilhas.visiochat.cloud || true"
-
-      - name: Prune old Docker images on HM host
-        shell: bash
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && bash scripts/prune-docker-images.sh datavisio/visiomilhas 4"
 
   smoke_hm:
     name: Playwright smoke on HM
@@ -653,27 +641,39 @@ jobs:
           printf '%s\n' "${SSH_PRIVATE_KEY}" > ~/.ssh/visiomilhas_deploy_key
           chmod 600 ~/.ssh/visiomilhas_deploy_key
           selected_port=""
+          candidate_ports=()
           for port in "${SSH_PORT}" 22; do
-            for attempt in 1 2 3 4 5 6; do
-              if ssh-keyscan -T 10 -p "${port}" "${SSH_HOST}" >> ~/.ssh/known_hosts; then
+            case " ${candidate_ports[*]} " in
+              *" ${port} "*) ;;
+              *) candidate_ports+=("${port}") ;;
+            esac
+          done
+          for port in "${candidate_ports[@]}"; do
+            delay=1
+            for attempt in 1 2 3; do
+              if ssh-keyscan -T 3 -p "${port}" "${SSH_HOST}" >> ~/.ssh/known_hosts; then
                 echo "SSH host key captured on port ${port} at attempt ${attempt}."
                 selected_port="${port}"
                 break 2
               fi
               echo "ssh-keyscan attempt ${attempt} failed on port ${port}, retrying..."
-              sleep 5
+              sleep "${delay}"
+              delay=$((delay * 2))
             done
           done
           if [ -z "${selected_port}" ]; then
-            for port in "${SSH_PORT}" 22; do
+            echo "SSH keyscan did not materialize known_hosts; retrying with SSH handshake fallback."
+            for port in "${candidate_ports[@]}"; do
+              delay=1
               for attempt in 1 2 3; do
-                if ssh -i ~/.ssh/visiomilhas_deploy_key -o BatchMode=yes -o ConnectTimeout=15 -o StrictHostKeyChecking=accept-new -p "${port}" "${SSH_USER}@${SSH_HOST}" "true"; then
+                if ssh -i ~/.ssh/visiomilhas_deploy_key -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new -p "${port}" "${SSH_USER}@${SSH_HOST}" "true"; then
                   echo "SSH authentication validated on port ${port} at attempt ${attempt}."
                   selected_port="${port}"
                   break 2
                 fi
                 echo "ssh authentication attempt ${attempt} failed on port ${port}, retrying..."
-                sleep 5
+                sleep "${delay}"
+                delay=$((delay * 2))
               done
             done
           fi
@@ -688,21 +688,12 @@ jobs:
           SSH_USER: root
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Ensure remote directory exists
-        shell: bash
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "mkdir -p '${REMOTE_DIR}' && test -w '${REMOTE_DIR}'"
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: root
-
       - name: Sync source to production server
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "rm -rf '${REMOTE_DIR}' && mkdir -p '${REMOTE_DIR}'"
           rsync -az --delete \
+            --rsync-path="mkdir -p '${REMOTE_DIR}' && rsync" \
             --exclude '.git' \
             --exclude 'node_modules' \
             --exclude '.next' \
@@ -733,12 +724,11 @@ jobs:
             -e "ssh -i ~/.ssh/visiomilhas_deploy_key -p ${SSH_PORT}" \
             ./ "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/"
 
-      - name: Load release image on PROD host
+      - name: Stage release image on PROD host
         shell: bash
         run: |
           set -euo pipefail
           scp -i ~/.ssh/visiomilhas_deploy_key -P "${SSH_PORT}" "/tmp/release-image/release-image.tar" "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/release-image.tar"
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && docker load -i release-image.tar && rm -f release-image.tar"
 
       - name: Render production env on server
         shell: bash
@@ -784,38 +774,32 @@ jobs:
 
           chmod 600 "${env_file}"
           scp -i ~/.ssh/visiomilhas_deploy_key -P "${SSH_PORT}" "${env_file}" "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/.env.production.tmp"
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && mv .env.production.tmp .env.production && chmod 600 .env.production && test -s .env.production"
+          echo "Production env staged on remote host."
 
-      - name: Deploy release artifact to PROD
+      - name: Run remote PROD deployment orchestration
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && docker rm -f '${VISIOMILIAS_CONTAINER_NAME}' >/dev/null 2>&1 || true && docker compose --env-file .env.production -f docker-compose.visiomilhas.standalone.yml up -d"
+          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && bash scripts/remote-release-deploy.sh"
 
-      - name: Validate PROD runtime
+      - name: Validate public URL via Traefik
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "container_id=\$(docker ps -q --filter name=${VISIOMILIAS_CONTAINER_NAME} | head -n1) && test -n \"\$container_id\" && docker exec \"\$container_id\" node scripts/healthcheck.js"
           for route in / /sign-in /subscribe /app /app/dashboard /app/accounts /app/programs /app/purchases; do
-            status="$(curl -k -s -o /dev/null -w '%{http_code}' --max-time 20 "${APP_URL}${route}" || true)"
+            for attempt in 1 2 3 4 5; do
+              status="$(curl -k -s -o /dev/null -w '%{http_code}' --max-time 15 "${APP_URL}${route}" || true)"
+              if [ "${status}" = "200" ] || [ "${status}" = "307" ]; then
+                break
+              fi
+              echo "PROD route ${route} returned HTTP ${status}, retrying..."
+              sleep $((attempt * 2))
+            done
             if [ "${status}" != "200" ] && [ "${status}" != "307" ]; then
               echo "PROD route ${route} returned HTTP ${status}"
               exit 1
             fi
           done
-
-      - name: Inspect Traefik routing state
-        shell: bash
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "curl -s http://127.0.0.1:8082/api/http/routers | grep -n visiomilhas.visiochat.cloud || true"
-
-      - name: Prune old Docker images on PROD host
-        shell: bash
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/visiomilhas_deploy_key -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "cd '${REMOTE_DIR}' && bash scripts/prune-docker-images.sh datavisio/visiomilhas 4"
 
   smoke_prod:
     name: Playwright smoke on PROD

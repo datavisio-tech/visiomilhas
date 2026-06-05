@@ -139,3 +139,12 @@
 5. Correlate the failing run timestamp with `journalctl -u ssh` on the target.
 6. If the server logs show successful `Accepted publickey` sessions in the same window, treat the failure as runner-path or negotiation variance, not host downtime.
 7. Re-run the workflow from a fresh runner and preserve the precheck gate before opening a host-level RCA.
+
+## Playbook: `release-promotion SSH retry amplification`
+
+1. Treat repeated port probes and remote setup SSH calls as workflow amplification, not as a new host failure class.
+2. Deduplicate the SSH port list so `${SSH_PORT}` and `22` are only probed once each.
+3. Keep exponential backoff on `ssh-keyscan` and SSH handshake retries, but cap the retry budget so the workflow still fails fast.
+4. Remove standalone remote-directory SSH calls from the promotion workflow; let `rsync` create the directory and let the remote orchestration script own target-side setup.
+5. Keep the release-promotion path to one precheck gate, one sync transport, one image stage, one env stage, and one remote orchestration session per environment.
+6. Re-run the release promotion workflow after the SSH path is compacted.
