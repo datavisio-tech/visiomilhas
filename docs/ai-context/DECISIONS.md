@@ -1,4 +1,22 @@
-﻿# 2026-06-04 - Release promotion SSH baseline decision
+# 2026-06-05 - Runner to VPS mitigation decision
+
+- Decision: the Runner -> VPS RCA is closed for the current incident class.
+- Consolidated cause: failed GitHub-hosted runner IP `172.184.172.212` did not reach the VPS; no entry exists in `sshd`, `auth.log`, `syslog`, kernel logs, or general journal for the failed window.
+- Decision: do not reopen SSH, Fail2Ban, firewall, key, or remote-script RCA for this class unless a future failing runner IP appears in server-side logs with different evidence.
+- Decision: the lowest-impact mitigation for HM certification is to keep GitHub-hosted runners for build/test and move deploy/precheck jobs to a self-hosted runner with stable path to the VPS.
+- Decision: preferred implementation is a self-hosted GitHub Actions runner on the VisioMilhas VPS or on a small auxiliary bastion VPS in the same provider/network, restricted to deploy jobs through labels such as `self-hosted`, `linux`, `x64`, `visiomilhas-deploy`.
+- Implementation decision: the VisioMilhas deploy runner is installed on the `visiochat` VPS as user `github-runner`, under `/opt/actions-runner/visiomilhas-deploy`, with GitHub labels `self-hosted`, `Linux`, `X64`, and `visiomilhas-deploy`.
+- Implementation decision: `build_once`, lint/typecheck/tests, Playwright smoke, integration tests, and release publishing remain on GitHub-hosted runners; only deploy jobs use the self-hosted deploy runner.
+- Decision: pull-based deploy is a valid future hardening path, but it is higher impact than a deploy runner because it changes the release execution model and operational ownership.
+- Decision: job-level retry remains useful as a temporary mitigation, but it does not remove the root path dependency and is insufficient as the main certification strategy.
+
+# 2026-06-05 - Precheck infrastructure retry decision
+
+- Decision: `PRECHECK_INFRASTRUCTURE` must remain the first gate before any HM or PROD build/deploy step.
+- Decision: `ssh-keyscan` inside the precheck should retry on `${SSH_PORT}` and `22` to avoid rejecting a valid target on a single transient miss.
+- Decision: the retry window must remain short enough to keep the failure fast and preserve the gate's purpose.
+- Decision: if `ssh-keyscan` still misses after the short retry window, the precheck may validate the target with a real SSH handshake using `StrictHostKeyChecking=accept-new` instead of blocking a known-good host on the keyscan alone.
+# 2026-06-04 - Release promotion SSH baseline decision
 
 - Decision: `.github/workflows/release-promotion.yml` must preserve the same SSH bootstrap behavior proven by `.github/workflows/deploy-hm.yml`.
 - Decision: release promotion must use the selected-port `ssh-keyscan` retry loop across `${SSH_PORT}` and `22`.
@@ -444,6 +462,12 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - Decision: headless Playwright runs in HM certification should not inherit the visible-mode slowMo setting.
 - Decision: HM smoke navigation should use a retry-capable helper so transient page navigation stalls do not block certification of the homepage and adjacent routes.
 - Decision: the HM smoke suite may use a wider navigation/request retry window in CI (45s timeout, 4 attempts) to absorb transient runner/network latency while preserving the same assertions.
+
+## 2026-06-05 - PRECHECK_INFRASTRUCTURE hard gate
+
+- Decision: every HM and PROD deploy entrypoint must run `PRECHECK_INFRASTRUCTURE` before starting build, sync, deploy, or smoke stages.
+- Decision: the gate must validate target resolution, `ssh-keyscan`, SSH handshake, remote directory access, minimum disk space, and Docker availability.
+- Decision: if the gate fails, the workflow must stop immediately and emit the failure evidence without continuing to build or deploy.
 
 # 2026-06-04 - PROD V2 migration validation decision
 

@@ -17,6 +17,12 @@ This registry tracks recurring operational failures so agents can recover before
 | `browser unavailable` | Browser automation / local runtime | No usable browser/DevTools/Playwright runtime is exposed, or the local process host cannot spawn browser helpers | `WARNING` if HTTP/runtime validation can continue; `FAIL` only if no fallback path exists |
 | `playwright runtime drift` | Test automation / local runtime | Playwright is available, but the environment requires isolation from unit test runners and explicit setup conventions | `WARNING` when the setup can be standardized; otherwise `FAIL` only if automation cannot be stabilized |
 | `browserType.launch: Executable doesn't exist` | Playwright runtime / CI preparation | The workflow installed Playwright dependencies but not the browser binary expected by the smoke job | `WARNING` when adding an explicit browser-install step restores the lane; otherwise `FAIL` if the runner cannot provision browsers |
+| `PRECHECK_INFRASTRUCTURE failed` | Deployment pipeline / target readiness | Target resolution, ssh-keyscan retry, SSH handshake, remote directory access, disk space, or Docker runtime is not ready for deployment | `FAIL` until the target passes the gate; collect runner evidence before any new SSH RCA |
+| `intermittent runner SSH timeout` | SSH / runner egress path | GitHub runner attempts sometimes time out or hit preauth negotiation variance even while the server is healthy and accepting other SSH sessions | `WARNING` when retries or reruns succeed on a fresh runner; `FAIL` only if the same pattern persists with no successful SSH sessions |
+| `release-promotion SSH retry amplification` | Release pipeline / SSH bootstrap | Release promotion repeats the same SSH port probes and remote setup calls more than necessary, amplifying transient runner-to-VPS variance | `WARNING` when the workflow can recover with backoff and deduped probes; `FAIL` only if the reduced SSH path still cannot complete |
+| `remote release env not propagated` | Release pipeline / remote execution | Runner env values are written to a staged env file but are not available inside the remote SSH process before the script validates them | `PIPELINE_REGRESSION`; load the staged remote env file before validating runtime variables |
+| `remote env source fails on public values` | Release pipeline / remote execution | Remote script sources `.env.production` as shell while the env file contains public values with spaces or currency symbols | `PIPELINE_REGRESSION`; parse only required operational keys instead of sourcing the full env file |
+| `container healthcheck immediate ECONNREFUSED` | Release pipeline / runtime validation | Deploy script runs container healthcheck before the Next.js process is listening inside the newly started container | `WARNING`; add bounded healthcheck retry before failing deploy |
 | `ssh timeout after release workflow change` | Release pipeline / SSH preparation | Release workflow diverged from the last known-good HM SSH bootstrap, including selected-port `ssh-keyscan` retry behavior, then timed out at the first remote command | `PIPELINE_REGRESSION`; restore the last known-good selected-port SSH bootstrap before investigating host infrastructure |
 | `SSH_DEPLOY_TIMEOUT_RELEASE_PROMOTION` | Release pipeline / SSH endpoint resolution | HM release promotion used masked/inconsistent `SSH_HOST` resolution while the operational HM SSH endpoint was known and reachable | `PIPELINE_REGRESSION`; pin HM release promotion to the approved SSH endpoint and port, then rerun |
 
@@ -67,3 +73,45 @@ If the failure persists after recovery and directly blocks delivery, the agent m
   - Root cause: the HM smoke job installed Node dependencies but not the Playwright browser binary required by Chromium smoke tests.
   - Recovery: insert an explicit `npx playwright install --with-deps chromium` step before `npx playwright test` in the HM smoke job.
   - Recurrence prevention: every browser-validation job must provision the browser executable explicitly instead of assuming `npm ci` is enough.
+- `FP-012`: Precheck infrastructure gate.
+  - Classification: `PIPELINE_GUARD`.
+  - Symptom: deploy HM or PROD stops before build/deploy because target resolution, `ssh-keyscan`, SSH handshake, remote directory access, disk space, or Docker availability fails the mandatory precheck.
+  - Affected workflows: `.github/workflows/deploy-hm.yml` and `.github/workflows/release-promotion.yml`.
+  - Root cause: the target environment is not ready to receive a deployment.
+  - Recovery: do not continue the pipeline; fix the target readiness issue first, then rerun the same workflow. The gate already retries `ssh-keyscan` on `${SSH_PORT}` and `22`, then falls back to a real SSH handshake with `StrictHostKeyChecking=accept-new` before failing.
+  - Evidence requirement: when the gate fails, the log must include `timestamp_utc`, `runner_name`, `runner_os`, `runner_arch`, `runner_labels`, `runner_public_ip`, `ssh_host`, `ssh_port`, `github_run_id`, `github_job`, and `github_workflow`.
+  - Recurrence prevention: keep the precheck as the first gate before any deploy/build stage that can touch HM or PROD, keep the fallback SSH handshake bounded, and do not open a new SSH RCA without the runner evidence block.
+- `FP-013`: Intermittent runner SSH timeout.
+  - Classification: `PIPELINE_VARIANCE`.
+  - Symptom: some GitHub runner SSH attempts time out or show preauth negotiation noise while other attempts from the same or different runners succeed against the same server.
+  - Evidence from server: `ssh.service` is active, port 22 is listening, `fail2ban-client` is not installed, `ufw` is inactive, `iptables` shows no SSH block, `MaxStartups` is the default `10:30:100`, host resources are healthy, and `journalctl -u ssh` shows both `Connection closed` / `Unable to negotiate` preauth events and successful `Accepted publickey` sessions from runner egress IPs in the same time window.
+  - Root cause: not a persistent host ban or firewall block; the observed failure sits in the runner-to-host SSH path or client negotiation variance.
+  - Recovery: rerun the workflow on a fresh runner, keep the precheck gate, and correlate the run timestamp with `journalctl -u ssh` before opening a host-level RCA.
+  - Recurrence prevention: do not label this as host downtime unless the server-side logs stop showing successful SSH sessions and the firewall/ban layers prove a block.
+- `FP-014`: Release promotion SSH retry amplification.
+  - Classification: `PIPELINE_VARIANCE`.
+  - Symptom: release promotion spent extra attempts on duplicated port probes and standalone remote-preparation SSH calls, making transient runner-to-VPS variance more expensive than necessary.
+  - Affected workflows: `.github/workflows/release-promotion.yml` and the shared SSH precheck helper.
+  - Root cause: the pipeline repeated equivalent SSH work across precheck, directory preparation, and remote orchestration instead of consolidating remote setup behind a single orchestration step.
+  - Recovery: dedupe the SSH port list, use exponential backoff on `ssh-keyscan` and handshake retries, remove standalone remote-directory SSH calls, and let the remote orchestration script own the target-side setup.
+  - Recurrence prevention: keep the release promotion SSH path minimized to one precheck gate, one sync transport, and one remote orchestration session per environment.
+- `FP-015`: Remote release deploy env propagation.
+  - Classification: `PIPELINE_REGRESSION`.
+  - Symptom: `Run remote HM deployment orchestration` failed with `scripts/remote-release-deploy.sh: line 4: VISIOMILIAS_CONTAINER_NAME: parameter null or not set`.
+  - Affected workflow: `.github/workflows/release-promotion.yml`.
+  - Affected script: `scripts/remote-release-deploy.sh`.
+  - Root cause: `VISIOMILIAS_CONTAINER_NAME`, `VISIOMILIAS_PUBLIC_HOST`, `VISIOMILIAS_ROUTER_NAME`, `VISIOMILIAS_SERVICE_NAME`, and `COMPOSE_PROJECT_NAME` existed in the runner and in `.env.production.tmp`, but were not exported into the remote SSH process before the script validated them.
+  - Recovery: move validation of runtime variables until after `.env.production.tmp` is promoted to `.env.production` and sourced by the remote script.
+  - Recurrence prevention: remote orchestration scripts must treat the staged remote env file as the source of runtime configuration and must not assume runner env variables cross SSH boundaries.
+- `FP-016`: Remote env source fails on public pricing values.
+  - Classification: `PIPELINE_REGRESSION`.
+  - Symptom: `Run remote HM deployment orchestration` failed with `./.env.production: line 12: 4,99/mês: No such file or directory`.
+  - Root cause: `.env.production` contains public display values such as `PLANO=R$ 4,99/mês`; sourcing the whole file as shell executes the value after the space as a command.
+  - Recovery: parse only required operational keys from `.env.production` and export those variables explicitly.
+  - Recurrence prevention: remote deploy scripts must not source env files that contain display copy, currency, or values with spaces.
+- `FP-017`: Container healthcheck immediate ECONNREFUSED.
+  - Classification: `RUNTIME_STARTUP_TIMING`.
+  - Symptom: `Run remote HM deployment orchestration` started `visiomilhas_hm`, then immediately failed with `Healthcheck request failed: connect ECONNREFUSED 127.0.0.1:3000`.
+  - Root cause: the deploy script ran the internal healthcheck before the Next.js process was listening inside the container.
+  - Recovery: retry the internal container healthcheck with a bounded window before failing and emit container logs if retries are exhausted.
+  - Recurrence prevention: runtime validation after container start must account for application boot time.

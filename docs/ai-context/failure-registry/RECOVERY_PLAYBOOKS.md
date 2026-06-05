@@ -114,3 +114,51 @@
 2. Add an explicit `npx playwright install --with-deps chromium` step before `npx playwright test`.
 3. Keep the browser-install step in the same job that runs the browser smoke tests.
 4. Re-run the workflow and verify that the browser launch error disappears.
+
+## Playbook: `PRECHECK_INFRASTRUCTURE failed`
+
+1. Stop the workflow immediately.
+2. Do not start build, deploy, or smoke stages until the target passes the precheck.
+3. Capture and preserve the evidence block emitted by the gate:
+   - `timestamp_utc`
+   - `runner_name`
+   - `runner_os`
+   - `runner_arch`
+   - `runner_labels`
+   - `runner_public_ip`
+   - `ssh_host`
+   - `ssh_port`
+   - `github_run_id`
+   - `github_job`
+   - `github_workflow`
+4. Check the failed item in order:
+   - DNS or host resolution for the target
+   - `ssh-keyscan` retry on `${SSH_PORT}` and `22`
+   - fallback SSH handshake with `StrictHostKeyChecking=accept-new`
+   - SSH handshake
+   - remote directory existence and writability
+   - free disk space on the target
+   - Docker and Docker Compose availability on the target
+5. Use the runner public IP and timestamp to distinguish runner-to-VPS path variance from VPS-side or configuration failures.
+6. Fix the target readiness issue outside the workflow only when the evidence points to target-side readiness.
+7. Re-run the same workflow only after the evidence-backed issue is addressed.
+
+## Playbook: `intermittent runner SSH timeout`
+
+1. Confirm the server-side SSH service is active and port 22 is listening.
+2. Confirm `fail2ban-client` is absent or that `sshd` is not banned.
+3. Confirm the host firewall is not blocking SSH.
+4. Check the effective `sshd` limits with `sshd -T`, especially `maxstartups` and `maxsessions`.
+5. Correlate the failing run timestamp with `journalctl -u ssh` on the target.
+6. If the server logs show successful `Accepted publickey` sessions in the same window, treat the failure as runner-path or negotiation variance, not host downtime.
+7. Require the `PRECHECK_INFRASTRUCTURE failure evidence` block before opening a new SSH RCA.
+8. Re-run the workflow from a fresh runner and preserve the precheck gate before opening a host-level RCA.
+
+## Playbook: `release-promotion SSH retry amplification`
+
+1. Treat repeated port probes and remote setup SSH calls as workflow amplification, not as a new host failure class.
+2. Deduplicate the SSH port list so `${SSH_PORT}` and `22` are only probed once each.
+3. Keep exponential backoff on `ssh-keyscan` and SSH handshake retries, but cap the retry budget so the workflow still fails fast.
+4. Remove standalone remote-directory SSH calls from the promotion workflow; let `rsync` create the directory and let the remote orchestration script own target-side setup.
+5. Keep the release-promotion path to one precheck gate, one sync transport, one image stage, one env stage, and one remote orchestration session per environment.
+6. Re-run the release promotion workflow after the SSH path is compacted.

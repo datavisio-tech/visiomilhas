@@ -1,3 +1,62 @@
+# 2026-06-05 - Self-hosted deploy runner implementation
+
+- Installed the VisioMilhas GitHub Actions self-hosted runner on the `visiochat` VPS as dedicated user `github-runner`.
+- Runner path: `/opt/actions-runner/visiomilhas-deploy`.
+- Runner service: `actions.runner.datavisio-tech-visiomilhas.visiomilhas-deploy-visiochat.service`.
+- Runner labels: `self-hosted`, `Linux`, `X64`, `visiomilhas-deploy`.
+- Moved deploy jobs to `runs-on: [self-hosted, linux, x64, visiomilhas-deploy]` while keeping build, lint, typecheck, tests, Playwright smoke, integration tests, and release publishing on GitHub-hosted runners.
+- Removed infrastructure precheck from GitHub-hosted build/smoke lanes; `PRECHECK_INFRASTRUCTURE` now belongs to deploy jobs.
+- Fixed remote deploy env parsing so operational variables are extracted by key instead of sourcing the full `.env.production`, which contains public pricing values with spaces.
+- Added retry around the internal container healthcheck so deploy validation waits for the Next.js runtime to listen on `127.0.0.1:3000` after container start.
+
+# 2026-06-05 - Runner to VPS RCA closure and mitigation proposal
+
+- Closed the current Runner -> VPS RCA class: failed runner IP `172.184.172.212` did not appear in `sshd`, `auth.log`, `syslog`, kernel logs, or general journal during the failed HM deploy precheck.
+- Confirmed the timeout happened before `sshd`; local OS firewall, Fail2Ban, SSH key handling, and remote deploy scripts are not supported as causes for this run.
+- Evaluated mitigations: full job retry, self-hosted runner, auxiliary fixed runner, bastion host, and pull-based deploy.
+- Proposed lowest-impact mitigation: keep GitHub-hosted runners for build/test, and execute HM/PROD deploy jobs on a self-hosted deploy runner with stable network path to the VPS.
+- Operational target: use labels such as `self-hosted`, `linux`, `x64`, `visiomilhas-deploy` only for deploy/precheck jobs, preserving the release promotion architecture.
+
+# 2026-06-05 - Remote release deploy env propagation fix
+
+- Fixed `scripts/remote-release-deploy.sh` so required runtime variables are loaded from the staged `.env.production` before validation.
+- Affected variables: `VISIOMILIAS_CONTAINER_NAME`, `VISIOMILIAS_PUBLIC_HOST`, `VISIOMILIAS_ROUTER_NAME`, `VISIOMILIAS_SERVICE_NAME`, and `COMPOSE_PROJECT_NAME`.
+- Cause: those values existed in the runner and were written to `.env.production.tmp`, but the SSH session does not automatically inherit runner environment variables.
+- Result: remote HM/PROD orchestration now uses the same env-file strategy already used by Docker Compose.
+
+# 2026-06-05 - Release promotion SSH retry consolidation
+
+- Deduped the release-promotion SSH port probe lists so `${SSH_PORT}` and `22` are only attempted once per gate.
+- Added exponential backoff to `ssh-keyscan` and SSH handshake retries in the shared precheck helper and in `release-promotion.yml`.
+- Removed standalone remote-directory SSH calls from the promotion workflow and moved directory creation into `rsync` / the remote orchestration script.
+- Consolidated target-side HM/PROD orchestration into `scripts/remote-release-deploy.sh` so image load, env finalization, deploy, validation, and image pruning happen behind one remote session.
+- Result: the release-promotion happy path drops from 10 SSH-touching operations to 8, and the retry-heavy envelope drops from 54 to 28, which lowers sensitivity to runner-to-VPS variance and shortens failure recovery time.
+
+# 2026-06-05 - PRECHECK_INFRASTRUCTURE hard gate
+
+- Added a mandatory `PRECHECK_INFRASTRUCTURE` gate to `deploy-hm.yml` and `release-promotion.yml`.
+- The gate validates target resolution, `ssh-keyscan`, SSH handshake, remote directory access, minimum disk space, and Docker availability before any build or deploy work starts.
+- Purpose: fail fast in under 30 seconds when the target host is not ready to receive a deployment.
+
+# 2026-06-05 - PRECHECK_INFRASTRUCTURE ssh-keyscan retry alignment
+
+- Updated the infrastructure precheck to retry `ssh-keyscan` on `${SSH_PORT}` and `22` before failing.
+- Reason: the HM release pipeline needed the precheck to match the proven SSH bootstrap behavior instead of failing on a single transient keyscan attempt.
+- Result: the gate stays fast-fail, but no longer rejects a valid target due to one transient `ssh-keyscan` miss.
+
+# 2026-06-05 - PRECHECK_INFRASTRUCTURE SSH handshake fallback
+
+- Updated the infrastructure precheck so a transient `ssh-keyscan` miss can fall back to a real SSH handshake using `StrictHostKeyChecking=accept-new`.
+- Reason: the target was reachable, but keyscan was not reliably seeding `known_hosts` in the GitHub runner.
+- Result: the gate still fails when SSH itself or the remote checks fail, but no longer blocks a ready target on a keyscan-only miss.
+
+# 2026-06-05 - Server-side SSH investigation on visiochat
+
+- Confirmed on the server: `ssh.service` is active, port 22 is listening, `fail2ban-client` is not installed, `ufw` is inactive, `iptables` does not block SSH, and `sshd -T` reports default `MaxStartups 10:30:100` and `MaxSessions 10`.
+- Host resources are healthy: low load, ~5.4 GB available RAM, and ~29 GB free disk on `/`.
+- `journalctl -u ssh` shows both preauth negotiation noise and successful `Accepted publickey` sessions from runner egress IPs in the same time window.
+- Result: the observed GitHub Actions SSH failures are not supported by host firewall or Fail2Ban evidence; they are intermittent runner-path / negotiation failures.
+
 # 2026-06-05 - HM smoke retry-window hardening
 
 - Updated `tests-e2e/hm-smoke.spec.ts` so the homepage preflight and browser navigations use a wider CI retry window.
