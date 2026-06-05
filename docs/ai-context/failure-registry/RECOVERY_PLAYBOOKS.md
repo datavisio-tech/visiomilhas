@@ -114,3 +114,17 @@
 2. Add an explicit `npx playwright install --with-deps chromium` step before `npx playwright test`.
 3. Keep the browser-install step in the same job that runs the browser smoke tests.
 4. Re-run the workflow and verify that the browser launch error disappears.
+
+## Playbook: `PRECHECK_INFRASTRUCTURE failed`
+
+1. Stop the workflow immediately.
+2. Do not start build, deploy, or smoke stages until the target passes the precheck.
+3. Check the failed item in order:
+   - DNS or host resolution for the target
+   - `ssh-keyscan`
+   - SSH handshake
+   - remote directory existence and writability
+   - free disk space on the target
+   - Docker and Docker Compose availability on the target
+4. Fix the target readiness issue outside the workflow.
+5. Re-run the same workflow only after the target is ready.

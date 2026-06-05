@@ -445,6 +445,12 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - Decision: HM smoke navigation should use a retry-capable helper so transient page navigation stalls do not block certification of the homepage and adjacent routes.
 - Decision: the HM smoke suite may use a wider navigation/request retry window in CI (45s timeout, 4 attempts) to absorb transient runner/network latency while preserving the same assertions.
 
+## 2026-06-05 - PRECHECK_INFRASTRUCTURE hard gate
+
+- Decision: every HM and PROD deploy entrypoint must run `PRECHECK_INFRASTRUCTURE` before starting build, sync, deploy, or smoke stages.
+- Decision: the gate must validate target resolution, `ssh-keyscan`, SSH handshake, remote directory access, minimum disk space, and Docker availability.
+- Decision: if the gate fails, the workflow must stop immediately and emit the failure evidence without continuing to build or deploy.
+
 # 2026-06-04 - PROD V2 migration validation decision
 
 - Decision: `db/app/migrations/0001_add_mile_point_lots.sql` is operationally validated in HM through read-only SQL metadata checks.
