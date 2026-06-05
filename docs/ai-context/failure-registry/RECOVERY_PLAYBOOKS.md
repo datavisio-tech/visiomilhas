@@ -129,3 +129,13 @@
    - Docker and Docker Compose availability on the target
 4. Fix the target readiness issue outside the workflow.
 5. Re-run the same workflow only after the target is ready.
+
+## Playbook: `intermittent runner SSH timeout`
+
+1. Confirm the server-side SSH service is active and port 22 is listening.
+2. Confirm `fail2ban-client` is absent or that `sshd` is not banned.
+3. Confirm the host firewall is not blocking SSH.
+4. Check the effective `sshd` limits with `sshd -T`, especially `maxstartups` and `maxsessions`.
+5. Correlate the failing run timestamp with `journalctl -u ssh` on the target.
+6. If the server logs show successful `Accepted publickey` sessions in the same window, treat the failure as runner-path or negotiation variance, not host downtime.
+7. Re-run the workflow from a fresh runner and preserve the precheck gate before opening a host-level RCA.

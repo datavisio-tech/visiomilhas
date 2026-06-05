@@ -16,6 +16,13 @@
 - Reason: the target was reachable, but keyscan was not reliably seeding `known_hosts` in the GitHub runner.
 - Result: the gate still fails when SSH itself or the remote checks fail, but no longer blocks a ready target on a keyscan-only miss.
 
+# 2026-06-05 - Server-side SSH investigation on visiochat
+
+- Confirmed on the server: `ssh.service` is active, port 22 is listening, `fail2ban-client` is not installed, `ufw` is inactive, `iptables` does not block SSH, and `sshd -T` reports default `MaxStartups 10:30:100` and `MaxSessions 10`.
+- Host resources are healthy: low load, ~5.4 GB available RAM, and ~29 GB free disk on `/`.
+- `journalctl -u ssh` shows both preauth negotiation noise and successful `Accepted publickey` sessions from runner egress IPs in the same time window.
+- Result: the observed GitHub Actions SSH failures are not supported by host firewall or Fail2Ban evidence; they are intermittent runner-path / negotiation failures.
+
 # 2026-06-05 - HM smoke retry-window hardening
 
 - Updated `tests-e2e/hm-smoke.spec.ts` so the homepage preflight and browser navigations use a wider CI retry window.
