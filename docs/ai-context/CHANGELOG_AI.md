@@ -1,4 +1,14 @@
-﻿# 2026-06-04 - Release promotion SSH baseline restoration
+﻿# 2026-06-04 - SSH_DEPLOY_TIMEOUT_RELEASE_PROMOTION operational memory
+
+- Symptom observed: `release-promotion.yml` failed in `Deploy promoted release to HM` at `Configure SSH` with repeated `ssh-keyscan` and SSH connection timeouts.
+- Root cause confirmed: HM release promotion depended on masked/inconsistent `SSH_HOST` resolution from the GitHub Environment instead of the approved operational HM SSH endpoint.
+- Evidence: after commit `12aa01b`, run `26986661630` passed `Configure SSH`, `Ensure remote directory exists`, source sync, image load, env render, and deploy artifact steps.
+- Correction applied: HM release promotion now uses `SSH_HOST=72.60.143.197`, `SSH_PORT=22`, `SSH_USER=root`, the baseline private-key path `~/.ssh/visiomilhas_deploy_key`, `chmod 600`, selected-port persistence, and `ssh -i`/`scp -i`.
+- Workflow affected: `.github/workflows/release-promotion.yml`.
+- Recovery record: added `SSH_DEPLOY_TIMEOUT_RELEASE_PROMOTION` to failure registry, recovery playbooks, and known limitations.
+- Prevention: do not replace the explicit HM endpoint with a masked environment value until a release-promotion run proves the replacement.
+- Commit references: `57de73a`, `2a79fbd`, `12aa01b`.
+# 2026-06-04 - Release promotion SSH baseline restoration
 
 - Regression identified: `.github/workflows/release-promotion.yml` changed the SSH preparation layer that was already proven in `.github/workflows/deploy-hm.yml`.
 - Root cause: release promotion diverged from the selected-port `ssh-keyscan` retry loop and did not preserve the same remote connection bootstrap.

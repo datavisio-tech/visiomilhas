@@ -17,6 +17,7 @@ This registry tracks recurring operational failures so agents can recover before
 | `browser unavailable` | Browser automation / local runtime | No usable browser/DevTools/Playwright runtime is exposed, or the local process host cannot spawn browser helpers | `WARNING` if HTTP/runtime validation can continue; `FAIL` only if no fallback path exists |
 | `playwright runtime drift` | Test automation / local runtime | Playwright is available, but the environment requires isolation from unit test runners and explicit setup conventions | `WARNING` when the setup can be standardized; otherwise `FAIL` only if automation cannot be stabilized |
 | `ssh timeout after release workflow change` | Release pipeline / SSH preparation | Release workflow diverged from the last known-good HM SSH bootstrap, including selected-port `ssh-keyscan` retry behavior, then timed out at the first remote command | `PIPELINE_REGRESSION`; restore the last known-good selected-port SSH bootstrap before investigating host infrastructure |
+| `SSH_DEPLOY_TIMEOUT_RELEASE_PROMOTION` | Release pipeline / SSH endpoint resolution | HM release promotion used masked/inconsistent `SSH_HOST` resolution while the operational HM SSH endpoint was known and reachable | `PIPELINE_REGRESSION`; pin HM release promotion to the approved SSH endpoint and port, then rerun |
 
 ## Recovery rule
 
@@ -48,3 +49,13 @@ If the failure persists after recovery and directly blocks delivery, the agent m
   - Recovery: keep the same private-key materialization path, permissions, `known_hosts` generation, selected-port persistence, and step-level SSH env declarations used by `deploy-hm.yml`; if `ssh-keyscan` does not materialize `known_hosts`, validate SSH authentication with the same private key and `StrictHostKeyChecking=accept-new` without introducing `~/.ssh/config`.
   - HM workflow correction: when `SSH_HOST` resolution inside release promotion remains masked or inconsistent, set the HM release job to the approved operational SSH endpoint `72.60.143.197` and port `22`.
   - Recurrence prevention: compare SSH authentication blocks before modifying release promotion deploy jobs.
+- `SSH_DEPLOY_TIMEOUT_RELEASE_PROMOTION`: HM release promotion SSH timeout.
+  - Context: release promotion replaced the old independent HM deploy path as the official RC promotion workflow.
+  - Symptoms: `Configure SSH` in `.github/workflows/release-promotion.yml` repeatedly timed out during `ssh-keyscan` and SSH authentication; earlier runs stopped before `Ensure remote directory exists`.
+  - RCA: the regression was in `.github/workflows/release-promotion.yml`; HM promotion depended on masked/inconsistent `SSH_HOST` resolution from the GitHub Environment while the approved operational SSH endpoint was already known. The functional path required explicit HM endpoint `72.60.143.197`, port `22`, the same private-key file path, `chmod 600`, selected-port persistence, and the same `ssh -i`/`scp -i` usage pattern as the baseline.
+  - Not root cause: `SSH_PRIVATE_KEY` and `SSH_USER`; after endpoint correction, the same key and `root` user authenticated and later deploy steps passed.
+  - Related factors: `SSH_HOST`, `SSH_PORT`, `ssh-keyscan`, `known_hosts`, GitHub Environment resolution, and `.github/workflows/release-promotion.yml`.
+  - Correction: commit `12aa01b` set HM release promotion to `SSH_HOST=72.60.143.197` and `SSH_PORT=22`; earlier commits `57de73a` and `2a79fbd` restored SSH preparation/authentication parity with `deploy-hm.yml`.
+  - Validation: GitHub Actions run `26986661630` passed `Configure SSH`, `Ensure remote directory exists`, `Sync source to HM server`, `Load release image on HM host`, `Render HM env on server`, and `Deploy release artifact to HM`.
+  - Lessons learned: release promotion workflows must not rely on a masked environment value when the approved operational endpoint is known and already validated by the legacy HM deploy.
+  - Prevention: keep HM SSH endpoint and port explicit in the release promotion HM job until a replacement is validated by a successful release-promotion run.
