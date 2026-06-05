@@ -499,6 +499,10 @@ jobs:
         shell: bash
         run: npm ci --include=dev
 
+      - name: Install Playwright browsers
+        shell: bash
+        run: npx playwright install --with-deps chromium
+
       - name: Run HM smoke tests
         shell: bash
         run: npx playwright test --config=playwright.config.ts

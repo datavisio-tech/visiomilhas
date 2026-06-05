@@ -1,4 +1,4 @@
-# PROD V2 Cutover Plan
+﻿# PROD V2 Cutover Plan
 
 **Status:** PROD_V2_CUTOVER_READY
 
@@ -77,3 +77,30 @@ Planejar o primeiro go-live do PostgreSQL Production V2 com banco vazio, sem mig
 - Cutover técnico com validação: 30 a 60 minutos
 - Bootstrap do primeiro usuário e conferências funcionais: 20 a 40 minutos
 - Janela total recomendada: 1 h 30 min a 2 h 40 min
+
+## Validação obrigatória da migration APP 0001
+
+**Status atual:** validada operacionalmente em HM; pendente em PROD V2.
+
+Antes de liberar o cutover, aplicar `db/app/migrations/0001_add_mile_point_lots.sql` no APP database PROD V2 e executar validação read-only confirmando:
+
+| Objeto | Resultado exigido |
+|---|---|
+| `mile_point_lots` | FOUND |
+| `mile_entries.consumed_lot_id` | FOUND |
+| `mile_entries.consumed_points` | FOUND |
+| `mile_entries.lot_snapshot` | FOUND |
+| `mile_transfers.source_entry_id` | FOUND |
+| `mile_transfers.destination_entry_id` | FOUND |
+| `idx_mpl_account_remaining` | FOUND |
+| `idx_mpl_source_entry` | FOUND |
+| `idx_me_account_occurred` | FOUND |
+| `idx_mt_source_dest` | FOUND |
+| `fk_mpl_account` | FOUND |
+| `chk_mpl_acquired_positive` | FOUND |
+
+Critério de liberação:
+
+- `MIGRATION OK`: todos os objetos acima retornam `FOUND` no APP database PROD V2.
+- `CUTOVER LIBERADO`: `MIGRATION OK` + backup/snapshot confirmado + smoke PROD aprovado.
+- `NO-GO`: qualquer objeto retorna `MISSING` ou a validação PROD V2 não pode ser executada.

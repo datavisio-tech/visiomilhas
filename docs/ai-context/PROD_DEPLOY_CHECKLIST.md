@@ -7,6 +7,8 @@
 - Confirm the target PROD environment uses the expected host and branch mapping.
 - Confirm the required production secrets are present.
 - Confirm the production database state is ready for the current schema.
+- Confirm `db/app/migrations/0001_add_mile_point_lots.sql` was applied to the PROD V2 APP database.
+- Confirm read-only SQL validation returns `FOUND` for `mile_point_lots`, auxiliary columns, indexes, `fk_mpl_account`, and `chk_mpl_acquired_positive`.
 - Confirm a rollback target SHA is known.
 - Confirm backups or snapshots are available before any schema-affecting promotion.
 
@@ -26,6 +28,7 @@
 - Confirm OAuth bootstrap returns a Google redirect and does not return `AUTH_BOOTSTRAP_FAILED`.
 - Confirm `/`, `/sign-in`, `/subscribe`, `/app`, `/app/dashboard`, `/app/accounts`, `/app/programs`, and `/app/purchases` are reachable.
 - Confirm no 500/502/503 responses are emitted during the smoke pass.
+- Confirm no `MISSING` result appears in the APP migration validation pass.
 
 ## Validation
 

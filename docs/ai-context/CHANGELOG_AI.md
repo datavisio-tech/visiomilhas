@@ -2795,3 +2795,18 @@ Resultado esperado:
 - Demoted the old HM and PROD deploy workflows to legacy manual fallback paths.
 - Added release context, architecture, process, pipeline, and cutover documentation under `docs/ai-context/`.
 
+# 2026-06-04 - PROD V2 migration operational validation
+
+- Validated `db/app/migrations/0001_add_mile_point_lots.sql` operationally against the active HM runtime container `visiomilhas_hm`.
+- Read-only SQL checks returned `FOUND` for `mile_point_lots`, auxiliary `mile_entries` and `mile_transfers` columns, expected indexes, `fk_mpl_account`, and `chk_mpl_acquired_positive`.
+- Confirmed the temporary validator was removed from the container after execution.
+- PROD V2 validation could not be completed from runtime because `/opt/datavisio/visiomilhas/.env.production` was not present on the host.
+- Updated cutover readiness, cutover plan, deploy checklist, and post-deploy validation docs.
+- Final production decision: **NO-GO** until the same read-only validation passes on PROD V2 after applying the migration.
+
+## 2026-06-05 - HM release smoke browser provisioning fix
+
+- The HM browser-smoke job in `release-promotion.yml` was failing after a successful deploy because the runner had installed Playwright packages but not the Chromium browser binary.
+- Added an explicit `npx playwright install --with-deps chromium` step before `npx playwright test --config=playwright.config.ts` in the HM smoke job.
+- Registered the failure pattern `browserType.launch: Executable doesn't exist` in the failure registry and added a recovery playbook that makes browser installation explicit in browser-validation jobs.
+- This change is limited to HM smoke certification and does not alter business logic, auth, or production migration behavior.

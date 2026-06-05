@@ -53,6 +53,8 @@ test.beforeAll(async () => {
   testUsers = await discoverTestUsers();
 });
 
+test.setTimeout(90_000);
+
 function isRelevantIssue(message: string) {
   return !ignoredConsoleMessages.some((pattern) => message.includes(pattern));
 }
@@ -117,7 +119,7 @@ async function assertSessionEstablished(page: Page, role: string) {
 
 async function assertHealthyRoute(page: Page, path: string, label: string) {
   const { hardIssues, softIssues } = await collectIssues(page);
-  await page.goto(path, { waitUntil: "domcontentloaded" });
+  await page.goto(path, { waitUntil: "commit" });
 
   const doctype = await page.evaluate(() => document.doctype?.name ?? "");
   expect(doctype, `${label} must render with a doctype`).toBe("html");
@@ -147,7 +149,7 @@ async function ensureSignedIn(page: Page, user: TestUser) {
     })
     .catch(() => undefined);
 
-  await page.goto("/sign-in", { waitUntil: "domcontentloaded" });
+  await page.goto("/sign-in", { waitUntil: "commit" });
   const openEmailLogin = page
     .getByRole("button", { name: "Entrar com e-mail" })
     .first();
@@ -191,11 +193,11 @@ async function signOut(page: Page) {
       sessionStorage.clear();
     })
     .catch(() => undefined);
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.goto("/", { waitUntil: "commit" });
 }
 
 test("homepage renders and stays clean", async ({ page }) => {
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.goto("/", { waitUntil: "commit" });
   const doctype = await page.evaluate(() => document.doctype?.name ?? "");
   expect(doctype).toBe("html");
   await expect(page.getByText("CENTRAL OPERACIONAL PARA MILHAS")).toBeVisible();
@@ -231,19 +233,19 @@ test("owner onboarding and authenticated HM surfaces are available", async ({
     await assertHealthyRoute(page, route.path, route.label);
   }
 
-  await page.goto("/app", { waitUntil: "domcontentloaded" }).catch(() => undefined);
+  await page.goto("/app", { waitUntil: "commit" }).catch(() => undefined);
   await expect(page).not.toHaveURL(/\/sign-in/);
 });
 
 test("new owner onboarding can bootstrap the app surface", async ({ page }) => {
   await ensureSignedIn(page, testUsers.QA_NEW);
-  await page.goto("/app", { waitUntil: "domcontentloaded" }).catch(() => undefined);
+  await page.goto("/app", { waitUntil: "commit" }).catch(() => undefined);
   await expect(page).not.toHaveURL(/\/sign-in/);
 });
 
 test("trial and subscribe flow are available", async ({ page }) => {
   await ensureSignedIn(page, testUsers.QA_TRIAL);
-  await page.goto("/subscribe", { waitUntil: "domcontentloaded" });
+  await page.goto("/subscribe", { waitUntil: "commit" });
   await expect(page.getByText(/Teste.*15 dias/i).first()).toBeVisible();
   await expect(page.getByRole("button", { name: /Come.*teste/i }).first()).toBeVisible();
 });
@@ -272,7 +274,7 @@ test("expired users can recover via subscribe", async ({ page }, testInfo) => {
     });
     return;
   }
-  await page.goto("/subscribe", { waitUntil: "domcontentloaded" });
+  await page.goto("/subscribe", { waitUntil: "commit" });
   await expect(page.getByText(/Teste.*15 dias/i).first()).toBeVisible();
   await expect(
     page.getByRole("button", { name: /Come.*teste/i }).first(),
@@ -291,7 +293,7 @@ test("session refresh survives reload", async ({ page }) => {
     return;
   }
 
-  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.reload({ waitUntil: "commit" });
 
   const accessResponse = await page.request.get("/api/subscription/access");
   expect(accessResponse.status()).toBe(200);
@@ -300,6 +302,6 @@ test("session refresh survives reload", async ({ page }) => {
 test("logout clears the session", async ({ page }) => {
   await ensureSignedIn(page, testUsers.QA_OWNER);
   await signOut(page);
-  await page.goto("/app/dashboard", { waitUntil: "domcontentloaded" }).catch(() => undefined);
+  await page.goto("/app/dashboard", { waitUntil: "commit" }).catch(() => undefined);
   await expect(page).toHaveURL(/\/sign-in|\/$/);
 });

@@ -2,6 +2,19 @@
 
 ## Smoke PROD
 
+- Confirm APP migration `0001_add_mile_point_lots.sql` objects are present in PROD V2:
+  - `mile_point_lots`
+  - `mile_entries.consumed_lot_id`
+  - `mile_entries.consumed_points`
+  - `mile_entries.lot_snapshot`
+  - `mile_transfers.source_entry_id`
+  - `mile_transfers.destination_entry_id`
+  - `idx_mpl_account_remaining`
+  - `idx_mpl_source_entry`
+  - `idx_me_account_occurred`
+  - `idx_mt_source_dest`
+  - `fk_mpl_account`
+  - `chk_mpl_acquired_positive`
 - Confirm `/` returns HTML with `<!DOCTYPE html>`.
 - Confirm `/sign-in` renders and does not emit hydration/runtime errors.
 - Confirm `/subscribe` renders and remains reachable.
@@ -30,5 +43,6 @@
 - Healthcheck passes.
 - Public HTML contains `<!DOCTYPE html>`.
 - OAuth bootstrap returns a Google redirect URL.
+- APP migration validation returns `FOUND` for all required `0001_add_mile_point_lots.sql` objects.
 - The smoke suite is green or carries only known, non-blocking warnings.
 - No new migration or rollback action is required immediately after deploy.

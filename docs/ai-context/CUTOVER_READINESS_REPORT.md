@@ -2,6 +2,13 @@
 
 ## Executive Summary
 
+Update 2026-06-04:
+
+- `db/app/migrations/0001_add_mile_point_lots.sql` was operationally validated against the active HM runtime container `visiomilhas_hm`.
+- Read-only SQL checks confirmed the expected table, auxiliary columns, indexes, FK, and check constraint objects are present in the runtime APP database used by HM.
+- The host does not currently expose `/opt/datavisio/visiomilhas/.env.production`; therefore the same read-only validation could not be executed against PROD V2 from the deployed production runtime path.
+- Final production decision remains **NO-GO** until PROD V2 has the migration applied and the same validation checklist returns `FOUND` for every required object.
+
 The current HM release candidate is functionally close to production, but the current repository evidence is **not sufficient to promote it to PROD V2 yet**.
 
 The two visible warnings are not hard product failures on their own:
@@ -21,7 +28,41 @@ That means the repository does not prove that a fresh PROD V2 database will be r
 ## Status
 
 - **Overall status:** NO-GO
-- **Reason:** PROD V2 schema/bootstrap readiness is not fully evidenced in the repository snapshot.
+- **Reason:** Migration `0001_add_mile_point_lots.sql` is operationally validated in HM, but not yet evidenced on PROD V2.
+
+## Migration 0001 Operational Validation
+
+### Scope
+
+- Migration: `db/app/migrations/0001_add_mile_point_lots.sql`
+- Runtime validated: HM container `visiomilhas_hm`
+- Validation type: read-only SQL metadata checks through the active application runtime database connection.
+- Production runtime validation: not completed because `/opt/datavisio/visiomilhas/.env.production` was not present on the host.
+
+### HM Validation Evidence
+
+All required objects returned `FOUND`:
+
+| Object | Status |
+|---|---|
+| `mile_point_lots` table | FOUND |
+| `mile_entries.consumed_lot_id` | FOUND |
+| `mile_entries.consumed_points` | FOUND |
+| `mile_entries.lot_snapshot` | FOUND |
+| `mile_transfers.source_entry_id` | FOUND |
+| `mile_transfers.destination_entry_id` | FOUND |
+| `idx_mpl_account_remaining` | FOUND |
+| `idx_mpl_source_entry` | FOUND |
+| `idx_me_account_occurred` | FOUND |
+| `idx_mt_source_dest` | FOUND |
+| `fk_mpl_account` | FOUND |
+| `chk_mpl_acquired_positive` | FOUND |
+
+### Production Decision Impact
+
+- The migration itself is valid and operationally compatible with the active HM runtime.
+- PROD V2 is not cleared until the same read-only SQL checks are executed against the PROD V2 APP database after applying the migration.
+- The blocker changed from "migration unvalidated" to "PROD V2 application evidence missing".
 
 ## Purchases Analysis
 
@@ -113,13 +154,14 @@ Low to medium operational impact:
 | Purchases browser/runtime instability | MEDIUM | No hard product failure evidenced; warning appears harness-related. |
 | Session refresh instability | MEDIUM | No hard product failure evidenced; warning appears harness-related. |
 | PROD V2 schema/bootstrap gap | BLOCKER | The repository does not prove that the APP lot migration is enforced for a fresh PROD V2 target. |
+| PROD V2 migration validation missing | BLOCKER | HM has validated objects; PROD V2 still needs the same read-only validation after application. |
 | Rollback after schema changes | HIGH | DB rollback depends on snapshot/backup, not ad hoc reversal. |
 
 ## Blockers
 
-1. The repository does not show an enforced APP migration path in `deploy-prod.yml`.
-2. The repository does not prove the APP journal has been fully advanced to include `0001_add_mile_point_lots.sql`.
-3. The current production deploy workflow is image/deploy only; it does not bootstrap a fresh PROD V2 schema.
+1. PROD V2 has not been read-only validated for `0001_add_mile_point_lots.sql`.
+2. The current production deploy workflow is image/deploy only; it does not bootstrap or validate a fresh PROD V2 schema.
+3. The production runtime env file was not present at `/opt/datavisio/visiomilhas/.env.production`, so runtime-based PROD V2 validation could not be completed from the host.
 
 ## Decision
 

@@ -1,6 +1,6 @@
 # Failure Registry
 
-Last updated: 2026-06-04
+Last updated: 2026-06-05
 
 This registry tracks recurring operational failures so agents can recover before surfacing `FAIL`.
 
@@ -16,6 +16,7 @@ This registry tracks recurring operational failures so agents can recover before
 | `container name conflict` | Docker compose / host state | HM and PROD share a container name or project name | `WARNING` after isolation fix; `FAIL` if old containers cannot be removed safely |
 | `browser unavailable` | Browser automation / local runtime | No usable browser/DevTools/Playwright runtime is exposed, or the local process host cannot spawn browser helpers | `WARNING` if HTTP/runtime validation can continue; `FAIL` only if no fallback path exists |
 | `playwright runtime drift` | Test automation / local runtime | Playwright is available, but the environment requires isolation from unit test runners and explicit setup conventions | `WARNING` when the setup can be standardized; otherwise `FAIL` only if automation cannot be stabilized |
+| `browserType.launch: Executable doesn't exist` | Playwright runtime / CI preparation | The workflow installed Playwright dependencies but not the browser binary expected by the smoke job | `WARNING` when adding an explicit browser-install step restores the lane; otherwise `FAIL` if the runner cannot provision browsers |
 | `ssh timeout after release workflow change` | Release pipeline / SSH preparation | Release workflow diverged from the last known-good HM SSH bootstrap, including selected-port `ssh-keyscan` retry behavior, then timed out at the first remote command | `PIPELINE_REGRESSION`; restore the last known-good selected-port SSH bootstrap before investigating host infrastructure |
 | `SSH_DEPLOY_TIMEOUT_RELEASE_PROMOTION` | Release pipeline / SSH endpoint resolution | HM release promotion used masked/inconsistent `SSH_HOST` resolution while the operational HM SSH endpoint was known and reachable | `PIPELINE_REGRESSION`; pin HM release promotion to the approved SSH endpoint and port, then rerun |
 
@@ -59,3 +60,10 @@ If the failure persists after recovery and directly blocks delivery, the agent m
   - Validation: GitHub Actions run `26986661630` passed `Configure SSH`, `Ensure remote directory exists`, `Sync source to HM server`, `Load release image on HM host`, `Render HM env on server`, and `Deploy release artifact to HM`.
   - Lessons learned: release promotion workflows must not rely on a masked environment value when the approved operational endpoint is known and already validated by the legacy HM deploy.
   - Prevention: keep HM SSH endpoint and port explicit in the release promotion HM job until a replacement is validated by a successful release-promotion run.
+- `FP-011`: Playwright browser binary missing in HM smoke.
+  - Classification: `PIPELINE_REGRESSION`.
+  - Symptom: `Playwright smoke on HM` reached `npx playwright test --config=playwright.config.ts`, then failed with `browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/.../chrome-headless-shell`.
+  - Affected workflow: `.github/workflows/release-promotion.yml`.
+  - Root cause: the HM smoke job installed Node dependencies but not the Playwright browser binary required by Chromium smoke tests.
+  - Recovery: insert an explicit `npx playwright install --with-deps chromium` step before `npx playwright test` in the HM smoke job.
+  - Recurrence prevention: every browser-validation job must provision the browser executable explicitly instead of assuming `npm ci` is enough.
