@@ -2,6 +2,13 @@
 
 ## Executive Summary
 
+Update 2026-06-05:
+
+- The GitHub-hosted runner -> VPS SSH timeout RCA was closed as a network-path issue before `sshd`.
+- The VisioMilhas deploy path now uses a self-hosted GitHub Actions runner on the `visiochat` VPS for deploy jobs, labeled `self-hosted`, `linux`, `x64`, `visiomilhas-deploy`.
+- Build, lint, typecheck, tests, Playwright smoke, integration tests, and release publishing remain on GitHub-hosted runners.
+- HM certification still requires a successful release-promotion run through deploy, runtime, and smoke on the updated runner topology.
+
 Update 2026-06-04:
 
 - `db/app/migrations/0001_add_mile_point_lots.sql` was operationally validated against the active HM runtime container `visiomilhas_hm`.

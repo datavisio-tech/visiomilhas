@@ -5,6 +5,8 @@
 - Decision: do not reopen SSH, Fail2Ban, firewall, key, or remote-script RCA for this class unless a future failing runner IP appears in server-side logs with different evidence.
 - Decision: the lowest-impact mitigation for HM certification is to keep GitHub-hosted runners for build/test and move deploy/precheck jobs to a self-hosted runner with stable path to the VPS.
 - Decision: preferred implementation is a self-hosted GitHub Actions runner on the VisioMilhas VPS or on a small auxiliary bastion VPS in the same provider/network, restricted to deploy jobs through labels such as `self-hosted`, `linux`, `x64`, `visiomilhas-deploy`.
+- Implementation decision: the VisioMilhas deploy runner is installed on the `visiochat` VPS as user `github-runner`, under `/opt/actions-runner/visiomilhas-deploy`, with GitHub labels `self-hosted`, `Linux`, `X64`, and `visiomilhas-deploy`.
+- Implementation decision: `build_once`, lint/typecheck/tests, Playwright smoke, integration tests, and release publishing remain on GitHub-hosted runners; only deploy jobs use the self-hosted deploy runner.
 - Decision: pull-based deploy is a valid future hardening path, but it is higher impact than a deploy runner because it changes the release execution model and operational ownership.
 - Decision: job-level retry remains useful as a temporary mitigation, but it does not remove the root path dependency and is insufficient as the main certification strategy.
 

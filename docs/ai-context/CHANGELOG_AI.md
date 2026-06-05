@@ -1,3 +1,12 @@
+# 2026-06-05 - Self-hosted deploy runner implementation
+
+- Installed the VisioMilhas GitHub Actions self-hosted runner on the `visiochat` VPS as dedicated user `github-runner`.
+- Runner path: `/opt/actions-runner/visiomilhas-deploy`.
+- Runner service: `actions.runner.datavisio-tech-visiomilhas.visiomilhas-deploy-visiochat.service`.
+- Runner labels: `self-hosted`, `Linux`, `X64`, `visiomilhas-deploy`.
+- Moved deploy jobs to `runs-on: [self-hosted, linux, x64, visiomilhas-deploy]` while keeping build, lint, typecheck, tests, Playwright smoke, integration tests, and release publishing on GitHub-hosted runners.
+- Removed infrastructure precheck from GitHub-hosted build/smoke lanes; `PRECHECK_INFRASTRUCTURE` now belongs to deploy jobs.
+
 # 2026-06-05 - Runner to VPS RCA closure and mitigation proposal
 
 - Closed the current Runner -> VPS RCA class: failed runner IP `172.184.172.212` did not appear in `sshd`, `auth.log`, `syslog`, kernel logs, or general journal during the failed HM deploy precheck.

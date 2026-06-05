@@ -96,18 +96,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: PRECHECK_INFRASTRUCTURE
-        shell: bash
-        run: bash scripts/precheck-infrastructure.sh
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
-          SSH_USER: root
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_DIR: /opt/datavisio/visiomilhas-hm
-          PRECHECK_MIN_DISK_KB: 2097152
-          PRECHECK_RUNNER_LABELS: ubuntu-latest
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -217,7 +205,7 @@ jobs:
 
   deploy_hm:
     name: Deploy promoted release to HM
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, visiomilhas-deploy]
     environment: hm
     needs:
       - resolve_release
@@ -256,7 +244,7 @@ jobs:
         run: bash scripts/precheck-infrastructure.sh
         env:
           PRECHECK_MIN_DISK_KB: 2097152
-          PRECHECK_RUNNER_LABELS: ubuntu-latest
+          PRECHECK_RUNNER_LABELS: self-hosted,linux,x64,visiomilhas-deploy
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -496,13 +484,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: PRECHECK_INFRASTRUCTURE
-        shell: bash
-        run: bash scripts/precheck-infrastructure.sh
-        env:
-          PRECHECK_MIN_DISK_KB: 2097152
-          PRECHECK_RUNNER_LABELS: ubuntu-latest
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -546,7 +527,7 @@ jobs:
 
   deploy_prod:
     name: Deploy promoted release to PROD
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, visiomilhas-deploy]
     environment: production
     needs:
       - resolve_release
@@ -578,6 +559,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: PRECHECK_INFRASTRUCTURE
+        shell: bash
+        run: bash scripts/precheck-infrastructure.sh
+        env:
+          PRECHECK_MIN_DISK_KB: 2097152
+          PRECHECK_RUNNER_LABELS: self-hosted,linux,x64,visiomilhas-deploy
 
       - name: Setup Node
         uses: actions/setup-node@v4

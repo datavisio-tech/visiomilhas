@@ -4,6 +4,15 @@
 - HM and PROD share the same Google OAuth client.
 - `BETTER_AUTH_SECRET` is the shared secret across DEV, HM and PROD.
 
+## 2026-06-05 - Self-hosted deploy runner implementation
+
+- Install a dedicated GitHub Actions runner on the `visiochat` VPS as user `github-runner`.
+- Use install path `/opt/actions-runner/visiomilhas-deploy`.
+- Register labels `self-hosted`, `linux`, `x64`, and `visiomilhas-deploy`.
+- Keep build, lint, typecheck, unit tests, Playwright, integration tests, packaging, and release publishing on GitHub-hosted runners.
+- Move only deploy/precheck jobs to `runs-on: [self-hosted, linux, x64, visiomilhas-deploy]`.
+- Validate HM through the release promotion pipeline after the runner is online.
+
 # IMPLEMENTATION_PLAN - MVP1 (VisioMilhas)
 
 ## 2026-06-03 - Pipeline Hardening for Environment Segregation

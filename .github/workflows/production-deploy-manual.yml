@@ -20,7 +20,7 @@ permissions:
 jobs:
   deploy:
     name: Deploy to production Swarm
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, visiomilhas-deploy]
     environment: production
 
     env:
