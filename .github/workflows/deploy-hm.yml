@@ -42,6 +42,7 @@ jobs:
           SSH_USER: root
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           PRECHECK_MIN_DISK_KB: 2097152
+          PRECHECK_RUNNER_LABELS: ubuntu-latest
 
       - name: Load public production config
         shell: bash

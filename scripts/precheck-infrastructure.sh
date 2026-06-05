@@ -1,6 +1,32 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+emit_failure_evidence() {
+  local public_ip
+  public_ip="$(curl -fsS --max-time 5 https://api.ipify.org 2>/dev/null || curl -fsS --max-time 5 https://ifconfig.me 2>/dev/null || true)"
+  public_ip="${public_ip:-unavailable}"
+
+  echo "::group::PRECHECK_INFRASTRUCTURE failure evidence"
+  echo "timestamp_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  echo "runner_name=${RUNNER_NAME:-unknown}"
+  echo "runner_os=${RUNNER_OS:-unknown}"
+  echo "runner_arch=${RUNNER_ARCH:-unknown}"
+  echo "runner_labels=${RUNNER_LABELS:-${PRECHECK_RUNNER_LABELS:-unknown}}"
+  echo "runner_public_ip=${public_ip}"
+  echo "ssh_host=${SSH_HOST:-unset}"
+  echo "ssh_port=${SSH_PORT:-unset}"
+  echo "github_run_id=${GITHUB_RUN_ID:-unknown}"
+  echo "github_job=${GITHUB_JOB:-unknown}"
+  echo "github_workflow=${GITHUB_WORKFLOW:-unknown}"
+  echo "::endgroup::"
+}
+
+fail() {
+  echo "PRECHECK_INFRASTRUCTURE failed: $*"
+  emit_failure_evidence
+  exit 1
+}
+
 required=(
   SSH_HOST
   SSH_PORT
@@ -11,8 +37,7 @@ required=(
 
 for name in "${required[@]}"; do
   if [ -z "${!name:-}" ]; then
-    echo "Missing required precheck input: ${name}"
-    exit 1
+    fail "missing required precheck input: ${name}"
   fi
 done
 
@@ -28,8 +53,7 @@ chmod 600 "${SSH_KEY_PATH}"
 echo "Precheck: resolving ${SSH_HOST}"
 if ! getent ahostsv4 "${SSH_HOST}" >/dev/null 2>&1; then
   getent hosts "${SSH_HOST}" >/dev/null 2>&1 || {
-    echo "PRECHECK_INFRASTRUCTURE failed: unable to resolve target ${SSH_HOST}"
-    exit 1
+    fail "unable to resolve target ${SSH_HOST}"
   }
 fi
 
@@ -93,8 +117,7 @@ for port in "${handshake_ports[@]}"; do
 done
 
 if [ "${handshake_ok}" != "true" ]; then
-  echo "PRECHECK_INFRASTRUCTURE failed: SSH handshake could not be established"
-  exit 1
+  fail "SSH handshake could not be established"
 fi
 
 printf 'SSH_PORT=%s\n' "${selected_port}" >> "${GITHUB_ENV:-/dev/null}"
@@ -111,8 +134,7 @@ fi
 docker version >/dev/null
 docker compose version >/dev/null
 "; then
-  echo "PRECHECK_INFRASTRUCTURE failed: remote directory, disk space or Docker runtime check failed"
-  exit 1
+  fail "remote directory, disk space or Docker runtime check failed"
 fi
 
 echo "PRECHECK_INFRASTRUCTURE passed"

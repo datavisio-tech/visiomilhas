@@ -119,7 +119,19 @@
 
 1. Stop the workflow immediately.
 2. Do not start build, deploy, or smoke stages until the target passes the precheck.
-3. Check the failed item in order:
+3. Capture and preserve the evidence block emitted by the gate:
+   - `timestamp_utc`
+   - `runner_name`
+   - `runner_os`
+   - `runner_arch`
+   - `runner_labels`
+   - `runner_public_ip`
+   - `ssh_host`
+   - `ssh_port`
+   - `github_run_id`
+   - `github_job`
+   - `github_workflow`
+4. Check the failed item in order:
    - DNS or host resolution for the target
    - `ssh-keyscan` retry on `${SSH_PORT}` and `22`
    - fallback SSH handshake with `StrictHostKeyChecking=accept-new`
@@ -127,8 +139,9 @@
    - remote directory existence and writability
    - free disk space on the target
    - Docker and Docker Compose availability on the target
-4. Fix the target readiness issue outside the workflow.
-5. Re-run the same workflow only after the target is ready.
+5. Use the runner public IP and timestamp to distinguish runner-to-VPS path variance from VPS-side or configuration failures.
+6. Fix the target readiness issue outside the workflow only when the evidence points to target-side readiness.
+7. Re-run the same workflow only after the evidence-backed issue is addressed.
 
 ## Playbook: `intermittent runner SSH timeout`
 
@@ -138,7 +151,8 @@
 4. Check the effective `sshd` limits with `sshd -T`, especially `maxstartups` and `maxsessions`.
 5. Correlate the failing run timestamp with `journalctl -u ssh` on the target.
 6. If the server logs show successful `Accepted publickey` sessions in the same window, treat the failure as runner-path or negotiation variance, not host downtime.
-7. Re-run the workflow from a fresh runner and preserve the precheck gate before opening a host-level RCA.
+7. Require the `PRECHECK_INFRASTRUCTURE failure evidence` block before opening a new SSH RCA.
+8. Re-run the workflow from a fresh runner and preserve the precheck gate before opening a host-level RCA.
 
 ## Playbook: `release-promotion SSH retry amplification`
 

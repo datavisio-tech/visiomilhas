@@ -106,6 +106,7 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           REMOTE_DIR: /opt/datavisio/visiomilhas-hm
           PRECHECK_MIN_DISK_KB: 2097152
+          PRECHECK_RUNNER_LABELS: ubuntu-latest
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -255,6 +256,7 @@ jobs:
         run: bash scripts/precheck-infrastructure.sh
         env:
           PRECHECK_MIN_DISK_KB: 2097152
+          PRECHECK_RUNNER_LABELS: ubuntu-latest
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -499,6 +501,7 @@ jobs:
         run: bash scripts/precheck-infrastructure.sh
         env:
           PRECHECK_MIN_DISK_KB: 2097152
+          PRECHECK_RUNNER_LABELS: ubuntu-latest
 
       - name: Setup Node
         uses: actions/setup-node@v4
