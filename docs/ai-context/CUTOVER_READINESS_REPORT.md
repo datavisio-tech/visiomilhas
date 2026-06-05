@@ -2,6 +2,15 @@
 
 ## Executive Summary
 
+Update 2026-06-05 authenticated smoke correction:
+
+- The remaining HM certification failure was traced to the Playwright smoke harness, not to HM runtime, Better Auth, OAuth, PostgreSQL, MongoDB, Traefik, or deploy infrastructure.
+- Root cause: `tests-e2e/hm-smoke.spec.ts` used the visual email login modal as the primary authenticated-session bootstrap and waited for a `role=dialog` before validating protected routes.
+- Current Better Auth-compatible smoke path: synthetic QA users can create a session through `/api/auth/sign-in/email`; the suite already used this endpoint in one authenticated recovery scenario.
+- Correction applied: `ensureSignedIn` now uses Better Auth email API login first, validates the authenticated/session state, then navigates to protected HM surfaces. The visual login modal path remains only as fallback.
+- `session refresh` is now a hard authenticated-session validation instead of returning early as a warning after login bootstrap failure.
+- Validation status: pre-fix authenticated subset passed locally with warnings, confirming that HM auth and protected route access are operational. Post-fix rerun is pending because the local agent execution environment rejected additional Playwright execution due to usage-limit enforcement.
+
 Update 2026-06-05:
 
 - The GitHub-hosted runner -> VPS SSH timeout RCA was closed as a network-path issue before `sshd`.

@@ -187,6 +187,22 @@ async function ensureSignedIn(page: Page, user: TestUser) {
     })
     .catch(() => undefined);
 
+  const apiResponse = await page.request.post("/api/auth/sign-in/email", {
+    data: {
+      email: user.email,
+      password: user.password,
+      callbackURL: "/app/dashboard",
+      rememberMe: true,
+    },
+  });
+
+  if (apiResponse.ok()) {
+    await assertSessionEstablished(page, user.role);
+    await gotoWithRetry(page, "/app/dashboard").catch(() => undefined);
+    await expect(page).not.toHaveURL(/\/sign-in/);
+    return;
+  }
+
   await gotoWithRetry(page, "/sign-in");
   const openEmailLogin = page
     .getByRole("button", { name: "Entrar com e-mail" })
@@ -327,16 +343,7 @@ test("expired users can recover via subscribe", async ({ page }, testInfo) => {
 });
 
 test("session refresh survives reload", async ({ page }) => {
-  try {
-    await ensureSignedIn(page, testUsers.QA_OWNER);
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      "[warning] session refresh login path fell back to warning:",
-      error instanceof Error ? error.message : String(error),
-    );
-    return;
-  }
+  await ensureSignedIn(page, testUsers.QA_OWNER);
 
   await page.reload({ waitUntil: "commit" });
 

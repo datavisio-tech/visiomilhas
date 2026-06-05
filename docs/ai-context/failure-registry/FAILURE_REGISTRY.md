@@ -23,6 +23,7 @@ This registry tracks recurring operational failures so agents can recover before
 | `remote release env not propagated` | Release pipeline / remote execution | Runner env values are written to a staged env file but are not available inside the remote SSH process before the script validates them | `PIPELINE_REGRESSION`; load the staged remote env file before validating runtime variables |
 | `remote env source fails on public values` | Release pipeline / remote execution | Remote script sources `.env.production` as shell while the env file contains public values with spaces or currency symbols | `PIPELINE_REGRESSION`; parse only required operational keys instead of sourcing the full env file |
 | `container healthcheck immediate ECONNREFUSED` | Release pipeline / runtime validation | Deploy script runs container healthcheck before the Next.js process is listening inside the newly started container | `WARNING`; add bounded healthcheck retry before failing deploy |
+| `authenticated smoke waits for login dialog` | Playwright smoke / auth bootstrap | The smoke harness uses the visual email login modal as the primary session bootstrap even though Better Auth email API is the stable synthetic-QA login path | `PIPELINE_REGRESSION`; use `/api/auth/sign-in/email` first, validate session, and keep UI login only as fallback |
 | `ssh timeout after release workflow change` | Release pipeline / SSH preparation | Release workflow diverged from the last known-good HM SSH bootstrap, including selected-port `ssh-keyscan` retry behavior, then timed out at the first remote command | `PIPELINE_REGRESSION`; restore the last known-good selected-port SSH bootstrap before investigating host infrastructure |
 | `SSH_DEPLOY_TIMEOUT_RELEASE_PROMOTION` | Release pipeline / SSH endpoint resolution | HM release promotion used masked/inconsistent `SSH_HOST` resolution while the operational HM SSH endpoint was known and reachable | `PIPELINE_REGRESSION`; pin HM release promotion to the approved SSH endpoint and port, then rerun |
 
@@ -115,3 +116,10 @@ If the failure persists after recovery and directly blocks delivery, the agent m
   - Root cause: the deploy script ran the internal healthcheck before the Next.js process was listening inside the container.
   - Recovery: retry the internal container healthcheck with a bounded window before failing and emit container logs if retries are exhausted.
   - Recurrence prevention: runtime validation after container start must account for application boot time.
+- `FP-018`: Authenticated smoke waits for login dialog.
+  - Classification: `PIPELINE_REGRESSION`.
+  - Symptom: HM certification reached the Playwright smoke lane, then authenticated scenarios waited for a login dialog before a session was established.
+  - Affected test: `tests-e2e/hm-smoke.spec.ts`.
+  - Root cause: the smoke harness used the visual `/sign-in` email modal as the primary authenticated-session bootstrap. That couples smoke certification to the login dialog structure even though the current Better Auth flow already exposes a stable synthetic-QA session path through `/api/auth/sign-in/email`.
+  - Correction: make `ensureSignedIn` post to `/api/auth/sign-in/email` first, validate authenticated state with the existing session/access checks, then navigate to protected HM routes. Keep the visual login dialog path only as fallback for API-login failure.
+  - Recurrence prevention: authenticated smoke tests should validate product surfaces with a stable Better Auth session bootstrap; dedicated sign-in UI tests may validate the visual login controls separately.

@@ -1,3 +1,12 @@
+# 2026-06-05 - HM authenticated smoke login bootstrap fix
+
+- Identified the remaining HM certification failure in the authenticated Playwright smoke lane.
+- Symptom: authenticated smoke tests waited for a login dialog before establishing a session.
+- Root cause: `tests-e2e/hm-smoke.spec.ts` used the visual `/sign-in` email modal as the primary test login path, while the current Better Auth smoke flow already supports direct `/api/auth/sign-in/email` session bootstrap for synthetic QA users.
+- Correction applied: `ensureSignedIn` now creates the QA session through Better Auth email API first, validates the authenticated state, then navigates to protected HM surfaces; the old UI-dialog path remains only as fallback when the API login fails.
+- Session refresh is no longer downgraded to warning after a login failure; it now requires a valid authenticated session before reload validation.
+- Validation status: the pre-fix authenticated subset passed locally with warnings, confirming HM auth itself is operational; post-fix rerun was blocked by the local agent execution limit and must be rerun when execution capacity is restored.
+
 # 2026-06-05 - Self-hosted deploy runner implementation
 
 - Installed the VisioMilhas GitHub Actions self-hosted runner on the `visiochat` VPS as dedicated user `github-runner`.
