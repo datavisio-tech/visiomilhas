@@ -121,7 +121,7 @@
 2. Do not start build, deploy, or smoke stages until the target passes the precheck.
 3. Check the failed item in order:
    - DNS or host resolution for the target
-   - `ssh-keyscan`
+   - `ssh-keyscan` retry on `${SSH_PORT}` and `22`
    - SSH handshake
    - remote directory existence and writability
    - free disk space on the target

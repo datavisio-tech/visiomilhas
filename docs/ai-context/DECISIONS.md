@@ -1,4 +1,9 @@
-﻿# 2026-06-04 - Release promotion SSH baseline decision
+# 2026-06-05 - Precheck infrastructure retry decision
+
+- Decision: `PRECHECK_INFRASTRUCTURE` must remain the first gate before any HM or PROD build/deploy step.
+- Decision: `ssh-keyscan` inside the precheck should retry on `${SSH_PORT}` and `22` to avoid rejecting a valid target on a single transient miss.
+- Decision: the retry window must remain short enough to keep the failure fast and preserve the gate's purpose.
+# 2026-06-04 - Release promotion SSH baseline decision
 
 - Decision: `.github/workflows/release-promotion.yml` must preserve the same SSH bootstrap behavior proven by `.github/workflows/deploy-hm.yml`.
 - Decision: release promotion must use the selected-port `ssh-keyscan` retry loop across `${SSH_PORT}` and `22`.

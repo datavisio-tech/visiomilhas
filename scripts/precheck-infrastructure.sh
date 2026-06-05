@@ -34,10 +34,25 @@ if ! getent ahostsv4 "${SSH_HOST}" >/dev/null 2>&1; then
 fi
 
 echo "Precheck: capturing SSH host key on ${SSH_HOST}:${SSH_PORT}"
-if ! ssh-keyscan -T 5 -p "${SSH_PORT}" "${SSH_HOST}" >> "${KNOWN_HOSTS_PATH}" 2>/dev/null; then
+selected_port=""
+for port in "${SSH_PORT}" 22; do
+  for attempt in 1 2; do
+    if ssh-keyscan -T 3 -p "${port}" "${SSH_HOST}" >> "${KNOWN_HOSTS_PATH}" 2>/dev/null; then
+      echo "Precheck: SSH host key captured on port ${port} at attempt ${attempt}"
+      selected_port="${port}"
+      break 2
+    fi
+    echo "Precheck: ssh-keyscan attempt ${attempt} failed on port ${port}, retrying..."
+    sleep 1
+  done
+done
+
+if [ -z "${selected_port}" ]; then
   echo "PRECHECK_INFRASTRUCTURE failed: ssh-keyscan could not capture host key"
   exit 1
 fi
+
+printf 'SSH_PORT=%s\n' "${selected_port}" >> "${GITHUB_ENV:-/dev/null}"
 
 if [ ! -s "${KNOWN_HOSTS_PATH}" ]; then
   echo "PRECHECK_INFRASTRUCTURE failed: known_hosts was not materialized"
@@ -45,13 +60,13 @@ if [ ! -s "${KNOWN_HOSTS_PATH}" ]; then
 fi
 
 echo "Precheck: validating SSH handshake"
-if ! ssh -i "${SSH_KEY_PATH}" -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "true"; then
+if ! ssh -i "${SSH_KEY_PATH}" -o BatchMode=yes -o ConnectTimeout=3 -o StrictHostKeyChecking=accept-new -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "true"; then
   echo "PRECHECK_INFRASTRUCTURE failed: SSH handshake could not be established"
   exit 1
 fi
 
 echo "Precheck: validating remote directory, disk space and Docker runtime"
-if ! ssh -i "${SSH_KEY_PATH}" -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "set -euo pipefail
+if ! ssh -i "${SSH_KEY_PATH}" -o BatchMode=yes -o ConnectTimeout=3 -o StrictHostKeyChecking=accept-new -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "set -euo pipefail
 test -d '${REMOTE_DIR}'
 test -w '${REMOTE_DIR}'
 free_kb=\$(df -Pk '${REMOTE_DIR}' | awk 'NR==2 { print \$4 }')

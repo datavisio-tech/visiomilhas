@@ -4,6 +4,12 @@
 - The gate validates target resolution, `ssh-keyscan`, SSH handshake, remote directory access, minimum disk space, and Docker availability before any build or deploy work starts.
 - Purpose: fail fast in under 30 seconds when the target host is not ready to receive a deployment.
 
+# 2026-06-05 - PRECHECK_INFRASTRUCTURE ssh-keyscan retry alignment
+
+- Updated the infrastructure precheck to retry `ssh-keyscan` on `${SSH_PORT}` and `22` before failing.
+- Reason: the HM release pipeline needed the precheck to match the proven SSH bootstrap behavior instead of failing on a single transient keyscan attempt.
+- Result: the gate stays fast-fail, but no longer rejects a valid target due to one transient `ssh-keyscan` miss.
+
 # 2026-06-05 - HM smoke retry-window hardening
 
 - Updated `tests-e2e/hm-smoke.spec.ts` so the homepage preflight and browser navigations use a wider CI retry window.

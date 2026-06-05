@@ -17,7 +17,7 @@ This registry tracks recurring operational failures so agents can recover before
 | `browser unavailable` | Browser automation / local runtime | No usable browser/DevTools/Playwright runtime is exposed, or the local process host cannot spawn browser helpers | `WARNING` if HTTP/runtime validation can continue; `FAIL` only if no fallback path exists |
 | `playwright runtime drift` | Test automation / local runtime | Playwright is available, but the environment requires isolation from unit test runners and explicit setup conventions | `WARNING` when the setup can be standardized; otherwise `FAIL` only if automation cannot be stabilized |
 | `browserType.launch: Executable doesn't exist` | Playwright runtime / CI preparation | The workflow installed Playwright dependencies but not the browser binary expected by the smoke job | `WARNING` when adding an explicit browser-install step restores the lane; otherwise `FAIL` if the runner cannot provision browsers |
-| `PRECHECK_INFRASTRUCTURE failed` | Deployment pipeline / target readiness | Target resolution, ssh-keyscan, SSH handshake, remote directory access, disk space, or Docker runtime is not ready for deployment | `FAIL` until the target passes the gate; rerun only after the target is ready |
+| `PRECHECK_INFRASTRUCTURE failed` | Deployment pipeline / target readiness | Target resolution, ssh-keyscan retry, SSH handshake, remote directory access, disk space, or Docker runtime is not ready for deployment | `FAIL` until the target passes the gate; rerun only after the target is ready |
 | `ssh timeout after release workflow change` | Release pipeline / SSH preparation | Release workflow diverged from the last known-good HM SSH bootstrap, including selected-port `ssh-keyscan` retry behavior, then timed out at the first remote command | `PIPELINE_REGRESSION`; restore the last known-good selected-port SSH bootstrap before investigating host infrastructure |
 | `SSH_DEPLOY_TIMEOUT_RELEASE_PROMOTION` | Release pipeline / SSH endpoint resolution | HM release promotion used masked/inconsistent `SSH_HOST` resolution while the operational HM SSH endpoint was known and reachable | `PIPELINE_REGRESSION`; pin HM release promotion to the approved SSH endpoint and port, then rerun |
 
@@ -73,5 +73,5 @@ If the failure persists after recovery and directly blocks delivery, the agent m
   - Symptom: deploy HM or PROD stops before build/deploy because target resolution, `ssh-keyscan`, SSH handshake, remote directory access, disk space, or Docker availability fails the mandatory precheck.
   - Affected workflows: `.github/workflows/deploy-hm.yml` and `.github/workflows/release-promotion.yml`.
   - Root cause: the target environment is not ready to receive a deployment.
-  - Recovery: do not continue the pipeline; fix the target readiness issue first, then rerun the same workflow.
-  - Recurrence prevention: keep the precheck as the first gate before any deploy/build stage that can touch HM or PROD.
+  - Recovery: do not continue the pipeline; fix the target readiness issue first, then rerun the same workflow. The gate already retries `ssh-keyscan` on `${SSH_PORT}` and `22` before failing.
+  - Recurrence prevention: keep the precheck as the first gate before any deploy/build stage that can touch HM or PROD, and keep the retry loop short enough to preserve fast failure.
