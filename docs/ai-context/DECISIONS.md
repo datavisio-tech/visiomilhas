@@ -1,3 +1,13 @@
+# 2026-06-05 - Runner to VPS mitigation decision
+
+- Decision: the Runner -> VPS RCA is closed for the current incident class.
+- Consolidated cause: failed GitHub-hosted runner IP `172.184.172.212` did not reach the VPS; no entry exists in `sshd`, `auth.log`, `syslog`, kernel logs, or general journal for the failed window.
+- Decision: do not reopen SSH, Fail2Ban, firewall, key, or remote-script RCA for this class unless a future failing runner IP appears in server-side logs with different evidence.
+- Decision: the lowest-impact mitigation for HM certification is to keep GitHub-hosted runners for build/test and move deploy/precheck jobs to a self-hosted runner with stable path to the VPS.
+- Decision: preferred implementation is a self-hosted GitHub Actions runner on the VisioMilhas VPS or on a small auxiliary bastion VPS in the same provider/network, restricted to deploy jobs through labels such as `self-hosted`, `linux`, `x64`, `visiomilhas-deploy`.
+- Decision: pull-based deploy is a valid future hardening path, but it is higher impact than a deploy runner because it changes the release execution model and operational ownership.
+- Decision: job-level retry remains useful as a temporary mitigation, but it does not remove the root path dependency and is insufficient as the main certification strategy.
+
 # 2026-06-05 - Precheck infrastructure retry decision
 
 - Decision: `PRECHECK_INFRASTRUCTURE` must remain the first gate before any HM or PROD build/deploy step.

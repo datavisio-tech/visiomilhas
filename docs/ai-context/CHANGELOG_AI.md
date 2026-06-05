@@ -1,3 +1,11 @@
+# 2026-06-05 - Runner to VPS RCA closure and mitigation proposal
+
+- Closed the current Runner -> VPS RCA class: failed runner IP `172.184.172.212` did not appear in `sshd`, `auth.log`, `syslog`, kernel logs, or general journal during the failed HM deploy precheck.
+- Confirmed the timeout happened before `sshd`; local OS firewall, Fail2Ban, SSH key handling, and remote deploy scripts are not supported as causes for this run.
+- Evaluated mitigations: full job retry, self-hosted runner, auxiliary fixed runner, bastion host, and pull-based deploy.
+- Proposed lowest-impact mitigation: keep GitHub-hosted runners for build/test, and execute HM/PROD deploy jobs on a self-hosted deploy runner with stable network path to the VPS.
+- Operational target: use labels such as `self-hosted`, `linux`, `x64`, `visiomilhas-deploy` only for deploy/precheck jobs, preserving the release promotion architecture.
+
 # 2026-06-05 - Remote release deploy env propagation fix
 
 - Fixed `scripts/remote-release-deploy.sh` so required runtime variables are loaded from the staged `.env.production` before validation.
