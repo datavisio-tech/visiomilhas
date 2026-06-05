@@ -107,3 +107,10 @@
 2. Put browser checks in a dedicated Playwright folder or naming convention.
 3. Keep the base URL explicit and avoid shared test bootstraps.
 4. Run the browser suite independently from unit tests.
+
+## Playbook: `browserType.launch: Executable doesn't exist`
+
+1. Confirm the workflow installed Node dependencies but not the browser binary.
+2. Add an explicit `npx playwright install --with-deps chromium` step before `npx playwright test`.
+3. Keep the browser-install step in the same job that runs the browser smoke tests.
+4. Re-run the workflow and verify that the browser launch error disappears.

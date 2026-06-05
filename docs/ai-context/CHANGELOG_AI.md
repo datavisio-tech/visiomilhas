@@ -2803,3 +2803,10 @@ Resultado esperado:
 - PROD V2 validation could not be completed from runtime because `/opt/datavisio/visiomilhas/.env.production` was not present on the host.
 - Updated cutover readiness, cutover plan, deploy checklist, and post-deploy validation docs.
 - Final production decision: **NO-GO** until the same read-only validation passes on PROD V2 after applying the migration.
+
+## 2026-06-05 - HM release smoke browser provisioning fix
+
+- The HM browser-smoke job in `release-promotion.yml` was failing after a successful deploy because the runner had installed Playwright packages but not the Chromium browser binary.
+- Added an explicit `npx playwright install --with-deps chromium` step before `npx playwright test --config=playwright.config.ts` in the HM smoke job.
+- Registered the failure pattern `browserType.launch: Executable doesn't exist` in the failure registry and added a recovery playbook that makes browser installation explicit in browser-validation jobs.
+- This change is limited to HM smoke certification and does not alter business logic, auth, or production migration behavior.
