@@ -22,6 +22,7 @@ This registry tracks recurring operational failures so agents can recover before
 | `release-promotion SSH retry amplification` | Release pipeline / SSH bootstrap | Release promotion repeats the same SSH port probes and remote setup calls more than necessary, amplifying transient runner-to-VPS variance | `WARNING` when the workflow can recover with backoff and deduped probes; `FAIL` only if the reduced SSH path still cannot complete |
 | `remote release env not propagated` | Release pipeline / remote execution | Runner env values are written to a staged env file but are not available inside the remote SSH process before the script validates them | `PIPELINE_REGRESSION`; load the staged remote env file before validating runtime variables |
 | `remote env source fails on public values` | Release pipeline / remote execution | Remote script sources `.env.production` as shell while the env file contains public values with spaces or currency symbols | `PIPELINE_REGRESSION`; parse only required operational keys instead of sourcing the full env file |
+| `container healthcheck immediate ECONNREFUSED` | Release pipeline / runtime validation | Deploy script runs container healthcheck before the Next.js process is listening inside the newly started container | `WARNING`; add bounded healthcheck retry before failing deploy |
 | `ssh timeout after release workflow change` | Release pipeline / SSH preparation | Release workflow diverged from the last known-good HM SSH bootstrap, including selected-port `ssh-keyscan` retry behavior, then timed out at the first remote command | `PIPELINE_REGRESSION`; restore the last known-good selected-port SSH bootstrap before investigating host infrastructure |
 | `SSH_DEPLOY_TIMEOUT_RELEASE_PROMOTION` | Release pipeline / SSH endpoint resolution | HM release promotion used masked/inconsistent `SSH_HOST` resolution while the operational HM SSH endpoint was known and reachable | `PIPELINE_REGRESSION`; pin HM release promotion to the approved SSH endpoint and port, then rerun |
 
@@ -108,3 +109,9 @@ If the failure persists after recovery and directly blocks delivery, the agent m
   - Root cause: `.env.production` contains public display values such as `PLANO=R$ 4,99/mês`; sourcing the whole file as shell executes the value after the space as a command.
   - Recovery: parse only required operational keys from `.env.production` and export those variables explicitly.
   - Recurrence prevention: remote deploy scripts must not source env files that contain display copy, currency, or values with spaces.
+- `FP-017`: Container healthcheck immediate ECONNREFUSED.
+  - Classification: `RUNTIME_STARTUP_TIMING`.
+  - Symptom: `Run remote HM deployment orchestration` started `visiomilhas_hm`, then immediately failed with `Healthcheck request failed: connect ECONNREFUSED 127.0.0.1:3000`.
+  - Root cause: the deploy script ran the internal healthcheck before the Next.js process was listening inside the container.
+  - Recovery: retry the internal container healthcheck with a bounded window before failing and emit container logs if retries are exhausted.
+  - Recurrence prevention: runtime validation after container start must account for application boot time.
