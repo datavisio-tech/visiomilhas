@@ -9,6 +9,9 @@ Before any execution, identify the task type, consult this router, then select t
 | TIPO_DE_TAREFA | AGENTE | SKILLS |
 |---|---|---|
 | Deploy | `024-deployment.agent.md` | `deployment-runtime-validation`, `failure-recovery-engine` |
+| Release | `024-deployment.agent.md` | `deployment-runtime-validation`, `failure-recovery-engine` |
+| Promotion | `024-deployment.agent.md` | `deployment-runtime-validation`, `failure-recovery-engine` |
+| Cutover | `024-deployment.agent.md` | `deployment-runtime-validation`, `failure-recovery-engine` |
 | Browser | `021-automated-testing.agent.md` | `browser-validation`, `failure-recovery-engine` |
 | Playwright | `021-automated-testing.agent.md` | `browser-validation`, `failure-recovery-engine` |
 | Testing | `020-test-architecture.agent.md` | `test-orchestration-engine`, `browser-validation` |

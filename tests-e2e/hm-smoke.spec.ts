@@ -32,6 +32,21 @@ const toleratedReactMessages = [
   "Minified React error #425",
 ];
 
+function resolveExpectedOAuthOrigin() {
+  const candidate =
+    process.env.PLAYWRIGHT_BASE_URL ??
+    process.env.BASE_URL ??
+    "https://hm.visiomilhas.visiochat.cloud";
+
+  try {
+    return new URL(candidate).origin;
+  } catch {
+    return "https://hm.visiomilhas.visiochat.cloud";
+  }
+}
+
+const expectedOAuthOrigin = resolveExpectedOAuthOrigin();
+
 let testUsers: Record<string, TestUser>;
 
 test.beforeAll(async () => {
@@ -202,7 +217,9 @@ test("google oauth bootstrap is available", async ({ page }) => {
   expect(response.status()).toBe(200);
   const payload = await response.json();
   expect(payload.url).toContain("accounts.google.com/o/oauth2/v2/auth");
-  expect(payload.url).toContain("redirect_uri=https%3A%2F%2Fhm.visiomilhas.visiochat.cloud%2Fapi%2Fauth%2Fcallback%2Fgoogle");
+  expect(payload.url).toContain(
+    encodeURIComponent(`${expectedOAuthOrigin}/api/auth/callback/google`),
+  );
 });
 
 test("owner onboarding and authenticated HM surfaces are available", async ({

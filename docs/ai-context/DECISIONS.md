@@ -1,4 +1,18 @@
-﻿# 2026-06-04 - PROD V2 cutover readiness decision
+﻿# 2026-06-04 - Release promotion SSH baseline decision
+
+- Decision: `.github/workflows/release-promotion.yml` must preserve the same SSH bootstrap behavior proven by `.github/workflows/deploy-hm.yml`.
+- Decision: release promotion must use the selected-port `ssh-keyscan` retry loop across `${SSH_PORT}` and `22`.
+- Decision: release promotion must persist `SSH_PORT=${selected_port}` before `Ensure remote directory exists` or any other remote command.
+- Decision: `~/.ssh/config` or `StrictHostKeyChecking accept-new` cannot replace the proven SSH bootstrap until validated by a successful release-promotion run.
+
+# 2026-06-04 - Release promotion SSH preparation decision
+
+- Decision: the release promotion pipeline must use the last known-good HM SSH preparation baseline from `deploy-hm.yml` until a replacement is proven in GitHub Actions.
+- Decision: the incident from `release-promotion.yml` run `26984230889` is classified as `DEPLOY_FAILURE_CLASSIFICATION: PIPELINE_REGRESSION`, not as an application defect.
+- Decision: when host, port, user, and secrets show no evidence of change, and the previous HM workflow passed the same remote step, the first recovery action is to restore the proven `ssh-keyscan` behavior.
+- Decision: `StrictHostKeyChecking accept-new` must not replace explicit `ssh-keyscan` in the release promotion deploy jobs without a successful proof run.
+
+# 2026-06-04 - PROD V2 cutover readiness decision
 
 - Decision: the current release candidate is **NO-GO** for PROD V2 promotion until schema/bootstrap evidence is closed.
 - Decision: purchases and session refresh warnings are tracked as medium-severity runtime/test instability, not as standalone blockers.
@@ -414,4 +428,13 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - Decision: `.github/agents/` is the official agent tree.
 - Decision: `.agents/skills/` is the official skill tree.
 - Decision: the agent tree and skill tree are separate on purpose; agent definitions must declare the skills they depend on.
+
+## 2026-06-04 - Release promotion pipeline
+
+- Decision: the official release model for VisioMilhas is Build Once, Promote Many.
+- Decision: release promotion is the primary process; independent HM and PROD deploys are legacy fallback workflows only.
+- Decision: RC tags use semantic pre-release forms and publish GitHub pre-releases after HM smoke and integration tests pass.
+- Decision: production tags use semantic final releases, pause on the `production` GitHub Environment approval rule, and publish GitHub Releases marked latest only after PROD smoke passes.
+- Decision: the same Docker image artifact must be promoted from HM to PROD for a given release tag.
+- Decision: `release-promotion.yml` is the official release pipeline entrypoint.
 

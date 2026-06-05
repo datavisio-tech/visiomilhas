@@ -1,4 +1,35 @@
-﻿# 2026-06-04 - PROD V2 cutover readiness audit
+﻿# 2026-06-04 - SSH_DEPLOY_TIMEOUT_RELEASE_PROMOTION operational memory
+
+- Symptom observed: `release-promotion.yml` failed in `Deploy promoted release to HM` at `Configure SSH` with repeated `ssh-keyscan` and SSH connection timeouts.
+- Root cause confirmed: HM release promotion depended on masked/inconsistent `SSH_HOST` resolution from the GitHub Environment instead of the approved operational HM SSH endpoint.
+- Evidence: after commit `12aa01b`, run `26986661630` passed `Configure SSH`, `Ensure remote directory exists`, source sync, image load, env render, and deploy artifact steps.
+- Correction applied: HM release promotion now uses `SSH_HOST=72.60.143.197`, `SSH_PORT=22`, `SSH_USER=root`, the baseline private-key path `~/.ssh/visiomilhas_deploy_key`, `chmod 600`, selected-port persistence, and `ssh -i`/`scp -i`.
+- Workflow affected: `.github/workflows/release-promotion.yml`.
+- Recovery record: added `SSH_DEPLOY_TIMEOUT_RELEASE_PROMOTION` to failure registry, recovery playbooks, and known limitations.
+- Prevention: do not replace the explicit HM endpoint with a masked environment value until a release-promotion run proves the replacement.
+- Commit references: `57de73a`, `2a79fbd`, `12aa01b`.
+# 2026-06-04 - Release promotion SSH baseline restoration
+
+- Regression identified: `.github/workflows/release-promotion.yml` changed the SSH preparation layer that was already proven in `.github/workflows/deploy-hm.yml`.
+- Root cause: release promotion diverged from the selected-port `ssh-keyscan` retry loop and did not preserve the same remote connection bootstrap.
+- Correction applied: restored selected-port SSH host-key capture for `${SSH_PORT}` and `22`, then persisted `SSH_PORT=${selected_port}` to `$GITHUB_ENV`.
+- Workflow affected: `.github/workflows/release-promotion.yml`.
+- Recovery procedure: restore the proven HM deploy SSH bootstrap, rerun release promotion, and only investigate infrastructure if the restored baseline also fails.
+- Recurrence prevention: future release promotion SSH changes must be compared against the last successful HM deploy baseline before merge.
+- Follow-up correction: aligned release-promotion SSH step-level env declarations with the proven `deploy-hm.yml` authentication baseline for `SSH_HOST`, `SSH_PORT`, `SSH_PRIVATE_KEY`, and remote preparation `SSH_USER`.
+- Follow-up correction: kept `ssh-keyscan` as the first known-host path and added SSH authentication validation with the same private key when `ssh-keyscan` does not materialize `known_hosts`, without introducing `~/.ssh/config`.
+- Follow-up correction: HM release promotion now uses the approved operational SSH endpoint `72.60.143.197` and port `22` instead of relying on the masked `SSH_HOST` value inside the promotion workflow.
+- Follow-up correction: HM release promotion runtime validation now follows the proven HM deploy baseline: container healthcheck, internal DOCTYPE/OAuth smoke, then public `/sign-in` retry through Traefik.
+
+# 2026-06-04 - Release promotion SSH regression fix
+
+- Classified the release promotion HM SSH timeout as `DEPLOY_FAILURE_CLASSIFICATION: PIPELINE_REGRESSION`.
+- Evidence: `.github/workflows/deploy-hm.yml` run `26961560274` at `fdf9b88035dcb3aa8dc8dec8d18370d4ff883d6a` passed `Ensure remote directory exists` after explicit `ssh-keyscan`.
+- Evidence: `.github/workflows/release-promotion.yml` run `26984230889` at `e95ac0af914a24ed79b7b99cf1fdabf0edbda076` failed the same remote-directory step after replacing `ssh-keyscan` with SSH config plus `StrictHostKeyChecking accept-new`.
+- Restored the known-good `ssh-keyscan` host-key capture behavior in `release-promotion.yml` for HM and PROD deploy jobs.
+- Updated the failure registry and recovery playbooks so future agents restore the known-good SSH preparation before opening a new infrastructure RCA.
+
+# 2026-06-04 - PROD V2 cutover readiness audit
 
 - Audited the current HM release candidate for production readiness.
 - Documented that purchases and session refresh warnings are not hard blockers on their own.
@@ -2755,4 +2786,12 @@ Resultado esperado:
 
 - Defined `.github/agents/` as the canonical agent tree and `.agents/skills/` as the canonical skill tree.
 - Added an explicit agent-to-skill mapping so every agent family carries the skills required for execution, recovery, orchestration, and deployment validation.
+
+## 2026-06-04 - Release promotion pipeline
+
+- Added the official release promotion pipeline for VisioMilhas.
+- Introduced Build Once, Promote Many as the release contract.
+- Added GitHub pre-release support for RC tags and final latest releases for production tags.
+- Demoted the old HM and PROD deploy workflows to legacy manual fallback paths.
+- Added release context, architecture, process, pipeline, and cutover documentation under `docs/ai-context/`.
 

@@ -65,6 +65,7 @@ Official agent-to-skill map:
 - `028-governance.agent.md` -> `ia-first-engine-discipline`, `failure-recovery-engine`
 - `visiomilhas.agent.md` -> `autonomous-delivery-engine`, `deployment-runtime-validation`
 - All browser-validation agents must include `failure-recovery-engine`
+- Release / promotion / cutover tasks are routed to `024-deployment.agent.md` with `deployment-runtime-validation` and `failure-recovery-engine`
 
 ## Required documentation consultation order
 
@@ -109,6 +110,10 @@ The global precedence for agent selection is:
 - `main` is the official PROD branch
 - All writes to Git are done with Git CLI locally
 - HM and PROD deployments must use isolated compose names, directories, and runtime targets
+- The official release path is `Release Promotion Pipeline` and follows Build Once, Promote Many
+- RC releases are created as GitHub pre-releases
+- Production releases are created as GitHub Releases and marked Latest after PROD smoke
+- The legacy HM/PROD deploy workflows are manual fallback paths only
 
 ## Failure recovery strategy
 

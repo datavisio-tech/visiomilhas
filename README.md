@@ -6,6 +6,14 @@ Empresa: DataVisio
 Descrição resumida:
 Plataforma SaaS para gestão de milhas/pontos de fidelidade com multi-tenant por organização.
 
+Release model:
+
+- Official release flow: Build Once, Promote Many
+- RC tags publish GitHub pre-releases after HM smoke and integration tests
+- Production tags wait for `production` GitHub Environment approval, then deploy the same artifact to PROD and publish the final GitHub Release as latest
+- Legacy `deploy-hm.yml` and `deploy-prod.yml` workflows remain manual fallback paths only
+- Operational docs: `docs/ai-context/RELEASE_PROCESS.md`, `docs/ai-context/RELEASE_PIPELINE.md`, `docs/ai-context/CUTOVER_PROCESS.md`
+
 Stack:
 
 - Frontend: Next.js (App Router)

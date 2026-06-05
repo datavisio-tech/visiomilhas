@@ -27,6 +27,59 @@
 2. Avoid re-overwriting the port later in the workflow.
 3. Re-run SSH validation.
 
+## Playbook: `ssh timeout after release workflow change`
+
+1. Compare the failing workflow with the last successful deploy workflow before changing infrastructure.
+2. If host, user, port, and secrets are unchanged but the release workflow changed the SSH bootstrap, classify the incident as `PIPELINE_REGRESSION`.
+3. Restore the proven baseline from `.github/workflows/deploy-hm.yml`:
+   - write `SSH_PRIVATE_KEY` to `~/.ssh/visiomilhas_deploy_key`
+   - set `chmod 600 ~/.ssh/visiomilhas_deploy_key`
+   - run the selected-port `ssh-keyscan` retry loop for `${SSH_PORT}` and `22`
+   - fail fast if neither port captures the host key
+   - persist `SSH_PORT=${selected_port}` to `$GITHUB_ENV`
+   - keep `Configure SSH` step-level env declarations for `SSH_HOST`, `SSH_PORT`, and `SSH_PRIVATE_KEY`
+   - keep `SSH_USER` available in `Configure SSH` when the workflow validates authentication during SSH preparation
+   - keep remote preparation step-level env declarations for `SSH_HOST` and `SSH_USER`
+4. If `ssh-keyscan` does not populate `known_hosts`, run a real SSH authentication validation with the same key and `StrictHostKeyChecking=accept-new`; do not create `~/.ssh/config`.
+5. For HM release promotion, if the masked `SSH_HOST` value remains inconsistent, use the approved operational endpoint `72.60.143.197` with port `22`.
+6. Re-run the release promotion workflow for the same release tag.
+7. Only inspect SSH authentication differences after the restored baseline fails again.
+
+## Playbook: `SSH_DEPLOY_TIMEOUT_RELEASE_PROMOTION`
+
+1. Confirm the failure is in `.github/workflows/release-promotion.yml`, job `Deploy promoted release to HM`, step `Configure SSH`.
+2. Do not reopen DNS, firewall, or host-availability RCA when the server is already confirmed online.
+3. Check the SSH deployment inputs in this order:
+   - `SSH_HOST`
+   - `SSH_PORT`
+   - `SSH_USER`
+   - `SSH_PRIVATE_KEY`
+   - private-key materialization path
+   - `chmod 600`
+   - `known_hosts`
+   - `ssh-keyscan`
+   - `ssh -i` and `scp -i`
+4. For HM release promotion, use the approved operational endpoint:
+   - `SSH_HOST=72.60.143.197`
+   - `SSH_PORT=22`
+   - `SSH_USER=root`
+5. Keep the baseline authentication behavior:
+   - write `SSH_PRIVATE_KEY` to `~/.ssh/visiomilhas_deploy_key`
+   - set `chmod 600 ~/.ssh/visiomilhas_deploy_key`
+   - attempt `ssh-keyscan`
+   - persist the selected port into `$GITHUB_ENV`
+   - use `ssh -i ~/.ssh/visiomilhas_deploy_key`
+   - use `scp -i ~/.ssh/visiomilhas_deploy_key`
+6. Validate recovery by rerunning release promotion for the same RC tag.
+7. Recovery is confirmed when the run passes:
+   - `Configure SSH`
+   - `Ensure remote directory exists`
+   - `Sync source to HM server`
+   - `Load release image on HM host`
+   - `Render HM env on server`
+   - `Deploy release artifact to HM`
+8. If a later step fails after those steps pass, classify it as a new non-SSH runtime/deploy validation issue.
+
 ## Playbook: `pull access denied`
 
 1. Stop relying on remote image pull for HM.
