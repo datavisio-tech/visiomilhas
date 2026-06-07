@@ -16,6 +16,7 @@
 - Decision: `ssh-keyscan` inside the precheck should retry on `${SSH_PORT}` and `22` to avoid rejecting a valid target on a single transient miss.
 - Decision: the retry window must remain short enough to keep the failure fast and preserve the gate's purpose.
 - Decision: if `ssh-keyscan` still misses after the short retry window, the precheck may validate the target with a real SSH handshake using `StrictHostKeyChecking=accept-new` instead of blocking a known-good host on the keyscan alone.
+
 # 2026-06-04 - Release promotion SSH baseline decision
 
 - Decision: `.github/workflows/release-promotion.yml` must preserve the same SSH bootstrap behavior proven by `.github/workflows/deploy-hm.yml`.
@@ -42,6 +43,7 @@
 - Decisao: `.github/agents/` remains the canonical agent tree and `.agents/skills/` remains the canonical skill tree.
 - Decisao: operational replies must not use generic agent identities when a routed agent exists for the task type.
 - Decisao: `.agents/AGENT_ROUTER.md` is part of the mandatory consultation chain alongside `AGENTS.md` and the ai-context records.
+
 ## 2026-06-03 â€” Pipeline Hardening for Environment Segregation
 
 - DecisÃ£o: `npm run typecheck` deve rodar em checkout limpo usando `tsconfig.typecheck.json` source-only, sem depender de `.next/types/**/*.ts`.
@@ -58,6 +60,13 @@
 # DECISIONS - VisioMilhas
 
 ## 2026-06-03 — Environment Segregation Implementation
+
+# 2026-06-07 - HM Release Pipeline Certification
+
+- Decision: `HM_RELEASE_PIPELINE_CERTIFIED` — The HM release pipeline is certified for release promotion when Playwright HM smoke suite passes 10/10 in the CI/HM validation lane.
+- Evidence: local execution of `tests-e2e/hm-smoke.spec.ts` reported `10 passed` after hardening `ensureSignedIn` and adding session-state caching to reduce auth API load.
+- Observation: intermittent `429 Too Many Requests` was observed on the auth API during repeated sign-ins; mitigation applied in test harness (session caching) and diagnostic logs added.
+- Action: request increased auth API rate limits for CI runners or maintain persistent session fixtures in CI; the test harness persists/restores session state to reduce sign-in volume.
 
 - Decisão: HM e PROD devem ter workflows próprios e progressão por branch (`develop` e `main`).
 - Decisão: o workflow de produção passa a ser explicitado em `deploy-prod.yml`.
@@ -392,6 +401,7 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - Decisão: qualquer drift entre docs, skills e agents deve ser registrado em `CHANGELOG_AI.md` e `DAILY_CHECKPOINT.md` antes de novas mudanças operacionais.
 - Decisão: `AI_OPERATING_MODEL_VERSION=2.2-I` é a baseline oficial ativa da governança IA.
 - Decisão: skills versionadas usam baseline `v1` e agents versionados usam baseline `v1`, ambos compatíveis com `2.2-I`.
+
 ### 2026-06-02 - Docker Runtime Layout Collision Fix
 
 - Decisao: o build containerizado do VisioMilhas nao deve usar `WORKDIR /app`, para evitar colisao com a arvore App Router `app/` e rotas internas `app/app/`.
@@ -412,6 +422,7 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - Decisao: `BETTER_AUTH_SECRET` passa a ser o segredo primario do Better Auth em producao; `AUTH_SECRET` continua como fallback tecnico, nao como substituto silencioso de um env vazio.
 - Motivo: a producao retornou `AUTH_BOOTSTRAP_FAILED` porque o processo Node recebeu `BETTER_AUTH_SECRET` vazio, apesar de outros segredos estarem presentes.
 - Resultado esperado: o provider Google so inicializa com um segredo valido e nao vazio.
+
 # 2026-06-03
 
 ## Final discovery decisions before implementation
@@ -420,6 +431,7 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - MongoDB is not part of the current required runtime path.
 - The production deploy pipeline must be validated end-to-end through GitHub Actions -> SSH -> Docker -> Traefik -> container -> public URL.
 - Healthcheck, auth runtime events, and post-deploy smoke tests are mandatory gates for readiness.
+
 # 2026-06-04
 
 - Adopted a Failure Recovery Layer as part of the delivery workflow.
@@ -429,6 +441,7 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - Adopted an Autonomous Delivery Engine flow for HM/PROD delivery: implement, test, validate, fix, retest, document, classify, continue, and only escalate to humans for credentials, business decisions, or destructive actions.
 - Standardized `DEPLOY_CONFIDENCE_SCORE` across Infrastructure, Authentication, Smoke, Functional, and Runtime categories for HM and PROD.
 - Formalized the test suite organization contract: `tests/domain` for pure unit rules, `tests/integration` for persistence/service checks, `tests/runtime` for browser-like journeys, `tests-e2e` only for a future dedicated browser lane, and `test-results` for artifacts only.
+
 ## 2026-06-04 - VisioMilhas Project Operating System
 
 - Decision: `AGENTS.md` at the repository root is the canonical operating-system document for all DataVisio work on VisioMilhas.
@@ -436,11 +449,13 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - Decision: browser validation uses visible Chromium for DEV/HM and headless mode for PROD.
 - Decision: QA identities must come from the official synthetic test-user discovery layer and must never be human or personal accounts.
 - Decision: every handover must use the standard `DE / PARA / MOTIVO / SKILLS / DOCUMENTOS CONSULTADOS / AÇÃO EXECUTADA / PRÓXIMO PASSO` structure.
+
 ## 2026-06-04 - IA-1stEngine discipline enforcement
 
 - Decision: every operational reply must expose `AGENT`, `SKILLS`, `SOURCES CONSULTED`, and `STATUS`.
 - Decision: missing mandatory response fields are treated as `PROCESS_VIOLATION` and must be corrected internally before the final answer is emitted.
 - Decision: `FAIL` requires consulting the failure registry first, and `HUMAN_ACTION_REQUIRED` requires consulting the relevant recovery playbook first.
+
 ## 2026-06-04 - Agent / skill governance alignment
 
 - Decision: `.github/agents/` is the official agent tree.

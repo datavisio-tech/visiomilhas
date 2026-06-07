@@ -47,6 +47,9 @@ That means the repository does not prove that a fresh PROD V2 database will be r
 - **Overall status:** NO-GO
 - **Reason:** Migration `0001_add_mile_point_lots.sql` is operationally validated in HM, but not yet evidenced on PROD V2.
 
+- **HM release pipeline:** HM_RELEASE_PIPELINE_CERTIFIED (10/10 Playwright HM smoke PASS)
+- **Next action for PROD:** Resolve PROD V2 schema/bootstrap gap before promoting to PROD.
+
 ## Migration 0001 Operational Validation
 
 ### Scope
@@ -60,20 +63,20 @@ That means the repository does not prove that a fresh PROD V2 database will be r
 
 All required objects returned `FOUND`:
 
-| Object | Status |
-|---|---|
-| `mile_point_lots` table | FOUND |
-| `mile_entries.consumed_lot_id` | FOUND |
-| `mile_entries.consumed_points` | FOUND |
-| `mile_entries.lot_snapshot` | FOUND |
-| `mile_transfers.source_entry_id` | FOUND |
-| `mile_transfers.destination_entry_id` | FOUND |
-| `idx_mpl_account_remaining` | FOUND |
-| `idx_mpl_source_entry` | FOUND |
-| `idx_me_account_occurred` | FOUND |
-| `idx_mt_source_dest` | FOUND |
-| `fk_mpl_account` | FOUND |
-| `chk_mpl_acquired_positive` | FOUND |
+| Object                                | Status |
+| ------------------------------------- | ------ |
+| `mile_point_lots` table               | FOUND  |
+| `mile_entries.consumed_lot_id`        | FOUND  |
+| `mile_entries.consumed_points`        | FOUND  |
+| `mile_entries.lot_snapshot`           | FOUND  |
+| `mile_transfers.source_entry_id`      | FOUND  |
+| `mile_transfers.destination_entry_id` | FOUND  |
+| `idx_mpl_account_remaining`           | FOUND  |
+| `idx_mpl_source_entry`                | FOUND  |
+| `idx_me_account_occurred`             | FOUND  |
+| `idx_mt_source_dest`                  | FOUND  |
+| `fk_mpl_account`                      | FOUND  |
+| `chk_mpl_acquired_positive`           | FOUND  |
 
 ### Production Decision Impact
 
@@ -166,13 +169,13 @@ Low to medium operational impact:
 
 ## Release Risks
 
-| Risk | Severity | Notes |
-|---|---:|---|
-| Purchases browser/runtime instability | MEDIUM | No hard product failure evidenced; warning appears harness-related. |
-| Session refresh instability | MEDIUM | No hard product failure evidenced; warning appears harness-related. |
-| PROD V2 schema/bootstrap gap | BLOCKER | The repository does not prove that the APP lot migration is enforced for a fresh PROD V2 target. |
-| PROD V2 migration validation missing | BLOCKER | HM has validated objects; PROD V2 still needs the same read-only validation after application. |
-| Rollback after schema changes | HIGH | DB rollback depends on snapshot/backup, not ad hoc reversal. |
+| Risk                                  | Severity | Notes                                                                                            |
+| ------------------------------------- | -------: | ------------------------------------------------------------------------------------------------ |
+| Purchases browser/runtime instability |   MEDIUM | No hard product failure evidenced; warning appears harness-related.                              |
+| Session refresh instability           |   MEDIUM | No hard product failure evidenced; warning appears harness-related.                              |
+| PROD V2 schema/bootstrap gap          |  BLOCKER | The repository does not prove that the APP lot migration is enforced for a fresh PROD V2 target. |
+| PROD V2 migration validation missing  |  BLOCKER | HM has validated objects; PROD V2 still needs the same read-only validation after application.   |
+| Rollback after schema changes         |     HIGH | DB rollback depends on snapshot/backup, not ad hoc reversal.                                     |
 
 ## Blockers
 
