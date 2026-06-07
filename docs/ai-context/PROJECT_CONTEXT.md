@@ -34,6 +34,7 @@ A DataVisio adota a seguinte política de utilização de modelos de IA, com obj
 - **Modelo de Arquitetura e Decisão Crítica**: GPT-5 — uso restrito a arquitetura, segurança, CI/CD, incidentes críticos, RCAs complexas e decisões estruturais.
 
 Regras operacionais:
+
 - Máximo 1 RCA por incidente; nova RCA somente com evidência adicional.
 - Agentes consultam `failure-registry` e `docs/ai-context/DECISIONS.md` antes de investigar.
 - Autonomia: commits/push/merge para `develop` permitidos; merges para `main` e deploys PROD exigem aprovação humana.
