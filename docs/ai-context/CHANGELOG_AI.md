@@ -29,6 +29,12 @@
 
 Data de vigência: 2026-06-07
 
+# 2026-06-07 - PROD V2 Bootstrap & Ledger — Preparação operacional
+
+- Gerado script operacional para aplicação controlada do bootstrap (`0000_misty_kulan_gath.sql`) e ledger (`0001_add_mile_point_lots.sql`) em PROD V2: `scripts/prod_v2_apply_bootstrap_and_ledger.sh` (GERADO, NÃO EXECUTADO).
+- Artefatos criados: `CUTOVER_READINESS_REPORT.md`, `PROD_V2_CUTOVER_PLAN.md`, `PROD_DEPLOY_CHECKLIST.md`.
+- Status: pronto para revisão humana e aprovação final; não executar sem autorização explícita.
+
 # 2026-06-05 - Self-hosted deploy runner implementation
 
 - Installed the VisioMilhas GitHub Actions self-hosted runner on the `visiochat` VPS as dedicated user `github-runner`.
