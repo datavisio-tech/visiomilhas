@@ -59,9 +59,17 @@ on_err() {
   rc=$?
   lineno=${BASH_LINENO[0]:-?}
   echo "ERROR: script failed at line ${lineno} (rc=${rc})" >&2
-  if [ "${AUTO_RESTORE}" = "true" ] && [ -n "$PRE_DUMP_FILE" ] && [ -f "$PRE_DUMP_FILE" ]; then
-    echo "AUTO_RESTORE is enabled — attempting pg_restore from $PRE_DUMP_FILE" >&2
-    pg_restore --no-owner --dbname="$APP_DATABASE_URL" "$PRE_DUMP_FILE" || echo "pg_restore failed" >&2
+  if [ "${AUTO_RESTORE}" = "true" ]; then
+    echo "AUTO_RESTORE is enabled — attempting restore inside container postgres_prod_v2" >&2
+    if [ -n "${PRE_DUMP_CONTAINER_PATH:-}" ]; then
+      docker exec postgres_prod_v2 pg_restore --no-owner --dbname="$APP_DATABASE_URL" "$PRE_DUMP_CONTAINER_PATH" || echo "pg_restore (container) failed" >&2
+    elif [ -n "$PRE_DUMP_FILE" ] && [ -f "$PRE_DUMP_FILE" ]; then
+      # copy host dump into container then restore
+      docker cp "$PRE_DUMP_FILE" postgres_prod_v2:/tmp/$(basename "$PRE_DUMP_FILE")
+      docker exec postgres_prod_v2 pg_restore --no-owner --dbname="$APP_DATABASE_URL" /tmp/$(basename "$PRE_DUMP_FILE") || echo "pg_restore (copied) failed" >&2
+    else
+      echo "AUTO_RESTORE requested but no dump available" >&2
+    fi
   else
     echo "Fail-fast: not attempting automatic restore. To enable automatic restore set AUTO_RESTORE=true" >&2
   fi
@@ -70,7 +78,7 @@ on_err() {
 trap on_err ERR
 
 echo "[*] PRECHECK: checking current database"
-current_db=$(psql --no-password --dbname="$APP_DATABASE_URL" -t -A -c "SELECT current_database()")
+current_db=$(docker exec postgres_prod_v2 psql --tuples-only --no-align --dbname="$APP_DATABASE_URL" -c "SELECT current_database()")
 echo "[*] connected to: $current_db"
 
 echo "[*] Creating pre-migration dump inside container postgres_prod_v2 (pg_dump -Fc)"
@@ -138,7 +146,6 @@ while IFS='|' read -r tbl present; do
   if [ "$present" != "t" ] && [ "$present" != "true" ]; then
     missing_bootstrap+=("$tbl")
   fi
-done < <(psql --no-password --dbname="$APP_DATABASE_URL" -t -A -F'|' -c "$values_sql")
 done < <(docker exec postgres_prod_v2 psql --tuples-only --no-align --field-separator='|' --dbname="$APP_DATABASE_URL" -c "$values_sql")
 
 if [ ${#missing_bootstrap[@]} -ne 0 ]; then
