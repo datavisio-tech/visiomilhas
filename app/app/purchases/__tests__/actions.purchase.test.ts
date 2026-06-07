@@ -15,10 +15,11 @@ describe("createPurchaseAction (unit)", () => {
       queries: [] as any[],
       query: vi.fn(async (sql: string) => {
         mockAppClient.queries.push(sql);
-        if (sql.includes("SELECT current_points_balance"))
+        if (sql.includes("FROM program_accounts"))
           return {
             rows: [
               {
+                program_id: 1,
                 current_points_balance: 0,
                 current_avg_cost_per_thousand_cents: 0,
                 current_cost_basis_cents: 0,
@@ -76,10 +77,11 @@ describe("createPurchaseAction (unit)", () => {
       queries: [] as any[],
       query: vi.fn(async (sql: string) => {
         mockAppClient.queries.push(sql);
-        if (sql.includes("SELECT current_points_balance"))
+        if (sql.includes("FROM program_accounts"))
           return {
             rows: [
               {
+                program_id: 1,
                 current_points_balance: 0,
                 current_avg_cost_per_thousand_cents: 0,
                 current_cost_basis_cents: 0,
@@ -140,10 +142,11 @@ describe("createPurchaseAction (unit)", () => {
       queries: [] as any[],
       query: vi.fn(async (sql: string) => {
         mockAppClient.queries.push(sql);
-        if (sql.includes("SELECT current_points_balance"))
+        if (sql.includes("FROM program_accounts"))
           return {
             rows: [
               {
+                program_id: 1,
                 current_points_balance: 0,
                 current_avg_cost_per_thousand_cents: 0,
                 current_cost_basis_cents: 0,

@@ -1,5 +1,7 @@
 ﻿import { expect, test, type Page } from "@playwright/test";
 import { discoverTestUsers, type TestUser } from "./test-user-discovery";
+import { readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
 
 type RouteSpec = {
   path: string;
@@ -16,7 +18,6 @@ const protectedRoutes: RouteSpec[] = [
   { path: "/app/accounts", label: "accounts" },
   { path: "/app/programs", label: "programs" },
   { path: "/app/purchases", label: "purchases" },
-
 ];
 
 const ignoredConsoleMessages = [
@@ -58,7 +59,10 @@ test.setTimeout(90_000);
 async function gotoWithRetry(
   page: Page,
   path: string,
-  options: { waitUntil?: "commit" | "domcontentloaded" | "load" | "networkidle"; timeout?: number } = {},
+  options: {
+    waitUntil?: "commit" | "domcontentloaded" | "load" | "networkidle";
+    timeout?: number;
+  } = {},
 ) {
   const waitUntil = options.waitUntil ?? "commit";
   const timeout = options.timeout ?? 45_000;
@@ -163,13 +167,16 @@ async function assertHealthyRoute(page: Page, path: string, label: string) {
   expect(doctype, `${label} must render with a doctype`).toBe("html");
 
   const bodyText = await page.locator("body").innerText({ timeout: 15000 });
-  expect(bodyText.trim().length, `${label} must render visible content`).toBeGreaterThan(0);
+  expect(
+    bodyText.trim().length,
+    `${label} must render visible content`,
+  ).toBeGreaterThan(0);
 
   await page.waitForLoadState("networkidle").catch(() => undefined);
 
   expect(
     hardIssues.filter((issue) => !issue.includes("/api/auth/sign-out")),
-    `${label} must not emit runtime/network issues`
+    `${label} must not emit runtime/network issues`,
   ).toEqual([]);
 
   if (softIssues.length > 0) {
@@ -179,13 +186,104 @@ async function assertHealthyRoute(page: Page, path: string, label: string) {
 }
 
 async function ensureSignedIn(page: Page, user: TestUser) {
-  await page.context().clearCookies().catch(() => undefined);
+  await page
+    .context()
+    .clearCookies()
+    .catch(() => undefined);
   await page
     .evaluate(() => {
       localStorage.clear();
       sessionStorage.clear();
     })
     .catch(() => undefined);
+
+  const storagePath = path.join(
+    process.cwd(),
+    "test-results",
+    `auth-${user.role}.json`,
+  );
+  // Try restore saved session for this user to avoid rate-limiting the auth API.
+  try {
+    const saved = await readFile(storagePath, "utf8")
+      .then((s) => JSON.parse(s))
+      .catch(() => null);
+    if (saved && Array.isArray(saved.cookies)) {
+      // ensure we're on the app origin before adding cookies
+      await gotoWithRetry(page, "/").catch(() => undefined);
+      await page
+        .context()
+        .addCookies(saved.cookies)
+        .catch(() => undefined);
+      try {
+        await page.evaluate((items) => {
+          Object.entries(items || {}).forEach(([k, v]) =>
+            localStorage.setItem(k, v as string),
+          );
+        }, saved.localStorage || {});
+      } catch {
+        // ignore
+      }
+
+      await gotoWithRetry(page, "/app/dashboard").catch(() => undefined);
+      const accessResponse = await page.request
+        .get("/api/subscription/access")
+        .catch(() => ({ status: () => 0 }));
+      if (
+        accessResponse &&
+        accessResponse.status &&
+        accessResponse.status() === 200
+      ) {
+        return;
+      }
+    }
+  } catch {
+    // ignore restore errors
+  }
+
+  const apiResponse = await page.request.post("/api/auth/sign-in/email", {
+    data: {
+      email: user.email,
+      password: user.password,
+      callbackURL: "/app/dashboard",
+      rememberMe: true,
+    },
+  });
+
+  if (apiResponse.ok()) {
+    await assertSessionEstablished(page, user.role);
+    await gotoWithRetry(page, "/app/dashboard").catch(() => undefined);
+    await expect(page).not.toHaveURL(/\/sign-in/);
+    // Persist session state to speed up subsequent tests and avoid auth rate limits.
+    try {
+      const cookies = await page.context().cookies();
+      const localStorageSnapshot = await page.evaluate(() => {
+        const out: Record<string, string> = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i)!;
+          out[key] = localStorage.getItem(key) as string;
+        }
+        return out;
+      });
+      const storage = { cookies, localStorage: localStorageSnapshot };
+      await writeFile(storagePath, JSON.stringify(storage), "utf8").catch(
+        () => undefined,
+      );
+    } catch {
+      // ignore persist errors
+    }
+    return;
+  }
+
+  // Log failing API sign-in details to help diagnose intermittent auth failures.
+  try {
+    const body = await apiResponse.text();
+    // eslint-disable-next-line no-console
+    console.warn(
+      `api sign-in failed: status=${apiResponse.status()} body=${body.slice(0, 300)}`,
+    );
+  } catch (e) {
+    // ignore logging errors
+  }
 
   await gotoWithRetry(page, "/sign-in");
   const openEmailLogin = page
@@ -196,20 +294,25 @@ async function ensureSignedIn(page: Page, user: TestUser) {
     await openEmailLogin.click();
   }
 
-  const dialog = page.getByRole("dialog").first();
-  await expect(dialog).toBeVisible({ timeout: 15_000 });
+  // The sign-in flow may be a modal dialog or a dedicated page.
+  // Support both: prefer the dialog when present, fall back to page-level form.
+  const maybeDialog = page.getByRole("dialog").first();
+  let scope = page;
+  try {
+    await expect(maybeDialog).toBeVisible({ timeout: 3_000 });
+    scope = maybeDialog;
+  } catch {
+    // dialog not visible — continue using the page as scope
+    scope = page;
+  }
 
-  const emailField = dialog
-    .getByLabel(/e-?mail|email/i)
-    .first();
-  const passwordField = dialog
-    .getByLabel(/senha|password/i)
-    .first();
+  const emailField = scope.getByLabel(/e-?mail|email/i).first();
+  const passwordField = scope.getByLabel(/senha|password/i).first();
 
   await emailField.fill(user.email);
   await passwordField.fill(user.password);
 
-  const submit = dialog.getByRole("button", { name: /^Entrar$/i }).first();
+  const submit = scope.getByRole("button", { name: /^Entrar$/i }).first();
   await submit.click();
 
   await page.waitForLoadState("networkidle").catch(() => undefined);
@@ -225,7 +328,10 @@ async function ensureSignedIn(page: Page, user: TestUser) {
 
 async function signOut(page: Page) {
   await page.request.post("/api/auth/sign-out").catch(() => undefined);
-  await page.context().clearCookies().catch(() => undefined);
+  await page
+    .context()
+    .clearCookies()
+    .catch(() => undefined);
   await page
     .evaluate(() => {
       localStorage.clear();
@@ -247,7 +353,7 @@ test("homepage renders and stays clean", async ({ page }) => {
   expect(doctype).toBe("html");
   await expect(page.getByText("CENTRAL OPERACIONAL PARA MILHAS")).toBeVisible();
   await expect(
-    page.getByRole("link", { name: /Come.*gratuitamente/i }).first()
+    page.getByRole("link", { name: /Come.*gratuitamente/i }).first(),
   ).toBeVisible();
 });
 
@@ -292,7 +398,9 @@ test("trial and subscribe flow are available", async ({ page }) => {
   await ensureSignedIn(page, testUsers.QA_TRIAL);
   await gotoWithRetry(page, "/subscribe");
   await expect(page.getByText(/Teste.*15 dias/i).first()).toBeVisible();
-  await expect(page.getByRole("button", { name: /Come.*teste/i }).first()).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Come.*teste/i }).first(),
+  ).toBeVisible();
 });
 
 test("expired users can recover via subscribe", async ({ page }, testInfo) => {
@@ -327,16 +435,7 @@ test("expired users can recover via subscribe", async ({ page }, testInfo) => {
 });
 
 test("session refresh survives reload", async ({ page }) => {
-  try {
-    await ensureSignedIn(page, testUsers.QA_OWNER);
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      "[warning] session refresh login path fell back to warning:",
-      error instanceof Error ? error.message : String(error),
-    );
-    return;
-  }
+  await ensureSignedIn(page, testUsers.QA_OWNER);
 
   await page.reload({ waitUntil: "commit" });
 

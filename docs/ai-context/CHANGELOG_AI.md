@@ -1,3 +1,40 @@
+# 2026-06-05 - HM authenticated smoke login bootstrap fix
+
+- Identified the remaining HM certification failure in the authenticated Playwright smoke lane.
+- Symptom: authenticated smoke tests waited for a login dialog before establishing a session.
+- Root cause: `tests-e2e/hm-smoke.spec.ts` used the visual `/sign-in` email modal as the primary test login path, while the current Better Auth smoke flow already supports direct `/api/auth/sign-in/email` session bootstrap for synthetic QA users.
+- Correction applied: `ensureSignedIn` now creates the QA session through Better Auth email API first, validates the authenticated state, then navigates to protected HM surfaces; the old UI-dialog path remains only as fallback when the API login fails.
+- Session refresh is no longer downgraded to warning after a login failure; it now requires a valid authenticated session before reload validation.
+- Validation status: the pre-fix authenticated subset passed locally with warnings, confirming HM auth itself is operational; post-fix rerun was blocked by the local agent execution limit and must be rerun when execution capacity is restored.
+
+# 2026-06-07 - HM smoke: 10/10 PASS and rate-limit mitigation
+
+- Achieved: Playwright HM smoke suite now passes 10/10 locally after targeted fixes.
+- Fixes applied:
+  - `tests-e2e/hm-smoke.spec.ts` updated to prefer the Better Auth email API for session bootstrap, with the visual login modal as fallback.
+  - Diagnostic logging added on API sign-in failures to surface `429` and other responses.
+  - Session caching persisted under `test-results/auth-<ROLE>.json` to reduce repeated sign-in calls and mitigate CI rate-limiting.
+- Root cause observed: intermittent `429 Too Many Requests` from the auth endpoint during repeated synthetic sign-ins in the smoke lane.
+- Operational recommendation: increase auth API rate limits for CI runners or prefer reusing a persisted session fixture in CI; the test harness now persists/restores session state to reduce sign-in volume.
+- Status: HM release pipeline certified locally. See `DECISIONS.md` for formal certification action.
+
+# 2026-06-07 - Política Oficial de Uso de Modelos de IA
+
+- A DataVisio adota uma política formal de utilização de modelos de IA para reduzir custo operacional e evitar ciclos repetitivos de investigação.
+- Resumo:
+  - `Gemini 2.5 Pro` — modelo principal para desenvolvimento diário e engenharia.
+  - `Gemini Flash` / `GPT-5 Mini` — modelos econômicos para geração de artefatos e tarefas repetitivas.
+  - `GPT-5` — uso restrito para decisões arquiteturais e RCAs críticas.
+- Regras: máximo 1 RCA por incidente; agentes devem consultar `failure-registry` e `DECISIONS.md`; commits/merge para `develop` permitidos, merges para `main` e deploys PROD exigem aprovação humana.
+
+Data de vigência: 2026-06-07
+
+# 2026-06-07 - PROD V2 Bootstrap & Ledger — Preparação operacional
+
+- Gerado script operacional para aplicação controlada do bootstrap (`0000_misty_kulan_gath.sql`) e ledger (`0001_add_mile_point_lots.sql`) em PROD V2: `scripts/prod_v2_apply_bootstrap_and_ledger.sh` (GERADO, NÃO EXECUTADO).
+- Artefatos criados: `CUTOVER_READINESS_REPORT.md`, `PROD_V2_CUTOVER_PLAN.md`, `PROD_DEPLOY_CHECKLIST.md`.
+- Status: pronto para revisão humana e aprovação final; não executar sem autorização explícita.
+
 # 2026-06-05 - Self-hosted deploy runner implementation
 
 - Installed the VisioMilhas GitHub Actions self-hosted runner on the `visiochat` VPS as dedicated user `github-runner`.
@@ -8,6 +45,7 @@
 - Removed infrastructure precheck from GitHub-hosted build/smoke lanes; `PRECHECK_INFRASTRUCTURE` now belongs to deploy jobs.
 - Fixed remote deploy env parsing so operational variables are extracted by key instead of sourcing the full `.env.production`, which contains public pricing values with spaces.
 - Added retry around the internal container healthcheck so deploy validation waits for the Next.js runtime to listen on `127.0.0.1:3000` after container start.
+- Validation run `27035246181`: build, artifact, self-hosted deploy precheck, SSH, source sync, HM deployment orchestration, runtime health, and public Traefik URL validation passed; HM certification remains blocked by Playwright smoke login-dialog expectations.
 
 # 2026-06-05 - Runner to VPS RCA closure and mitigation proposal
 
@@ -73,6 +111,7 @@
 - Recovery record: added `SSH_DEPLOY_TIMEOUT_RELEASE_PROMOTION` to failure registry, recovery playbooks, and known limitations.
 - Prevention: do not replace the explicit HM endpoint with a masked environment value until a release-promotion run proves the replacement.
 - Commit references: `57de73a`, `2a79fbd`, `12aa01b`.
+
 # 2026-06-04 - Release promotion SSH baseline restoration
 
 - Regression identified: `.github/workflows/release-promotion.yml` changed the SSH preparation layer that was already proven in `.github/workflows/deploy-hm.yml`.
@@ -106,6 +145,7 @@
 - Added `.agents/AGENT_ROUTER.md` as the mandatory routing layer between task type, agent file, and skill set.
 - Updated the root `AGENTS.md` and `.agents/HANDOVER.md` so operational replies must select a routed agent instead of using a generic identity.
 - Document precedence now explicitly includes `.github/agents/` as the agent tree and `.agents/AGENT_ROUTER.md` as the selection entry point.
+
 ## 2026-06-03 â€” Environment Segregation Pipeline Hardening â€” IN PROGRESS
 
 ## 2026-06-03 - OAuth matrix correction
@@ -498,12 +538,12 @@
 
 | Capability      | Status | Note                                     |
 | --------------- | ------ | ---------------------------------------- |
-| FIFO purchase   | ?     | `acquireMiles()` estabilizado            |
-| FIFO sale       | ?     | Continuidade preservada                  |
-| FIFO transfer   | ?     | Continua registrando lineage             |
-| Replay timeline | ?     | Materializada sem duplicidade conceitual |
-| FIFO lineage    | ?     | Derivada do runtime persistido           |
-| Validation      | ?     | Suíte focada passou                      |
+| FIFO purchase   | ?      | `acquireMiles()` estabilizado            |
+| FIFO sale       | ?      | Continuidade preservada                  |
+| FIFO transfer   | ?      | Continua registrando lineage             |
+| Replay timeline | ?      | Materializada sem duplicidade conceitual |
+| FIFO lineage    | ?      | Derivada do runtime persistido           |
+| Validation      | ?      | Suíte focada passou                      |
 
 # CHANGELOG_AI
 
@@ -655,11 +695,11 @@ Validação:
 
 | Capability         | Status | Note                                  |
 | ------------------ | ------ | ------------------------------------- |
-| FIFO purchase      | ?     | Mantido                               |
-| FIFO sale          | ?     | Commit só após o use case             |
-| FIFO transfer      | ?     | Credita destino e mantém rollback     |
-| Testability        | ?     | Dependências críticas injetáveis      |
-| Ledger consistency | ?     | Destino deixa de ficar sem lote/saldo |
+| FIFO purchase      | ?      | Mantido                               |
+| FIFO sale          | ?      | Commit só após o use case             |
+| FIFO transfer      | ?      | Credita destino e mantém rollback     |
+| Testability        | ?      | Dependências críticas injetáveis      |
+| Ledger consistency | ?      | Destino deixa de ficar sem lote/saldo |
 
 ---
 
@@ -694,9 +734,9 @@ Validação:
 
 | Capability           | Status | Note                                |
 | -------------------- | ------ | ----------------------------------- |
-| Trial activation     | ?     | Server-side e persistido no SAAS_DB |
-| Commercial lifecycle | ?     | Estados bloqueiam/liberam dashboard |
-| Subscribe UX         | ?     | CTA com retry e redirect            |
+| Trial activation     | ?      | Server-side e persistido no SAAS_DB |
+| Commercial lifecycle | ?      | Estados bloqueiam/liberam dashboard |
+| Subscribe UX         | ?      | CTA com retry e redirect            |
 | Browser lifecycle    | ??     | Falta validação completa no browser |
 
 ---
@@ -733,12 +773,12 @@ Validação:
 
 | Capability          | Status | Note                                                      |
 | ------------------- | ------ | --------------------------------------------------------- |
-| SAAS_DB separation  | ?     | Billing/subscription continuam no ADM DB                  |
-| APP_DB separation   | ?     | Dados operacionais continuam no APP DB                    |
-| Subscription access | ?     | Gating server-side implementado                           |
-| Subscribe page      | ?     | Nova etapa publica/autenticada de gate comercial          |
-| Trial state         | ?     | Agora e um estado operacional de acesso                   |
-| Cancel/Suspend      | ?     | Bloqueio comercial classificado                           |
+| SAAS_DB separation  | ?      | Billing/subscription continuam no ADM DB                  |
+| APP_DB separation   | ?      | Dados operacionais continuam no APP DB                    |
+| Subscription access | ?      | Gating server-side implementado                           |
+| Subscribe page      | ?      | Nova etapa publica/autenticada de gate comercial          |
+| Trial state         | ?      | Agora e um estado operacional de acesso                   |
+| Cancel/Suspend      | ?      | Bloqueio comercial classificado                           |
 | Browser runtime     | ??     | Ainda falta rerodar o fluxo real com sessao Google válida |
 
 ### Residual Caveat
@@ -780,15 +820,15 @@ Validação:
 
 | Capability           | Status | Note                                           |
 | -------------------- | ------ | ---------------------------------------------- |
-| Google OAuth         | ?     | Continua funcional                             |
-| Callback             | ?     | Continua funcional                             |
-| Session persistence  | ?     | Continua funcional                             |
-| Logout               | ?     | Agora usa signOut oficial                      |
-| Session invalidation | ?     | Auditada no handler                            |
-| Refresh              | ?     | Instrumentado como success                     |
-| Browser reopen       | ?     | Instrumentado como success                     |
-| Onboarding           | ?     | Continua onboarding-aware                      |
-| Ownership            | ?     | Mantido no server                              |
+| Google OAuth         | ?      | Continua funcional                             |
+| Callback             | ?      | Continua funcional                             |
+| Session persistence  | ?      | Continua funcional                             |
+| Logout               | ?      | Agora usa signOut oficial                      |
+| Session invalidation | ?      | Auditada no handler                            |
+| Refresh              | ?      | Instrumentado como success                     |
+| Browser reopen       | ?      | Instrumentado como success                     |
+| Onboarding           | ?      | Continua onboarding-aware                      |
+| Ownership            | ?      | Mantido no server                              |
 | Browser runtime      | ??     | Sem sessão ativa no browser final da validação |
 
 ### Residual Caveat
@@ -835,12 +875,12 @@ Validação:
 
 | Capability          | Status | Note                                                                                |
 | ------------------- | ------ | ----------------------------------------------------------------------------------- |
-| Better Auth login   | ?     | Continua funcional                                                                  |
-| Session persistence | ?     | Continua funcional                                                                  |
-| Ownership hydration | ?     | `organizationId` agora entra na session context                                     |
-| Read scope          | ?     | Redirect onboarding-aware em vez de crash                                           |
-| Dashboard           | ?     | Boundary explícito, sem uncaught throw                                              |
-| Observability       | ?     | Novos eventos de onboarding/runtime                                                 |
+| Better Auth login   | ?      | Continua funcional                                                                  |
+| Session persistence | ?      | Continua funcional                                                                  |
+| Ownership hydration | ?      | `organizationId` agora entra na session context                                     |
+| Read scope          | ?      | Redirect onboarding-aware em vez de crash                                           |
+| Dashboard           | ?      | Boundary explícito, sem uncaught throw                                              |
+| Observability       | ?      | Novos eventos de onboarding/runtime                                                 |
 | Browser runtime     | ??     | Sign-in/Google continuam alcançáveis; dashboard sem sessão redireciona para sign-in |
 
 ### Remaining External Caveat
@@ -879,11 +919,11 @@ Validação:
 
 | Capability                | Status | Note                                                       |
 | ------------------------- | ------ | ---------------------------------------------------------- |
-| Better Auth schema lookup | ?     | `user/session/account/verification` agora exportados       |
-| OAuth callback wiring     | ?     | Continua apontando para `/api/auth/callback/google`        |
+| Better Auth schema lookup | ?      | `user/session/account/verification` agora exportados       |
+| OAuth callback wiring     | ?      | Continua apontando para `/api/auth/callback/google`        |
 | Session persistence       | ??     | Pronto no runtime; E2E real depende de login Google válido |
 | Onboarding                | ??     | Sem regressão observada; aguardando E2E completo           |
-| Browser runtime           | ?     | Sign-in continua carregando normalmente                    |
+| Browser runtime           | ?      | Sign-in continua carregando normalmente                    |
 
 ### Residual Blocker
 
@@ -935,16 +975,16 @@ Validação:
 
 | Capability          | Code | Testing | Docs | Status     |
 | ------------------- | ---- | ------- | ---- | ---------- |
-| Google OAuth        | ?   | ?      | ?   | ?? READY   |
-| Better Auth DB      | ?   | ?      | ?   | ?? READY   |
-| Session Persistence | ?   | ?      | ?   | ?? READY   |
-| Callback Routing    | ?   | ?      | ?   | ?? READY   |
-| Onboarding Flow     | ?   | ?      | ?   | ?? READY   |
-| Error Handling      | ?   | ?      | ?   | ?? READY   |
-| Observability       | ?   | ?      | ?   | ?? READY   |
-| Runtime Hardening   | ?   | ?      | ?   | ?? READY   |
-| Recovery Fallback   | ?   | ?      | ?   | ?? READY   |
-| Browser Runtime     | ?   | ??\*    | ?   | ?? READY\* |
+| Google OAuth        | ?    | ?       | ?    | ?? READY   |
+| Better Auth DB      | ?    | ?       | ?    | ?? READY   |
+| Session Persistence | ?    | ?       | ?    | ?? READY   |
+| Callback Routing    | ?    | ?       | ?    | ?? READY   |
+| Onboarding Flow     | ?    | ?       | ?    | ?? READY   |
+| Error Handling      | ?    | ?       | ?    | ?? READY   |
+| Observability       | ?    | ?       | ?    | ?? READY   |
+| Runtime Hardening   | ?    | ?       | ?    | ?? READY   |
+| Recovery Fallback   | ?    | ?       | ?    | ?? READY   |
+| Browser Runtime     | ?    | ??\*    | ?    | ?? READY\* |
 
 \*Browser runtime código 100% ready, E2E real login bloqueado por erro transiente do Google
 
@@ -2766,6 +2806,7 @@ Notas de segurança:
 - O workflow faz masking do connection string e não imprime segredos (scripts usam masking). Ainda assim, nunca cole o valor do secret em conversas públicas ou documentos versionados.
 - Este agente NÃO configura o secret automaticamente; solicite ao responsável de infraestrutura/owner para adicionar o secret.
 - Se houver falha, coletar apenas logs sanitizados e abrir investigação; não executar ações manuais em `staging` ou `production`.
+
 ## 2026-06-02 - Docker Runtime Layout Collision Fix
 
 Objetivo:
@@ -2813,6 +2854,7 @@ Resultado esperado:
 
 - O bootstrap do Better Auth volta a inicializar o provider Google em producao.
 - O erro `AUTH_BOOTSTRAP_FAILED` nao deve mais surgir por secret vazio.
+
 # 2026-06-03
 
 - Added production readiness discovery for empty PostgreSQL V2 bootstrap.
@@ -2830,6 +2872,7 @@ Resultado esperado:
   - `docs/ai-context/GO_LIVE_OPERATIONS_CHECKLIST.md`
 - Purpose:
   - formalize onboarding, trial, subscription, cancellation, reactivation, support, incident response and rollback procedures.
+
 # 2026-06-04
 
 - Added the Failure Recovery Layer to turn recurring operational errors into registry-backed recovery paths before surfacing `FAIL`.
@@ -2837,16 +2880,19 @@ Resultado esperado:
 - Registered FP-008 for browser automation availability: Playwright runtime confirmed and should be treated as a dedicated smoke-test lane.
 - Introduced the Autonomous Delivery Engine directive and the HM/PROD `DEPLOY_CONFIDENCE_SCORE` model.
 - Formalized the official test suite organization contract for `tests/domain`, `tests/integration`, `tests/runtime`, `tests-e2e`, and `test-results`.
+
 ## 2026-06-04 - VisioMilhas Project Operating System
 
 - Added the repository-root `AGENTS.md` as the canonical operating system for IA-1stEngine on VisioMilhas.
 - Added `.agents/HANDOVER.md` as the standard handover format for every agent transition.
 - Standardized the required document consultation order, official agents, deploy policy, failure recovery policy, and HUMAN_ACTION_REQUIRED criteria for the project.
+
 ## 2026-06-04 - IA-1stEngine discipline enforcement
 
 - Strengthened the repository operating system with mandatory operational response fields: `AGENT`, `SKILLS`, `SOURCES CONSULTED`, and `STATUS`.
 - Added explicit `PROCESS_VIOLATION` self-correction guidance for any response draft missing the mandatory fields.
 - Expanded the handover template to include `STATUS`, `SOURCES CONSULTED`, and `AGENT` so formal transitions remain machine-checkable.
+
 ## 2026-06-04 - Agent / skill governance alignment
 
 - Defined `.github/agents/` as the canonical agent tree and `.agents/skills/` as the canonical skill tree.
