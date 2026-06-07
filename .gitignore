@@ -18,3 +18,7 @@ tsconfig.tsbuildinfo
 *.tsbuildinfo
 .vscode/settings.json
 .claude/
+
+# Playwright artifacts
+test-results/
+playwright-report/
