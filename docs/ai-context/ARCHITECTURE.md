@@ -44,3 +44,13 @@
 
 - `deploy-hm.yml` and `deploy-prod.yml` remain as legacy fallback workflows only.
 - Official release promotion happens through `release-promotion.yml`.
+
+## Política de Uso de Modelos de IA (resumo técnico)
+
+Para decisões de arquitetura, segurança e deploy, a DataVisio usa um modelo de alto-falante (GPT-5) com uso restrito e auditoria humana. Para atividades de engenharia e documentação usar preferencialmente Gemini 2.5 Pro; tarefas repetitivas e geração de artefatos usar Gemini Flash / GPT-5 Mini.
+
+Regras rápidas:
+- Arquitetura crítica, mudanças de deploy e cutover HM→PROD: revisar com GPT-5 e registrar decisão em `docs/ai-context/DECISIONS.md`.
+- Mudanças de infra ou mergem em `main` exigem aprovação humana explícita.
+
+Data de vigência: 2026-06-07

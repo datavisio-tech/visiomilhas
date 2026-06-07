@@ -61,6 +61,22 @@
 
 ## 2026-06-03 — Environment Segregation Implementation
 
+# 2026-06-07 — Política Oficial de Uso de Modelos de IA
+
+- Decision: Adotar política oficial de uso de modelos de IA da DataVisio.
+- Modelos e papéis:
+  - `Gemini 2.5 Pro`: modelo principal para desenvolvimento diário (Next.js, TypeScript, React, Tailwind, shadcn/ui, APIs, Drizzle, MongoDB, CRUD, refatorações, documentação técnica comum).
+  - `Gemini Flash` / `GPT-5 Mini`: modelos econômicos para geração de arquivos, markdown, changelog, documentação, testes simples e tarefas repetitivas.
+  - `GPT-5`: modelo de arquitetura e decisão crítica — uso restrito a arquitetura SaaS, multi-tenancy, segurança, deploy, CI/CD, incidentes críticos, RCA complexas, cutover HM→PROD e auditorias técnicas.
+
+- Regras operacionais:
+  - Máximo de 1 RCA por incidente; nova RCA apenas quando existir evidência adicional (novo log, novo comportamento, mudança de arquitetura).
+  - Agentes devem consultar `failure-registry` e `docs/ai-context/DECISIONS.md` antes de iniciar investigações.
+  - Autonomia permitida: commits, push, merge para `develop`, correções de código e atualizações documentais.
+  - Não permitido sem aprovação humana: merge para `main`, deploy PROD, alterações de infraestrutura crítica.
+
+Data de vigência: 2026-06-07
+
 # 2026-06-07 - HM Release Pipeline Certification
 
 - Decision: `HM_RELEASE_PIPELINE_CERTIFIED` — The HM release pipeline is certified for release promotion when Playwright HM smoke suite passes 10/10 in the CI/HM validation lane.

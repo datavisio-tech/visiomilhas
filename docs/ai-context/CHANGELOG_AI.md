@@ -18,6 +18,17 @@
 - Operational recommendation: increase auth API rate limits for CI runners or prefer reusing a persisted session fixture in CI; the test harness now persists/restores session state to reduce sign-in volume.
 - Status: HM release pipeline certified locally. See `DECISIONS.md` for formal certification action.
 
+# 2026-06-07 - Política Oficial de Uso de Modelos de IA
+
+- A DataVisio adota uma política formal de utilização de modelos de IA para reduzir custo operacional e evitar ciclos repetitivos de investigação.
+- Resumo:
+  - `Gemini 2.5 Pro` — modelo principal para desenvolvimento diário e engenharia.
+  - `Gemini Flash` / `GPT-5 Mini` — modelos econômicos para geração de artefatos e tarefas repetitivas.
+  - `GPT-5` — uso restrito para decisões arquiteturais e RCAs críticas.
+- Regras: máximo 1 RCA por incidente; agentes devem consultar `failure-registry` e `DECISIONS.md`; commits/merge para `develop` permitidos, merges para `main` e deploys PROD exigem aprovação humana.
+
+Data de vigência: 2026-06-07
+
 # 2026-06-05 - Self-hosted deploy runner implementation
 
 - Installed the VisioMilhas GitHub Actions self-hosted runner on the `visiochat` VPS as dedicated user `github-runner`.

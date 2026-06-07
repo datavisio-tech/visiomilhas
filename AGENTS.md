@@ -139,3 +139,35 @@ Return `HUMAN_ACTION_REQUIRED` only for:
 
 - When implementation changes behavior, update the relevant operational docs and the changelog/decisions/plan records
 - Do not create documentation for its own sake; create it when it unlocks execution, validation, or handover
+
+## Política Oficial de Uso de Modelos de IA — DataVisio
+
+Nota: esta política regula o uso de modelos e o comportamento dos agentes automáticos no repositório VisioMilhas.
+
+Modelos e papéis:
+- **Modelo Principal de Implementação**: Gemini 2.5 Pro
+	- Uso: desenvolvimento diário (Next.js, TypeScript, React, Tailwind, shadcn/ui, APIs, Drizzle, MongoDB, CRUD, refatorações, documentação técnica comum).
+- **Modelo Econômico**: Gemini Flash ou GPT-5 Mini
+	- Uso: geração de arquivos, markdown, changelog, documentação, testes simples, tarefas repetitivas, atualizações operacionais.
+- **Modelo de Arquitetura e Decisão Crítica**: GPT-5
+	- Uso restrito: arquitetura SaaS, multi-tenancy, segurança, deploy, CI/CD, incidentes críticos, RCA complexas, cutover HM→PROD, auditorias técnicas, decisões estruturais.
+
+Regras para agentes:
+- NÃO iniciar RCAs sucessivas sem evidência nova; NÃO reanalisar incidentes oficialmente encerrados; NÃO revalidar infraestrutura já certificada; NÃO reinvestigar incidentes documentados no `failure-registry`.
+- DEVER consultar o `failure-registry` antes de qualquer investigação e `docs/ai-context/DECISIONS.md` antes de propor mudanças estruturais.
+- DEVER executar correções quando a causa já estiver identificada e escalonar para humano quando não houver nova evidência.
+
+Política de RCA:
+- Máximo: 1 RCA por incidente.
+- Nova RCA só quando: nova evidência, novo log, novo comportamento, ou mudança de arquitetura.
+- Caso contrário: executar correção ou solicitar decisão humana.
+
+Autonomia e limites:
+- Permitido: commit, push, merge para `develop`, atualizações documentais, correções de código e de testes.
+- Não permitido: merge para `main`, deploy para PROD, alterações em infraestrutura crítica sem aprovação humana.
+
+Implementação operativa:
+- Agentes devem registrar qual modelo foi usado nas ações (campo `MODEL` nos logs/operações).
+- Agentes devem emitir um resumo factual e citar as `SOURCES CONSULTED` antes de executar mudanças críticas.
+
+Data de vigência: 2026-06-07
