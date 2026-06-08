@@ -52,9 +52,20 @@ That means the repository does not prove that a fresh PROD V2 database will be r
 - Evidence collected from PROD V2 operational run: `0000_misty_kulan_gath.sql` (bootstrap) was applied and `0001_add_mile_point_lots.sql` was applied successfully.
 - Confirmed objects: table `mile_point_lots`, indices `idx_mpl_account_remaining`, `idx_mpl_source_entry` present in PROD V2 APP database.
 - Repository synced with server-side parsing fix to `scripts/prod_v2_apply_bootstrap_and_ledger.sh` to avoid divergence.
-
 - **HM release pipeline:** HM_RELEASE_PIPELINE_CERTIFIED (10/10 Playwright HM smoke PASS)
 - **Next action for PROD:** Resolve PROD V2 schema/bootstrap gap before promoting to PROD.
+
+- **PROD V2 CERTIFICATION RESULT (2026-06-07):**
+  - **Date:** 2026-06-07
+  - **Commit / Evidence SHA:** f1499a105d572180d4016f54850d37ea8955aa99
+  - **Migrations applied:** `0000_misty_kulan_gath.sql` (bootstrap) and `0001_add_mile_point_lots.sql` (ledger)
+  - **Validated objects:** `mile_point_lots` table, indices `idx_mpl_account_remaining`, `idx_mpl_source_entry`, related FK and CHECK constraints
+  - **Backup:** pre-migration `pg_dump` snapshot created and archived per operational runbook
+  - **Validation method:** read-only SQL metadata checks executed against PROD V2 APP database; results matched HM validations
+  - **Result:** GO — PROD V2 schema/bootstrap validated and documented
+
+- **HM release pipeline:** HM_RELEASE_PIPELINE_CERTIFIED (10/10 Playwright HM smoke PASS)
+- **Next action for PROD:** Run post-certification actions (smoke tests, tagging, monitoring) and continue controlled promotion.
 
 ## Migration 0001 Operational Validation
 

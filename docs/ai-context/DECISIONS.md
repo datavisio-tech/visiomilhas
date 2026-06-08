@@ -506,3 +506,10 @@ Skills detectadas: `code-review`, `frontend-patterns`, `saas-multi-tenant`, `sec
 - Decision: production remains **NO-GO** because the same validation was not executed against PROD V2; `/opt/datavisio/visiomilhas/.env.production` was not present on the host.
 - Decision: production can move to GO only after applying the migration to PROD V2 APP DB and confirming every required object returns `FOUND`.
 - Decision: the migration blocker is not a code blocker anymore; it is an operational PROD V2 evidence blocker.
+
+## 2026-06-07 - PROD V2 Certification Decision
+
+- Decision: Mark PROD V2 as `CERTIFIED` for schema/bootstrap after controlled application of `0000_misty_kulan_gath.sql` and `0001_add_mile_point_lots.sql`, with pre-migration backup and read-only validation.
+- Evidence: Operational run confirming migrations applied and read-only SQL metadata validation; repository synchronized with parsing fix. Commit SHA: `f1499a105d572180d4016f54850d37ea8955aa99`.
+- Rationale: HM validation and PROD V2 validations match; pre-migration snapshot is available for rollback; remaining runtime warnings do not block schema promotion.
+- Impact: Proceed with controlled promotion under monitoring and post-certification actions (smoke tests, release tagging, monitoring, log retention). Any infra or destructive changes still require human approval per governing rules.

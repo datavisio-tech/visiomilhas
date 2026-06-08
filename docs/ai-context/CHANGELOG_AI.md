@@ -43,6 +43,14 @@ Data de vigência: 2026-06-07
 - Resultado operacional: tabela `mile_point_lots` criada com índices `idx_mpl_account_remaining`, `idx_mpl_source_entry`.
 - Commit de sincronização: commit aplicado em `develop` para refletir a correção e certificação operacional.
 
+# 2026-06-07 - PROD V2 Certified
+
+- PROD V2 schema and bootstrap validated: `0000_misty_kulan_gath.sql` and `0001_add_mile_point_lots.sql` applied successfully in PROD V2.
+- Confirmed presence of `mile_point_lots`, indices `idx_mpl_account_remaining`, `idx_mpl_source_entry`, and related constraints.
+- Pre-migration backup snapshot created and archived following the operational runbook.
+- Repository synchronized with production parsing fix; final certification recorded at SHA `f1499a105d572180d4016f54850d37ea8955aa99`.
+- Status: CERTIFIED (GO) — ready for controlled promotion and post-certification monitoring.
+
 # 2026-06-05 - Self-hosted deploy runner implementation
 
 - Installed the VisioMilhas GitHub Actions self-hosted runner on the `visiochat` VPS as dedicated user `github-runner`.

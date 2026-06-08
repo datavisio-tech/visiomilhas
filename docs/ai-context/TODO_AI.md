@@ -8,7 +8,8 @@
 - [x] PR-06: criar migration explícita para Better Auth (`ba_*`)
 - [ ] Validar a sintaxe dos workflows em CI
 - [ ] Preparar secrets por ambiente antes do primeiro go-live
-- [ ] Confirmar manualmente o cutover de HM e o bootstrap do Production V2
+- [x] Confirmar manualmente o cutover de HM e o bootstrap do Production V2
+  - **PROD V2 bootstrap confirmado:** 2026-06-07 — migrations `0000_misty_kulan_gath.sql` e `0001_add_mile_point_lots.sql` aplicadas em PROD V2; evidence SHA f1499a105d572180d4016f54850d37ea8955aa99
 
 **Status**: ✅ `/subscribe` refinado para explicar trial, planos e política de acesso
 
@@ -929,12 +930,14 @@ Status 1.3.20 — integração atômica da compra ao motor FIFO:
 - `createPurchaseAction` em `app/app/purchases/actions.ts` foi atualizado para, quando `USE_FIFO_MOVEMENTS_ENGINE` estiver ativa, delegar ao `acquireMilesUseCase(..., txRepo)` executando o use-case dentro da mesma transação da compra.
 - Pendências: validar a migration `db/app/migrations/0001_add_mile_point_lots.sql` em ambiente isolado, executar testes de integração e validar rollback antes de ativar a flag em staging.
 ```
+
 2026-06-02 - Docker Runtime Layout Collision Fix
 
 - Validar `docker build` com o novo `WORKDIR /workspace`.
 - Validar `docker run` e conferir HTML bruto de `/`, `/subscribe`, `/app` e `/app/accounts`.
 - Confirmar em navegador que nao ha React #418, React #423, `HierarchyRequestError` ou tela branca.
 - Apos validacao local, executar deploy via GitHub Actions e repetir smoke test em producao.
+
 ## 2026-06-03 - Pipeline Hardening for Environment Segregation
 
 - [x] Remover a dependência de `.next/types/**/*.ts` do `tsconfig.json`
