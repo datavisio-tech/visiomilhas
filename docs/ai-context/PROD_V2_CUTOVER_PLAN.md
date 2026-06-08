@@ -61,9 +61,9 @@ Planejar o primeiro go-live do PostgreSQL Production V2 com banco vazio, sem mig
 ## Rollback
 1. Reverter para a última imagem estável.
 2. Redirecionar o deploy para o SHA anterior.
-3. Validar healthcheck da imagem antiga.
-4. Confirmar rotas públicas novamente.
-5. Se necessário, restaurar snapshot do banco V2 antes de qualquer escrita relevante.
+ - Execute the prepared migration script `scripts/prod_v2_apply_bootstrap_and_ledger.sh` under supervision.
+	 - NOTE: the script now runs PostgreSQL client operations inside the `postgres_prod_v2` container using `docker exec`.
+	 - The script copies migration files into the container, creates a pre-migration dump inside the container, and copies the dump to the host for safekeeping.
 
 ## Riscos
 - Better Auth falhar em banco vazio se a migration não estiver aplicada corretamente.

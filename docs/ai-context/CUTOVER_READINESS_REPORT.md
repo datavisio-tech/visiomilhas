@@ -47,6 +47,12 @@ That means the repository does not prove that a fresh PROD V2 database will be r
 - **Overall status:** NO-GO
 - **Reason:** Migration `0001_add_mile_point_lots.sql` is operationally validated in HM, but not yet evidenced on PROD V2.
 
+## 2026-06-07 - PROD V2 Migration Applied (Operational Update)
+
+- Evidence collected from PROD V2 operational run: `0000_misty_kulan_gath.sql` (bootstrap) was applied and `0001_add_mile_point_lots.sql` was applied successfully.
+- Confirmed objects: table `mile_point_lots`, indices `idx_mpl_account_remaining`, `idx_mpl_source_entry` present in PROD V2 APP database.
+- Repository synced with server-side parsing fix to `scripts/prod_v2_apply_bootstrap_and_ledger.sh` to avoid divergence.
+
 - **HM release pipeline:** HM_RELEASE_PIPELINE_CERTIFIED (10/10 Playwright HM smoke PASS)
 - **Next action for PROD:** Resolve PROD V2 schema/bootstrap gap before promoting to PROD.
 

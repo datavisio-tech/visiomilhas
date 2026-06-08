@@ -35,6 +35,14 @@ Data de vigência: 2026-06-07
 - Artefatos criados: `CUTOVER_READINESS_REPORT.md`, `PROD_V2_CUTOVER_PLAN.md`, `PROD_DEPLOY_CHECKLIST.md`.
 - Status: pronto para revisão humana e aprovação final; não executar sem autorização explícita.
 
+# 2026-06-07 - PROD V2: Correção de parsing e migrações aplicadas
+
+- Corrigido bug de parsing no script `scripts/prod_v2_apply_bootstrap_and_ledger.sh` que removia corretamente aspas em `APP_DATABASE_URL` (`${APP_DATABASE_URL#\"}` / `${APP_DATABASE_URL%\"}`). A correção veio do ambiente PROD V2 e foi sincronizada no repositório.
+- Validação sintática: `bash -n scripts/prod_v2_apply_bootstrap_and_ledger.sh` passou localmente.
+- Operação em PROD V2: `0000_misty_kulan_gath.sql` (bootstrap) aplicado com sucesso; `0001_add_mile_point_lots.sql` aplicado com sucesso.
+- Resultado operacional: tabela `mile_point_lots` criada com índices `idx_mpl_account_remaining`, `idx_mpl_source_entry`.
+- Commit de sincronização: commit aplicado em `develop` para refletir a correção e certificação operacional.
+
 # 2026-06-05 - Self-hosted deploy runner implementation
 
 - Installed the VisioMilhas GitHub Actions self-hosted runner on the `visiochat` VPS as dedicated user `github-runner`.
