@@ -18,6 +18,13 @@
 - Operational recommendation: increase auth API rate limits for CI runners or prefer reusing a persisted session fixture in CI; the test harness now persists/restores session state to reduce sign-in volume.
 - Status: HM release pipeline certified locally. See `DECISIONS.md` for formal certification action.
 
+# 2026-06-07 - CI: persist Playwright artifacts via Actions
+
+- Added artifact upload steps to `.github/workflows/release-promotion.yml` for Playwright smoke lanes (HM and PROD).
+- Artifacts uploaded: `playwright-report/**`, `test-results/**`, `artifacts/playwright/**` using `actions/upload-artifact@v4`.
+- Artifact name: `visiomilhas-playwright-smoke-report`, retention: 30 days.
+- Rationale: keep test artifacts available per-run without versioning binary/report files in Git.
+
 # 2026-06-07 - Política Oficial de Uso de Modelos de IA
 
 - A DataVisio adota uma política formal de utilização de modelos de IA para reduzir custo operacional e evitar ciclos repetitivos de investigação.
