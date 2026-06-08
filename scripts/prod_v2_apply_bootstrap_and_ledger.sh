@@ -21,8 +21,8 @@ ENV_FILE=${ENV_FILE:-/opt/datavisio/visiomilhas-clean/.env.production}
 if [ -f "$ENV_FILE" ]; then
   # shellcheck disable=SC1090
   APP_DATABASE_URL=$(grep -E '^APP_DATABASE_URL=' "$ENV_FILE" | cut -d'=' -f2-)
-  APP_DATABASE_URL=${APP_DATABASE_URL#"}
-  APP_DATABASE_URL=${APP_DATABASE_URL%"}
+  APP_DATABASE_URL=${APP_DATABASE_URL#\"}
+  APP_DATABASE_URL=${APP_DATABASE_URL%\"}
   export APP_DATABASE_URL
 fi
 
