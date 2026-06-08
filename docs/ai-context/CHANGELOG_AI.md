@@ -51,6 +51,13 @@ Data de vigência: 2026-06-07
 - Repository synchronized with production parsing fix; final certification recorded at SHA `f1499a105d572180d4016f54850d37ea8955aa99`.
 - Status: CERTIFIED (GO) — ready for controlled promotion and post-certification monitoring.
 
+# 2026-06-07 - Smoke Test Certification
+
+- Execução Playwright concluída.
+- 10/10 testes aprovados.
+- Relatórios gerados: `artifacts/playwright/playwright-report/`, `test-results/playwright-hm-2026-06-07.json`, `test-results/playwright-hm-2026-06-07.xml`.
+- Ambiente considerado estável para continuidade.
+
 # 2026-06-05 - Self-hosted deploy runner implementation
 
 - Installed the VisioMilhas GitHub Actions self-hosted runner on the `visiochat` VPS as dedicated user `github-runner`.

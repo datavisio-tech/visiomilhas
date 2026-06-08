@@ -11,6 +11,10 @@
 - [x] Confirmar manualmente o cutover de HM e o bootstrap do Production V2
   - **PROD V2 bootstrap confirmado:** 2026-06-07 — migrations `0000_misty_kulan_gath.sql` e `0001_add_mile_point_lots.sql` aplicadas em PROD V2; evidence SHA f1499a105d572180d4016f54850d37ea8955aa99
 
+## 2026-06-07 - Smoke Evidence
+
+- [x] Playwright HM smoke executado e evidências geradas: `artifacts/playwright/playwright-report/`, `test-results/playwright-hm-2026-06-07.json`, `test-results/playwright-hm-2026-06-07.xml`.
+
 **Status**: ✅ `/subscribe` refinado para explicar trial, planos e política de acesso
 
 **Realizado**:

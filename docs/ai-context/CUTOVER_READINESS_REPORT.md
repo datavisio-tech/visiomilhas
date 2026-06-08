@@ -241,3 +241,14 @@ The release candidate is strong enough to keep moving toward cutover, but it sho
 - Committed Playwright traces and screenshots were not available in the repository snapshot.
 - Live production database state was not inspected.
 - External GitHub Actions runtime logs were not available in the repository snapshot.
+
+## POST CERTIFICATION VALIDATION (2026-06-07)
+
+- Resultado: PASS
+- Smoke tests: 10/10
+- Tempo: 22.3s
+- Artefatos gerados:
+  - `artifacts/playwright/playwright-report/index.html`
+  - `test-results/playwright-hm-2026-06-07.json`
+  - `test-results/playwright-hm-2026-06-07.xml`
+- Status final: GO
